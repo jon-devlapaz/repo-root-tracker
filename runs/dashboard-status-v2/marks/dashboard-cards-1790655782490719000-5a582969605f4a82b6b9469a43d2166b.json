@@ -1,0 +1,7 @@
+{
+  "item": "dashboard-cards",
+  "result": "passed",
+  "evidence": "dashboard.html render() fetches /api/repos/status per card async, renders dirty badge, branch/commit line, sync counts, stale count; CSS classes repo-body, repo-meta, branch, commit, status-dirty added",
+  "candidate": "84fef01997dcfa304504f2ebb416b66592a6e4016da1499af346b5db792e8dea",
+  "time_ns": 1790655782490719000
+}

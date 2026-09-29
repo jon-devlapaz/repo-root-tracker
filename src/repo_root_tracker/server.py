@@ -10,6 +10,7 @@ from pathlib import Path
 from urllib.parse import urlsplit
 
 from . import NotARepositoryError, find_root
+from .status import GitNotAvailableError, get_repo_status
 
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
 REPOS_FILE = CONFIG_DIR / "repos.json"
@@ -59,6 +60,25 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(body)
         elif path == "/api/repos":
             self._json(200, load_repos())
+        elif path == "/api/repos/status":
+            # ?path=<repo-root> — status signals for one repo
+            query = urlsplit(self.path).query
+            params = dict(
+                kv.split("=", 1) for kv in query.split("&") if "=" in kv
+            )
+            from urllib.parse import unquote
+
+            repo_path = unquote(params.get("path", ""))
+            if not repo_path:
+                self._json(400, {"error": "path query param is required"})
+                return
+            if not any(r["path"] == repo_path for r in load_repos()):
+                self._json(404, {"error": "not tracked"})
+                return
+            try:
+                self._json(200, get_repo_status(repo_path).to_dict())
+            except GitNotAvailableError as e:
+                self._json(503, {"error": str(e)})
         else:
             self.send_error(404)
 

@@ -159,8 +159,45 @@
     flex-shrink: 0;
   }
   .status-ok      { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .status-dirty   { background: var(--yellow); box-shadow: 0 0 6px var(--yellow); }
   .status-missing { background: var(--red);   box-shadow: 0 0 6px var(--red); }
   .status-unknown { background: var(--muted); }
+
+  .repo-body { flex: 1; min-width: 0; }
+
+  .repo-meta {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    gap: 6px;
+    align-items: baseline;
+    flex-wrap: wrap;
+  }
+
+  .repo-meta .branch {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+  }
+
+  .repo-meta .commit {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 320px;
+  }
+
+  .repo-meta .rel { font-size: 11px; }
+
+  .repo-label.stale { color: var(--yellow); }
 
   .repo-path {
     flex: 1;
@@ -265,7 +302,21 @@
 
   async function load() {
     const res = await fetch('/api/repos');
-    repos = await res.json();
+    repos = (await res.json()).map(r => ({...r, _status: null}));
+    render();
+    // Fetch status per card without blocking the list
+    repos.forEach((_, i) => fetchStatus(i));
+  }
+
+  async function fetchStatus(i) {
+    const card = document.getElementById('card-' + i);
+    try {
+      const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repos[i].path));
+      if (!res.ok) { repos[i]._status = {error: true}; }
+      else { repos[i]._status = await res.json(); }
+    } catch {
+      repos[i]._status = {error: true};
+    }
     render();
   }
 
@@ -287,19 +338,62 @@
     }
 
     list.innerHTML = repos.map((r, i) => {
-      const status = r._status;
-      const dot = status === 'ok' ? 'status-ok' : status === 'missing' ? 'status-missing' : 'status-unknown';
-      const label = status === 'ok' ? 'valid' : status === 'missing' ? 'not found' : '';
+      const s = r._status;
+      // Status dot: green clean, yellow dirty, red missing, grey loading
+      let dot = 'status-unknown', label = '';
+      if (s && s.error) { dot = 'status-missing'; label = 'error'; }
+      else if (s && s.dirty) {
+        if (s.dirty.is_clean) { dot = 'status-ok'; label = 'clean'; }
+        else { dot = 'status-dirty'; label = dirtyLabel(s.dirty); }
+      }
+      // Branch + last commit line
+      let meta = '';
+      if (s && s.branch) {
+        const c = s.last_commit || {};
+        meta = `<div class="repo-meta"><span class="branch">${s.branch}</span>`;
+        if (c.hash) meta += ` <span class="commit">${c.hash} ${escapeHtml(c.subject || '')}</span> <span class="rel">${c.relative || ''}</span>`;
+        meta += '</div>';
+      }
+      // Sync line
+      let sync = '';
+      if (s && s.sync) {
+        sync = s.sync.has_upstream
+          ? `<span class="repo-label">↑${s.sync.ahead} ↓${s.sync.behind}</span>`
+          : '<span class="repo-label">no upstream</span>';
+      }
+      // Stale branches
+      let stale = '';
+      if (s && s.stale_branches && s.stale_branches.length > 0) {
+        stale = `<span class="repo-label stale" title="${s.stale_branches.map(b => b.name).join(', ')}">${s.stale_branches.length} stale</span>`;
+      }
+      const loading = (!s) ? '<span class="repo-label"><span class="spinner"></span></span>' : '';
       return `<div class="repo-card" id="card-${i}">
         <div class="repo-status ${dot}" title="${label}"></div>
-        <div class="repo-path">${r.path}</div>
+        <div class="repo-body">
+          <div class="repo-path">${r.path}</div>
+          ${meta}
+        </div>
         ${label ? `<span class="repo-label">${label}</span>` : ''}
+        ${sync}${stale}${loading}
         <div class="repo-actions">
           <button class="btn btn-ghost" onclick="validate(${i})">check</button>
           <button class="btn btn-ghost" onclick="removeRepo(${i})" style="color:var(--red)">remove</button>
         </div>
       </div>`;
     }).join('');
+  }
+
+  function dirtyLabel(d) {
+    const parts = [];
+    if (d.staged) parts.push(d.staged + ' staged');
+    if (d.modified) parts.push(d.modified + ' modified');
+    if (d.untracked) parts.push(d.untracked + ' untracked');
+    return parts.join(', ') || 'dirty';
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
   }
 
   async function addRepo() {
@@ -322,8 +416,9 @@
 
     if (res.status === 201) {
       input.value = '';
-      repos.push({path: data.path, _status: 'ok'});
+      repos.push({path: data.path, _status: null});
       render();
+      fetchStatus(repos.length - 1);
       toast('Added ' + data.path, 'success');
     } else if (res.status === 409) {
       toast('Already tracked', 'error');
@@ -333,17 +428,19 @@
   }
 
   async function validate(i) {
-    const card = document.getElementById('card-' + i);
-    if (card) card.style.opacity = '0.5';
+    // Re-check existence, then refresh full status
     const res = await fetch('/api/repos/validate', {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({path: repos[i].path})
     });
     const data = await res.json();
-    repos[i]._status = data.valid ? 'ok' : 'missing';
-    if (card) card.style.opacity = '1';
-    render();
+    if (!data.valid) {
+      repos[i]._status = {error: true};
+      render();
+      return;
+    }
+    await fetchStatus(i);
   }
 
   async function revalidateAll() {

@@ -1,8 +1,8 @@
 {
   "result": "passed",
   "candidate": {
-    "head": "3ec2120d2f54fddbff46ebc551cd429c15955d40",
-    "tree": "98fb694350643b8d59d6108f92562f4b3a07beacb55f36bff1461aa13ccff0a8"
+    "head": "a3342a06e3bbd2912924e1a6994c65f1d84df65a",
+    "tree": "7e315cf1981905b981090c92486e410785ebe79d2350d1ad969eb1adade83898"
   },
   "inputs": "c1c1bcda540c5b6c8280007ec6374835ecb8e312ccf157f9d3bb40801f1a9d58",
   "policy": "3bbc940e3894615a6a02939e6cc80a82070c317de24c724e7e600d3d486042a6",
@@ -14,5 +14,5 @@
     "all-tests-pass": "proven",
     "cli-importable": "proven"
   },
-  "log": "21a168e55219be169b85bbd8ac567c333ef63192291319516efb1e98352cdba0"
+  "log": "2689157ad758d36ed516b7bf0fea0135eb2ee27caeefc888b1235e62c29f69ac"
 }

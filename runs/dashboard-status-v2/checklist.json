@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "status-module",
+      "description": "src/repo_root_tracker/status.py implements get_repo_status returning branch, last_commit, dirty counts, sync, stale_branches",
+      "verify": "Import get_repo_status from repo_root_tracker.status and call against a temp git repo"
+    },
+    {
+      "id": "status-endpoint",
+      "description": "GET /api/repos/status?path=<path> returns JSON status for a tracked repo; 404 for untracked; 503 if git missing",
+      "verify": "curl the endpoint against the live server",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_status.py", "-v", "--tb=short"],
+        "timeout_seconds": 60
+      }
+    },
+    {
+      "id": "dashboard-cards",
+      "description": "Dashboard HTML cards fetch status async and render dirty badge, branch/commit, sync, stale count",
+      "verify": "Inspect dashboard.html for status fetch JS and card rendering"
+    },
+    {
+      "id": "all-tests-pass",
+      "description": "Full test suite passes including new status tests",
+      "verify": "pytest tests/ exits 0",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+        "timeout_seconds": 120
+      }
+    }
+  ]
+}

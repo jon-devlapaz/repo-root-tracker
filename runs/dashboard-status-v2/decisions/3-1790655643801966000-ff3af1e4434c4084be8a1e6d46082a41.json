@@ -1,0 +1,8 @@
+{
+  "inputs": "94b2bf6c9a6bc82622c63595f17c66f5298c9980477f2d34f5c18e1fc110bcdb",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "jondev",
+  "source": "Seed-me session 3b7c754b completed with Jev verdicts (dirty p=1.0, branch p=1.0, sync p=1.0, stale p=0.96, scope p=0.95); web research on developer dashboard preferences; user directive: 'search online... drive jev as decisions maker... feed back to ai-native-sdlc... do this autonomously'",
+  "reason": "All four signals Jev-approved with high confidence; research-backed; local git only, no auth; scope matches pre-intent"
+}
