@@ -1,4 +1,18 @@
 {
-  "result": "failed",
-  "error": "Checklist incomplete: package-structure"
+  "result": "passed",
+  "candidate": {
+    "head": "3ec2120d2f54fddbff46ebc551cd429c15955d40",
+    "tree": "98fb694350643b8d59d6108f92562f4b3a07beacb55f36bff1461aa13ccff0a8"
+  },
+  "inputs": "c1c1bcda540c5b6c8280007ec6374835ecb8e312ccf157f9d3bb40801f1a9d58",
+  "policy": "3bbc940e3894615a6a02939e6cc80a82070c317de24c724e7e600d3d486042a6",
+  "test_lock": null,
+  "checklist": "112fa86395e16ad371b24bb4c2393b39ff4f5ab8f6130bcf9e1ce762c66eaf8b",
+  "checklist_items": {
+    "package-structure": "attested",
+    "zero-deps": "proven",
+    "all-tests-pass": "proven",
+    "cli-importable": "proven"
+  },
+  "log": "21a168e55219be169b85bbd8ac567c333ef63192291319516efb1e98352cdba0"
 }
