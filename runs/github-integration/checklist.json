@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "github-module",
+      "description": "src/repo_root_tracker/github.py implements get_github_info with PR+CI rollup, issues, TTL cache, graceful no-remote/no-gh paths",
+      "verify": "Call against tink-route (has PRs) and a local-only repo",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_github.py", "-v", "--tb=short"],
+        "timeout_seconds": 90
+      }
+    },
+    {
+      "id": "github-endpoint",
+      "description": "GET /api/github?path= returns PR/issue JSON; 404 untracked; has_github false when no remote",
+      "verify": "Covered by test_github.py live-server tests"
+    },
+    {
+      "id": "github-ui",
+      "description": "GitHub tab in detail view with PR rows (CI badges, branch tags, link-outs) and issue list",
+      "verify": "Screenshot verification in browser"
+    },
+    {
+      "id": "all-tests-pass",
+      "description": "Full suite passes",
+      "verify": "pytest tests/ exits 0",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+        "timeout_seconds": 180
+      }
+    }
+  ]
+}

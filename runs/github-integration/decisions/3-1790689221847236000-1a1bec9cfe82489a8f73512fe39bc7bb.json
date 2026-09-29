@@ -1,0 +1,8 @@
+{
+  "inputs": "30b85e5c97312f38b2ef85b12654c3ce6bc1f2000e3abb702cf2e1443ef63c86",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "jondev",
+  "source": "User directive: 'i want gh connection now to show more useful information'; Jev verdicts PRs+CI p=0.99, gh CLI p=0.99, issues p=0.62, per-PR checks p=0.50; gh authenticated with repo+workflow scope verified this session",
+  "reason": "Scope matches research-backed remote signals; gh CLI reuses keyring auth with zero new deps; graceful degradation for non-GitHub repos"
+}

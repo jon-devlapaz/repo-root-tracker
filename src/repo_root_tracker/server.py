@@ -11,6 +11,7 @@ from urllib.parse import unquote, urlsplit
 
 from . import NotARepositoryError, find_root
 from .detail import get_commit_diff, get_repo_detail, get_working_diff
+from .github import get_github_info
 from .status import GitNotAvailableError, get_repo_status
 
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
@@ -90,6 +91,15 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, get_repo_detail(repo_path).to_dict())
             except RuntimeError as e:
                 self._json(500, {"error": str(e)})
+        elif path == "/api/github":
+            repo_path = unquote(params.get("path", ""))
+            if not repo_path:
+                self._json(400, {"error": "path query param is required"})
+                return
+            if not any(r["path"] == repo_path for r in load_repos()):
+                self._json(404, {"error": "not tracked"})
+                return
+            self._json(200, get_github_info(repo_path).to_dict())
         elif path == "/api/commit":
             repo_path = unquote(params.get("path", ""))
             commit_hash = params.get("hash", "")
