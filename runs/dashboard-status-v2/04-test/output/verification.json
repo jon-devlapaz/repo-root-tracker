@@ -1,0 +1,18 @@
+{
+  "result": "passed",
+  "candidate": {
+    "head": "983a8486c965ecf1638d3ed50f509523d2453725",
+    "tree": "84fef01997dcfa304504f2ebb416b66592a6e4016da1499af346b5db792e8dea"
+  },
+  "inputs": "94b2bf6c9a6bc82622c63595f17c66f5298c9980477f2d34f5c18e1fc110bcdb",
+  "policy": "3bbc940e3894615a6a02939e6cc80a82070c317de24c724e7e600d3d486042a6",
+  "test_lock": null,
+  "checklist": "41af92adc7d9071f399518285a9bd3633a8fa3e40db23af468c78034f4e28fd5",
+  "checklist_items": {
+    "status-module": "attested",
+    "status-endpoint": "proven",
+    "dashboard-cards": "attested",
+    "all-tests-pass": "proven"
+  },
+  "log": "c63493edba570d3082491879ece3e8bd03ceec55faa4c169101100d60ad17a46"
+}
