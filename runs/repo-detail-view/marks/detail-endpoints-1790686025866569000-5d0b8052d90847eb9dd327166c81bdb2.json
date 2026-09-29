@@ -1,0 +1,7 @@
+{
+  "item": "detail-endpoints",
+  "result": "passed",
+  "evidence": "GET /api/repo, /api/commit, /api/working-diff verified by live-server tests in test_detail.py (test_repo_endpoint, test_commit_endpoint, test_working_diff_endpoint, 404 cases)",
+  "candidate": "cfeeabdf5d867c24d7b3f3e95a77a873d21550ac3c3b79f17dfadff572b9656d",
+  "time_ns": 1790686025866569000
+}
