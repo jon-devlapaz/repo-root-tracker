@@ -1,0 +1,161 @@
+"""Tests for the repo-root-tracker web dashboard server."""
+
+from __future__ import annotations
+
+import json
+import os
+import subprocess
+import threading
+import time
+import urllib.request
+from pathlib import Path
+
+import pytest
+
+from repo_root_tracker import server as srv
+from repo_root_tracker.server import Handler, load_repos, save_repos, validate_repo
+
+
+@pytest.fixture()
+def isolated_config(tmp_path: Path, monkeypatch):
+    """Point the server's config dir at a temp directory for test isolation."""
+    cfg = tmp_path / "config"
+    cfg.mkdir()
+    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
+    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
+    yield cfg
+
+
+def test_validate_repo_valid(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    result = validate_repo(str(tmp_path))
+    assert result["valid"] is True
+    assert result["root"] == str(tmp_path.resolve())
+
+
+def test_validate_repo_from_subdirectory(tmp_path: Path) -> None:
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    subdir = tmp_path / "nested"
+    subdir.mkdir()
+    result = validate_repo(str(subdir))
+    assert result["valid"] is True
+    assert result["root"] == str(tmp_path.resolve())
+
+
+def test_validate_repo_invalid(tmp_path: Path) -> None:
+    result = validate_repo(str(tmp_path))
+    assert result["valid"] is False
+    assert "error" in result
+
+
+def test_load_repos_missing_file(isolated_config: Path) -> None:
+    assert load_repos() == []
+
+
+def test_save_and_load_roundtrip(isolated_config: Path) -> None:
+    repos = [{"path": "/tmp/a"}, {"path": "/tmp/b"}]
+    save_repos(repos)
+    assert load_repos() == repos
+
+
+def test_config_dir_created_on_save(tmp_path: Path, monkeypatch) -> None:
+    cfg = tmp_path / "newdir"
+    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
+    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
+    save_repos([{"path": "/tmp/x"}])
+    assert cfg.is_dir()
+    assert (cfg / "repos.json").is_file()
+
+
+# ---------------------------------------------------------------------------
+# Live-server integration test
+# ---------------------------------------------------------------------------
+
+@pytest.fixture()
+def live_server(isolated_config: Path):
+    """Start the dashboard server on a test port in a background thread."""
+    import http.server
+
+    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 18742), Handler)
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    time.sleep(0.3)
+    yield "http://127.0.0.1:18742"
+    httpd.shutdown()
+
+
+def _get(url: str):
+    with urllib.request.urlopen(url, timeout=5) as r:
+        return r.status, r.read().decode()
+
+
+def _post(url: str, payload: dict):
+    req = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=5) as r:
+            return r.status, json.loads(r.read().decode())
+    except urllib.error.HTTPError as e:
+        return e.code, json.loads(e.read().decode())
+
+
+def test_dashboard_html_served(live_server: str) -> None:
+    status, body = _get(live_server + "/")
+    assert status == 200
+    assert "repo-root-tracker" in body
+    assert "<style>" in body
+
+
+def test_repos_api_crud(live_server: str, tmp_path: Path) -> None:
+    # Start empty
+    status, _ = _get(live_server + "/api/repos")
+    assert status == 200
+
+    # Reject non-repo
+    code, data = _post(live_server + "/api/repos", {"path": str(tmp_path)})
+    assert code == 400
+    assert "valid" in data
+
+    # Accept a real repo
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    code, data = _post(live_server + "/api/repos", {"path": str(tmp_path)})
+    assert code == 201
+    assert data["path"] == str(tmp_path.resolve())
+
+    # List shows it
+    status, body = _get(live_server + "/api/repos")
+    assert status == 200
+    assert str(tmp_path.resolve()) in body
+
+    # Duplicate rejected
+    code, _ = _post(live_server + "/api/repos", {"path": str(tmp_path)})
+    assert code == 409
+
+    # Delete works
+    req = urllib.request.Request(
+        live_server + "/api/repos",
+        data=json.dumps({"path": str(tmp_path.resolve())}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="DELETE",
+    )
+    with urllib.request.urlopen(req, timeout=5) as r:
+        assert r.status == 200
+
+    # Gone
+    status, body = _get(live_server + "/api/repos")
+    assert str(tmp_path.resolve()) not in body
+
+
+def test_validate_endpoint(live_server: str, tmp_path: Path) -> None:
+    code, data = _post(live_server + "/api/repos/validate", {"path": str(tmp_path)})
+    assert code == 200
+    assert data["valid"] is False
+
+    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+    code, data = _post(live_server + "/api/repos/validate", {"path": str(tmp_path)})
+    assert code == 200
+    assert data["valid"] is True

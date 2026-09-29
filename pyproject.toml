@@ -28,6 +28,7 @@ dependencies = []
 
 [project.scripts]
 repo-root-tracker = "repo_root_tracker.__main__:main"
+repo-root-tracker-web = "repo_root_tracker.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/repo_root_tracker"]
