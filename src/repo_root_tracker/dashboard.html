@@ -183,6 +183,10 @@
     font-family: var(--mono); font-size: 11px; color: var(--accent);
   }
   .repo-meta .rel { font-size: 11px; }
+  .repo-subject {
+    margin-top: 2px; font-size: 12px; color: var(--body);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
 
   .repo-label { font-size: 11px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .repo-label.stale { color: var(--yellow); }
@@ -506,8 +510,9 @@
       if (s && s.branch) {
         const c = s.last_commit || {};
         meta = `<div class="repo-meta"><span class="branch">${escapeHtml(s.branch)}</span>`;
-        if (c.hash) meta += `<span>${c.hash}</span><span class="rel">${c.relative || ''}</span>`;
+        if (c.hash) meta += `<span class="rel">${c.hash} · ${c.relative || ''}</span>`;
         meta += '</div>';
+        if (c.subject) meta += `<div class="repo-subject">${escapeHtml(c.subject)}</div>`;
       }
       let extra = '';
       if (s && s.sync) {
@@ -935,11 +940,13 @@
 
   function renderPalette(q) {
     const list = document.getElementById('palette-list');
-    paletteItems = repos
+    const all = repos
       .map(r => ({path: r.path, display: shortHome(r.path),
                    hits: q ? fuzzyMatch(shortHome(r.path), q) : []}))
-      .filter(r => !q || r.hits)
-      .slice(0, 9);
+      .filter(r => !q || r.hits);
+    const overflow = all.length - Math.min(all.length, 9);
+    paletteItems = all.slice(0, 9);
+    list.dataset.overflow = overflow > 0 ? `+${overflow} more` : '';
     paletteIdx = Math.min(paletteIdx, Math.max(0, paletteItems.length - 1));
     if (!paletteItems.length) {
       list.innerHTML = '<div class="palette-item" style="color:var(--muted)">No matches</div>';
@@ -953,7 +960,8 @@
           hitSet.has(idx) ? `<span class="match">${escapeHtml(ch)}</span>` : escapeHtml(ch)).join('');
       } else html = escapeHtml(r.display);
       return `<div class="palette-item${i === paletteIdx ? ' active' : ''}" onclick="paletteOpen(${i})">${html}</div>`;
-    }).join('');
+    }).join('') + (list.dataset.overflow
+      ? `<div class="palette-item" style="color:var(--muted);cursor:default">${list.dataset.overflow} — keep typing to narrow</div>` : '');
   }
 
   function paletteOpen(i) {
