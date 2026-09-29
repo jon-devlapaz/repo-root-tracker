@@ -1,0 +1,37 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "package-structure",
+      "description": "src/repo_root_tracker/__init__.py exports find_root and NotARepositoryError; __main__.py provides CLI entry point; pyproject.toml wires repo-root-tracker script",
+      "verify": "Inspect src/repo_root_tracker/__init__.py and pyproject.toml for expected symbols and entry point"
+    },
+    {
+      "id": "zero-deps",
+      "description": "pyproject.toml lists no third-party dependencies in [project].dependencies",
+      "verify": "grep dependencies pyproject.toml shows empty list",
+      "check": {
+        "argv": ["python3", "-c", "import tomllib, sys; d=tomllib.load(open('pyproject.toml','rb')); deps=d.get('project',{}).get('dependencies',[]); sys.exit(0 if deps==[] else 1)"],
+        "timeout_seconds": 10
+      }
+    },
+    {
+      "id": "all-tests-pass",
+      "description": "All pytest tests covering AC-1 through AC-5 pass",
+      "verify": "pytest tests/ exits 0 with all tests collected and passing",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+        "timeout_seconds": 60
+      }
+    },
+    {
+      "id": "cli-importable",
+      "description": "Package is installable and find_root importable after pip install -e .",
+      "verify": "python3 -c 'from repo_root_tracker import find_root, NotARepositoryError' exits 0",
+      "check": {
+        "argv": ["python3", "-c", "from repo_root_tracker import find_root, NotARepositoryError"],
+        "timeout_seconds": 10
+      }
+    }
+  ]
+}
