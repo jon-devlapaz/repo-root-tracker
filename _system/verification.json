@@ -1,4 +1,15 @@
 {
   "require_tink": false,
-  "checks": []
+  "checks": [
+    {
+      "id": "install",
+      "argv": ["pip", "install", "-e", "."],
+      "timeout_seconds": 60
+    },
+    {
+      "id": "pytest",
+      "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+      "timeout_seconds": 60
+    }
+  ]
 }
