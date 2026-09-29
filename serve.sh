@@ -9,10 +9,14 @@ set -euo pipefail
 PORT="${RRT_PORT:-7842}"
 URL="http://127.0.0.1:${PORT}/"
 
+# Resolve the repo root even when invoked via a symlink (e.g. ~/.local/bin)
+SCRIPT_PATH="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$0")"
+REPO_ROOT="$(dirname "${SCRIPT_PATH}")"
+
 # Install the package if Python can't see it yet
 if ! python3 -c "import repo_root_tracker.server" 2>/dev/null; then
   echo "Installing repo-root-tracker..."
-  pip install -e "$(cd "$(dirname "$0")" && pwd)" -q
+  pip install -e "${REPO_ROOT}" -q
 fi
 
 # Start the server if nothing is answering on the port
