@@ -1,4 +1,18 @@
 {
-  "result": "failed",
-  "error": "Checklist incomplete: detail-endpoints"
+  "result": "passed",
+  "candidate": {
+    "head": "5813e4d903bbef172bcd1a3fdc0266e744193e88",
+    "tree": "cfeeabdf5d867c24d7b3f3e95a77a873d21550ac3c3b79f17dfadff572b9656d"
+  },
+  "inputs": "938240479f6ced6bd59113070ec1f25214fad0870b7e67e3c35e340807490c33",
+  "policy": "3bbc940e3894615a6a02939e6cc80a82070c317de24c724e7e600d3d486042a6",
+  "test_lock": null,
+  "checklist": "d46287a12c51b18593a7e31e2895d5d37c1c766a50a49486622458efd69c5ccc",
+  "checklist_items": {
+    "detail-module": "proven",
+    "detail-endpoints": "attested",
+    "detail-ui": "attested",
+    "all-tests-pass": "proven"
+  },
+  "log": "49aec1ccdf185330b03af07348929d83cf269178938ec9f552b14d859dd8bc8f"
 }
