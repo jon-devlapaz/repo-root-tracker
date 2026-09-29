@@ -1,0 +1,7 @@
+{
+  "item": "github-endpoint",
+  "result": "passed",
+  "evidence": "GET /api/github verified by test_endpoint_no_remote, test_endpoint_untracked_404, test_endpoint_live_github; live response confirmed via curl",
+  "candidate": "4f7d662d6f8d300307b7df59f30b0cffff64e582c6d0b7050f20b3858ab86896",
+  "time_ns": 1790689539540250000
+}
