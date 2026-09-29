@@ -1,4 +1,18 @@
 {
-  "result": "failed",
-  "error": "Checklist incomplete: github-endpoint"
+  "result": "passed",
+  "candidate": {
+    "head": "a04bf3bba58f84436366ebe6b87d988259795af3",
+    "tree": "4f7d662d6f8d300307b7df59f30b0cffff64e582c6d0b7050f20b3858ab86896"
+  },
+  "inputs": "30b85e5c97312f38b2ef85b12654c3ce6bc1f2000e3abb702cf2e1443ef63c86",
+  "policy": "3bbc940e3894615a6a02939e6cc80a82070c317de24c724e7e600d3d486042a6",
+  "test_lock": null,
+  "checklist": "6cf742c464a05afc282e28e292bd2b54bcff8d67dd7ad5801dd9adb7452cc4bd",
+  "checklist_items": {
+    "github-module": "proven",
+    "github-endpoint": "attested",
+    "github-ui": "attested",
+    "all-tests-pass": "proven"
+  },
+  "log": "b8c78a251148061a699e29747486a137576a454ae0967719fb68cf69d0f45067"
 }

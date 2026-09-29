@@ -15,7 +15,7 @@ Building wheels for collected packages: repo-root-tracker
   Building editable for repo-root-tracker (pyproject.toml): started
   Building editable for repo-root-tracker (pyproject.toml): finished with status 'done'
   Created wheel for repo-root-tracker: filename=repo_root_tracker-0.1.0-py3-none-any.whl size=1653 sha256=3b308f00e8344f5e762e4ea40f4100442397c24c52f90dea5f7538439d15244e
-  Stored in directory: /private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pip-ephem-wheel-cache-iym66qqm/wheels/59/4f/16/862fe7aee12d0c22486bd297d27902a281d2cf9afa2d7ea0d4
+  Stored in directory: /private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pip-ephem-wheel-cache-_8gqzs_t/wheels/59/4f/16/862fe7aee12d0c22486bd297d27902a281d2cf9afa2d7ea0d4
 Successfully built repo-root-tracker
 Installing collected packages: repo-root-tracker
   Attempting uninstall: repo-root-tracker
@@ -92,7 +92,7 @@ tests/test_status.py::test_stale_branch_detected PASSED                  [ 96%]
 tests/test_status.py::test_status_endpoint_tracked PASSED                [ 98%]
 tests/test_status.py::test_status_endpoint_untracked_404 PASSED          [100%]
 
-============================= 58 passed in 14.34s ==============================
+============================= 58 passed in 14.51s ==============================
 
 # checklist item github-module
 $ ["python3", "-m", "pytest", "tests/test_github.py", "-v", "--tb=short"]
@@ -119,7 +119,7 @@ tests/test_github.py::test_endpoint_no_remote PASSED                     [ 85%]
 tests/test_github.py::test_endpoint_untracked_404 PASSED                 [ 92%]
 tests/test_github.py::test_endpoint_live_github PASSED                   [100%]
 
-============================== 14 passed in 4.09s ==============================
+============================== 14 passed in 4.55s ==============================
 
 # checklist item all-tests-pass
 $ ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"]
@@ -190,4 +190,4 @@ tests/test_status.py::test_stale_branch_detected PASSED                  [ 96%]
 tests/test_status.py::test_status_endpoint_tracked PASSED                [ 98%]
 tests/test_status.py::test_status_endpoint_untracked_404 PASSED          [100%]
 
-============================= 58 passed in 15.28s ==============================
+============================= 58 passed in 14.41s ==============================
