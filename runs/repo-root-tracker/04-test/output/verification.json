@@ -1,0 +1,4 @@
+{
+  "result": "failed",
+  "error": "Candidate or inputs changed during verification; rerun against stable inputs."
+}
