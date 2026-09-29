@@ -7,6 +7,8 @@ from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
+from . import NotARepositoryError
+
 STALE_DAYS = 30
 
 
@@ -104,8 +106,13 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     """Collect dashboard status signals for the repo at *path*.
 
     Uses local git subprocess calls only — no network, no auth.
+
+    Raises NotARepositoryError if the path does not exist — never returns
+    fake-clean defaults for a missing directory.
     """
     repo = Path(path).expanduser().resolve()
+    if not repo.is_dir():
+        raise NotARepositoryError(f"path does not exist: {repo}")
     status = RepoStatus(path=str(repo))
 
     # Branch

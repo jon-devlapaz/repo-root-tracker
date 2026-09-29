@@ -514,7 +514,11 @@
   async function fetchStatus(i) {
     try {
       const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repos[i].path));
-      repos[i]._status = res.ok ? await res.json() : {error: true};
+      if (res.status === 410) {
+        repos[i]._status = {error: true, gone: true, detail: (await res.json()).error};
+      } else {
+        repos[i]._status = res.ok ? await res.json() : {error: true};
+      }
     } catch { repos[i]._status = {error: true}; }
     render();
   }
@@ -549,7 +553,8 @@
     list.innerHTML = repos.map((r, i) => {
       const s = r._status;
       let dot = 'status-unknown', label = '';
-      if (s && s.error) { dot = 'status-missing'; label = 'error'; }
+      if (s && s.gone) { dot = 'status-missing'; label = 'gone from disk'; }
+      else if (s && s.error) { dot = 'status-missing'; label = 'error'; }
       else if (s && s.dirty) {
         if (s.dirty.is_clean) { dot = 'status-ok'; label = 'clean'; }
         else { dot = 'status-dirty'; label = dirtyLabel(s.dirty); }
@@ -682,6 +687,14 @@
     switchTab('commits');
     try {
       const res = await fetch('/api/repo?path=' + encodeURIComponent(path));
+      if (res.status === 410) {
+        const err = await res.json();
+        document.getElementById('detail-header').innerHTML =
+          `<h2>${escapeHtml(shortHome(path))}</h2>` +
+          `<div class="sub" style="color:var(--red-text)">⚠ ${escapeHtml(err.error || 'repo gone from disk')}</div>` +
+          `<button class="btn btn-ghost btn-danger" onclick="untrackCurrent()">Remove from tracked list</button>`;
+        return;
+      }
       if (!res.ok) throw new Error();
       detailData = await res.json();
       detailData.graph = layoutGraph(detailData.commits);
@@ -689,6 +702,19 @@
     } catch {
       document.getElementById('detail-header').innerHTML =
         `<h2>${escapeHtml(shortHome(path))}</h2><div class="sub" style="color:var(--red-text)">could not load repo detail</div>`;
+    }
+  }
+
+  async function untrackCurrent() {
+    if (!detailPath) return;
+    const res = await fetch('/api/repos', {
+      method: 'DELETE', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({path: detailPath})
+    });
+    if (res.ok) {
+      repos = repos.filter(r => r.path !== detailPath);
+      toast('Removed gone repo', 'success');
+      closeDetail();
     }
   }
 

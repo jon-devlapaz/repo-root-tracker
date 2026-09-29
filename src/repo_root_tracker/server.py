@@ -77,6 +77,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             try:
                 self._json(200, get_repo_status(repo_path).to_dict())
+            except NotARepositoryError as e:
+                self._json(410, {"error": str(e), "gone": True})
             except GitNotAvailableError as e:
                 self._json(503, {"error": str(e)})
         elif path == "/api/repo":
@@ -89,6 +91,8 @@ class Handler(BaseHTTPRequestHandler):
                 return
             try:
                 self._json(200, get_repo_detail(repo_path).to_dict())
+            except NotARepositoryError as e:
+                self._json(410, {"error": str(e), "gone": True})
             except RuntimeError as e:
                 self._json(500, {"error": str(e)})
         elif path == "/api/github":
@@ -111,6 +115,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._text(200, diff)
             except ValueError as e:
                 self._json(400, {"error": str(e)})
+            except NotARepositoryError as e:
+                self._json(410, {"error": str(e), "gone": True})
             except RuntimeError as e:
                 self._json(500, {"error": str(e)})
         elif path == "/api/working-diff":
@@ -124,6 +130,8 @@ class Handler(BaseHTTPRequestHandler):
                 self._text(200, diff)
             except ValueError as e:
                 self._json(400, {"error": str(e)})
+            except NotARepositoryError as e:
+                self._json(410, {"error": str(e), "gone": True})
             except RuntimeError as e:
                 self._json(500, {"error": str(e)})
         else:

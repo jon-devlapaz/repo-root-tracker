@@ -195,3 +195,13 @@ def test_status_endpoint_untracked_404(live_server: str, tmp_path: Path) -> None
     with pytest.raises(urllib.error.HTTPError) as exc_info:
         urllib.request.urlopen(url, timeout=5)
     assert exc_info.value.code == 404
+
+
+# ---------------------------------------------------------------------------
+# Loud failures: missing directory must raise, never return fake-clean data
+# ---------------------------------------------------------------------------
+
+def test_status_missing_dir_raises(tmp_path: Path) -> None:
+    from repo_root_tracker import NotARepositoryError
+    with pytest.raises(NotARepositoryError):
+        get_repo_status(tmp_path / "does-not-exist")

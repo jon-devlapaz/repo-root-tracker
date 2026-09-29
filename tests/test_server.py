@@ -159,3 +159,30 @@ def test_validate_endpoint(live_server: str, tmp_path: Path) -> None:
     code, data = _post(live_server + "/api/repos/validate", {"path": str(tmp_path)})
     assert code == 200
     assert data["valid"] is True
+
+
+def test_deleted_repo_returns_410_gone(live_server: str, tmp_path: Path) -> None:
+    import shutil
+
+    repo = tmp_path / "gone"
+    repo.mkdir()
+    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
+    req = urllib.request.Request(
+        live_server + "/api/repos",
+        data=json.dumps({"path": str(repo)}).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST",
+    )
+    with urllib.request.urlopen(req, timeout=5):
+        pass
+    shutil.rmtree(repo)
+
+    for endpoint in ("/api/repos/status?path=", "/api/repo?path="):
+        url = live_server + endpoint + urllib.parse.quote(str(repo.resolve()))
+        try:
+            urllib.request.urlopen(url, timeout=5)
+            raise AssertionError(f"{endpoint} should not return 2xx for deleted repo")
+        except urllib.error.HTTPError as e:
+            assert e.code == 410, f"{endpoint} returned {e.code}, want 410"
+            body = json.loads(e.read().decode())
+            assert body.get("gone") is True

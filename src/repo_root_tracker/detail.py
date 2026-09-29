@@ -6,6 +6,7 @@ import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+from . import NotARepositoryError
 from .status import _relative
 
 MAX_COMMITS = 30
@@ -60,12 +61,23 @@ class RepoDetail:
 
 
 def _run(repo: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=repo, capture_output=True, text=True, timeout=15
-    )
+    try:
+        result = subprocess.run(
+            ["git", *args], cwd=repo, capture_output=True, text=True, timeout=15
+        )
+    except FileNotFoundError as e:
+        # Missing cwd (deleted repo) or missing git binary — loud, not silent
+        raise RuntimeError(f"cannot run git in {repo}: {e}") from e
     if result.returncode != 0:
         raise RuntimeError(f"git {' '.join(args)} failed: {result.stderr.strip()}")
     return result.stdout.strip("\n")
+
+
+def _require_dir(path: str | Path) -> Path:
+    repo = Path(path).expanduser().resolve()
+    if not repo.is_dir():
+        raise NotARepositoryError(f"path does not exist: {repo}")
+    return repo
 
 
 def _assign_lanes(commits: list[Commit]) -> None:
@@ -106,7 +118,7 @@ def _assign_lanes(commits: list[Commit]) -> None:
 
 
 def get_repo_detail(path: str | Path) -> RepoDetail:
-    repo = Path(path).expanduser().resolve()
+    repo = _require_dir(path)
     detail = RepoDetail(path=str(repo))
 
     try:
@@ -262,7 +274,7 @@ def get_repo_detail(path: str | Path) -> RepoDetail:
 
 
 def get_commit_diff(path: str | Path, commit_hash: str) -> str:
-    repo = Path(path).expanduser().resolve()
+    repo = _require_dir(path)
     # Validate hash shape to prevent arg injection
     if (not commit_hash.replace("_", "").replace("-", "").isalnum()
             or len(commit_hash) > 64 or not commit_hash):
@@ -278,7 +290,7 @@ def get_commit_diff(path: str | Path, commit_hash: str) -> str:
 
 
 def get_working_diff(path: str | Path, file: str) -> str:
-    repo = Path(path).expanduser().resolve()
+    repo = _require_dir(path)
     if not file or file.startswith("/") or ".." in file.split("/"):
         raise ValueError("invalid file path")
     # Staged + unstaged diff for the file

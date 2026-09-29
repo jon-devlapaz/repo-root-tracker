@@ -202,3 +202,14 @@ def test_working_diff_endpoint(live_server: str, repo: Path) -> None:
         assert r.status == 200
         body = r.read().decode()
     assert "endpoint-dirty" in body
+
+
+def test_detail_missing_dir_raises(tmp_path: Path) -> None:
+    from repo_root_tracker import NotARepositoryError
+    from repo_root_tracker.detail import get_commit_diff, get_working_diff
+    with pytest.raises(NotARepositoryError):
+        get_repo_detail(tmp_path / "does-not-exist")
+    with pytest.raises(NotARepositoryError):
+        get_commit_diff(tmp_path / "does-not-exist", "abc1234")
+    with pytest.raises(NotARepositoryError):
+        get_working_diff(tmp_path / "does-not-exist", "f.txt")
