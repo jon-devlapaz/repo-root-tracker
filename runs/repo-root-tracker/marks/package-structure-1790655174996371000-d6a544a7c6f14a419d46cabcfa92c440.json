@@ -1,0 +1,7 @@
+{
+  "item": "package-structure",
+  "result": "passed",
+  "evidence": "src/repo_root_tracker/__init__.py exports find_root and NotARepositoryError; src/repo_root_tracker/__main__.py provides main() CLI; pyproject.toml [project.scripts] wires 'repo-root-tracker = repo_root_tracker.__main__:main'",
+  "candidate": "98fb694350643b8d59d6108f92562f4b3a07beacb55f36bff1461aa13ccff0a8",
+  "time_ns": 1790655174996371000
+}
