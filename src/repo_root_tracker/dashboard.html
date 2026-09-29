@@ -898,15 +898,28 @@
   let paletteIdx = 0, paletteItems = [];
 
   function fuzzyMatch(hay, needle) {
+    // Minimal-span subsequence match: prefer contiguous / tight matches
+    // over leftmost-scattered ones (e.g. 'tinkr' -> 'tink-r', not 'acTi-ve...NKR').
     hay = hay.toLowerCase(); needle = needle.toLowerCase();
-    let hi = 0;
-    const hits = [];
-    for (let ni = 0; ni < needle.length; ni++) {
-      hi = hay.indexOf(needle[ni], hi);
-      if (hi === -1) return null;
-      hits.push(hi++);
+    if (!needle) return [];
+    let best = null;
+    for (let start = 0; start < hay.length; start++) {
+      if (hay[start] !== needle[0]) continue;
+      const hits = [start];
+      let hi = start + 1, ok = true;
+      for (let ni = 1; ni < needle.length; ni++) {
+        hi = hay.indexOf(needle[ni], hi);
+        if (hi === -1) { ok = false; break; }
+        hits.push(hi++);
+      }
+      if (!ok) continue;
+      const span = hits[hits.length - 1] - hits[0];
+      if (!best || span < best.span || (span === best.span && start < best.hits[0])) {
+        best = {hits, span};
+      }
+      if (span === needle.length - 1) break; // can't beat contiguous
     }
-    return hits;
+    return best ? best.hits : null;
   }
 
   function openPalette() {
@@ -923,7 +936,8 @@
   function renderPalette(q) {
     const list = document.getElementById('palette-list');
     paletteItems = repos
-      .map(r => ({path: r.path, hits: q ? fuzzyMatch(r.path, q) : []}))
+      .map(r => ({path: r.path, display: shortHome(r.path),
+                   hits: q ? fuzzyMatch(shortHome(r.path), q) : []}))
       .filter(r => !q || r.hits)
       .slice(0, 9);
     paletteIdx = Math.min(paletteIdx, Math.max(0, paletteItems.length - 1));
@@ -935,9 +949,9 @@
       let html = '';
       if (q && r.hits) {
         const hitSet = new Set(r.hits);
-        html = [...r.path].map((ch, idx) =>
+        html = [...r.display].map((ch, idx) =>
           hitSet.has(idx) ? `<span class="match">${escapeHtml(ch)}</span>` : escapeHtml(ch)).join('');
-      } else html = escapeHtml(r.path);
+      } else html = escapeHtml(r.display);
       return `<div class="palette-item${i === paletteIdx ? ' active' : ''}" onclick="paletteOpen(${i})">${html}</div>`;
     }).join('');
   }
