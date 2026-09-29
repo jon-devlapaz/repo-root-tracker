@@ -29,6 +29,7 @@ class Commit:
 @dataclass
 class BranchInfo:
     name: str = ""
+    kind: str = "local"  # "local" or "remote"
     current: bool = False
     last_commit: str = ""
     relative: str = ""
@@ -36,6 +37,7 @@ class BranchInfo:
     behind: int = 0
     has_upstream: bool = False
     stale: bool = False
+    tracked_by: list[str] = field(default_factory=list)  # remotes: locals tracking this
 
 
 @dataclass
@@ -149,6 +151,9 @@ def get_repo_detail(path: str | Path) -> RepoDetail:
         pass
 
     # Branches with ahead/behind + staleness
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc)
     try:
         current = detail.branch
         out = _run(
@@ -156,9 +161,6 @@ def get_repo_detail(path: str | Path) -> RepoDetail:
             "--format=%(refname:short)|%(committerdate:iso-strict)|%(upstream:short)",
             "refs/heads/",
         )
-        from datetime import datetime, timezone
-
-        now = datetime.now(timezone.utc)
         for line in out.splitlines():
             if "|" not in line:
                 continue
@@ -186,10 +188,50 @@ def get_repo_detail(path: str | Path) -> RepoDetail:
                 except (RuntimeError, ValueError):
                     pass
             detail.branches.append(BranchInfo(
-                name=name, current=(name == current),
+                name=name, kind="local", current=(name == current),
                 last_commit=tip[:7], relative=rel,
                 ahead=ahead, behind=behind, has_upstream=has_up,
                 stale=stale,
+            ))
+    except RuntimeError:
+        pass
+
+    # Remote-tracking branches (refs/remotes/), skipping origin/HEAD pointers
+    try:
+        out = _run(
+            repo, "for-each-ref",
+            "--format=%(refname:short)|%(committerdate:iso-strict)|%(objectname:short)|%(symref)",
+            "refs/remotes/",
+        )
+        # Map upstream short name -> local branches tracking it
+        upstream_to_locals: dict[str, list[str]] = {}
+        for b in detail.branches:
+            if b.kind == "local" and b.has_upstream:
+                try:
+                    up = _run(repo, "for-each-ref",
+                              "--format=%(upstream:short)", f"refs/heads/{b.name}")
+                    if up:
+                        upstream_to_locals.setdefault(up, []).append(b.name)
+                except RuntimeError:
+                    pass
+        for line in out.splitlines():
+            if "|" not in line:
+                continue
+            name, date_str, tip, symref = (line.split("|", 3) + ["", "", "", ""])[:4]
+            if symref or name.endswith("/HEAD"):
+                continue  # HEAD pointer, not a real branch
+            try:
+                dt = datetime.fromisoformat(date_str)
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                stale = (now - dt).days > 30
+                rel = _relative(date_str)
+            except ValueError:
+                stale, rel = False, date_str
+            detail.branches.append(BranchInfo(
+                name=name, kind="remote",
+                last_commit=tip, relative=rel, stale=stale,
+                tracked_by=upstream_to_locals.get(name, []),
             ))
     except RuntimeError:
         pass

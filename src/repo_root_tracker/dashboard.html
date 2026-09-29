@@ -315,6 +315,18 @@
   .branch-row .bname { font-family: var(--mono); font-size: 13px; font-weight: 600; color: var(--text); }
   .branch-row .bmeta { font-size: 11px; color: var(--muted); font-family: var(--mono); margin-top: 1px; }
   .branch-row .bstale { color: var(--yellow); }
+  .branch-row.remote { border-left: 2px solid var(--purple); }
+  .tag-remote {
+    background: rgba(188,140,255,.13); border: 1px solid rgba(188,140,255,.4);
+    color: var(--purple); border-radius: 10px;
+    font-size: 10px; padding: 0 8px; font-family: var(--mono); font-weight: 400;
+  }
+  .branch-group {
+    font-size: 11px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .06em; color: var(--muted);
+    margin: 12px 0 6px;
+  }
+  .branch-group:first-child { margin-top: 0; }
 
   /* Command palette */
   #palette-overlay {
@@ -806,21 +818,44 @@
   }
 
   /* ----- branches ----- */
+  function branchRow(b) {
+    const isRemote = b.kind === 'remote';
+    const kindBadge = isRemote ? ' <span class="tag-remote">remote</span>' : '';
+    const cur = b.current ? ' <span class="tag-branch">current</span>' : '';
+    const dot = b.current ? 'var(--green)' : isRemote ? 'var(--purple)' : 'var(--muted)';
+    let meta;
+    if (isRemote) {
+      const tracked = (b.tracked_by && b.tracked_by.length)
+        ? ` · tracked by ${b.tracked_by.map(escapeHtml).join(', ')}` : '';
+      meta = `${b.last_commit} · ${b.relative}${tracked}`;
+    } else {
+      const sync = b.has_upstream ? `↑${b.ahead} ↓${b.behind}` : 'no upstream';
+      meta = `${b.last_commit} · ${b.relative} · ${sync}`;
+    }
+    const stale = b.stale ? ' <span class="bstale">· stale</span>' : '';
+    return `<div class="branch-row${b.current ? ' current' : ''}${isRemote ? ' remote' : ''}">
+      <div class="dot" style="background:${dot}"></div>
+      <div><div class="bname">${escapeHtml(b.name)}${kindBadge}${cur}</div>
+      <div class="bmeta">${meta}${stale}</div></div>
+    </div>`;
+  }
+
   function renderBranches() {
     const el = document.getElementById('tab-branches');
-    const branches = detailData.branches;
+    const branches = detailData.branches || [];
     if (!branches.length) { el.innerHTML = '<div class="empty"><p>No branches.</p></div>'; return; }
-    el.innerHTML = branches.map(b => {
-      const sync = b.has_upstream ? `↑${b.ahead} ↓${b.behind}` : 'no upstream';
-      const stale = b.stale ? ' <span class="bstale">· stale</span>' : '';
-      const cur = b.current ? ' <span class="tag-branch">current</span>' : '';
-      const dot = b.current ? 'var(--green)' : 'var(--muted)';
-      return `<div class="branch-row${b.current ? ' current' : ''}">
-        <div class="dot" style="background:${dot}"></div>
-        <div><div class="bname">${escapeHtml(b.name)}${cur}</div>
-        <div class="bmeta">${b.last_commit} · ${b.relative} · ${sync}${stale}</div></div>
-      </div>`;
-    }).join('');
+    const locals = branches.filter(b => b.kind !== 'remote');
+    const remotes = branches.filter(b => b.kind === 'remote');
+    let html = '';
+    if (locals.length) {
+      html += `<div class="branch-group">Local (${locals.length})</div>` +
+        locals.map(branchRow).join('');
+    }
+    if (remotes.length) {
+      html += `<div class="branch-group">Remote (${remotes.length})</div>` +
+        remotes.map(branchRow).join('');
+    }
+    el.innerHTML = html;
   }
 
   /* ----- diff rendering: file headers + per-file stats + word highlight ----- */

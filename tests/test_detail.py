@@ -60,6 +60,33 @@ def test_detail_branches(repo: Path) -> None:
     assert len(d.branches) >= 1
     current = [b for b in d.branches if b.current]
     assert len(current) == 1
+    assert all(b.kind == "local" for b in d.branches)  # no remotes here
+
+
+def test_detail_remote_branches(tmp_path: Path, repo: Path) -> None:
+    remote = tmp_path / "remote.git"
+    subprocess.run(["git", "init", "--bare", str(remote)],
+                   check=True, capture_output=True)
+    branch = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "--abbrev-ref", "HEAD"],
+        check=True, capture_output=True, text=True).stdout.strip()
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(remote)],
+                   check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", branch],
+                   check=True, capture_output=True)
+    d = get_repo_detail(repo)
+    remotes = [b for b in d.branches if b.kind == "remote"]
+    assert len(remotes) == 1
+    assert remotes[0].name == f"origin/{branch}"
+    assert branch in remotes[0].tracked_by
+    # Local branch now has an upstream
+    local = [b for b in d.branches if b.kind == "local" and b.name == branch][0]
+    assert local.has_upstream is True
+
+
+def test_detail_no_remotes_section_when_none(repo: Path) -> None:
+    d = get_repo_detail(repo)
+    assert [b for b in d.branches if b.kind == "remote"] == []
 
 
 def test_detail_changed_files_clean(repo: Path) -> None:
