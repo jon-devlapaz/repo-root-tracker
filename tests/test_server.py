@@ -186,3 +186,24 @@ def test_deleted_repo_returns_410_gone(live_server: str, tmp_path: Path) -> None
             assert e.code == 410, f"{endpoint} returned {e.code}, want 410"
             body = json.loads(e.read().decode())
             assert body.get("gone") is True
+
+
+def test_malformed_repos_entries_filtered(isolated_config: Path) -> None:
+    from repo_root_tracker.server import REPOS_FILE, load_repos
+    REPOS_FILE.write_text(json.dumps([
+        {"path": "/tmp/ok"},
+        {"foo": 1},
+        "not-a-dict",
+        {"path": ""},
+        {"path": None},
+        42,
+    ]))
+    assert load_repos() == [{"path": "/tmp/ok"}]
+
+
+def test_malformed_repos_file_shapes(isolated_config: Path) -> None:
+    from repo_root_tracker.server import REPOS_FILE, load_repos
+    REPOS_FILE.write_text(json.dumps({"path": "/tmp/nope"}))
+    assert load_repos() == []
+    REPOS_FILE.write_text("{broken json")
+    assert load_repos() == []

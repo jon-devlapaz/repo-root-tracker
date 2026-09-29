@@ -479,10 +479,10 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
+  const HOME_DIR = '__HOME__';
   function shortHome(p) {
-    const home = '/Users/jondev';
-    if (p === home) return '~';
-    if (p.startsWith(home + '/')) return '~' + p.slice(home.length);
+    if (p === HOME_DIR) return '~';
+    if (HOME_DIR !== '__HOME__' && p.startsWith(HOME_DIR + '/')) return '~' + p.slice(HOME_DIR.length);
     return p;
   }
 

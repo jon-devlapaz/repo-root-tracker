@@ -213,3 +213,14 @@ def test_detail_missing_dir_raises(tmp_path: Path) -> None:
         get_commit_diff(tmp_path / "does-not-exist", "abc1234")
     with pytest.raises(NotARepositoryError):
         get_working_diff(tmp_path / "does-not-exist", "f.txt")
+
+
+def test_working_diff_labels_staged_sections(repo: Path) -> None:
+    from repo_root_tracker.detail import get_working_diff
+    (repo / "a.txt").write_text("staged-change")
+    subprocess.run(["git", "-C", str(repo), "add", "a.txt"],
+                   check=True, capture_output=True)
+    (repo / "a.txt").write_text("unstaged-change")
+    diff = get_working_diff(repo, "a.txt")
+    assert "--- staged ---" in diff
+    assert "--- unstaged ---" in diff

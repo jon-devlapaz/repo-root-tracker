@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -17,6 +18,9 @@ from .status import GitNotAvailableError, get_repo_status
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
 REPOS_FILE = CONFIG_DIR / "repos.json"
 ASSET = Path(__file__).resolve().parent / "dashboard.html"
+# Serializes read-modify-write cycles on repos.json (concurrent add/remove
+# would otherwise interleave and silently drop entries).
+_REPOS_LOCK = threading.Lock()
 
 
 def load_repos() -> list[dict]:
@@ -24,9 +28,13 @@ def load_repos() -> list[dict]:
         return []
     try:
         data = json.loads(REPOS_FILE.read_text())
-        return data if isinstance(data, list) else []
     except (json.JSONDecodeError, OSError):
         return []
+    if not isinstance(data, list):
+        return []
+    # Sanitize: one malformed entry must not brick every endpoint
+    return [r for r in data
+            if isinstance(r, dict) and isinstance(r.get("path"), str) and r["path"]]
 
 
 def save_repos(repos: list[dict]) -> None:
@@ -57,7 +65,8 @@ class Handler(BaseHTTPRequestHandler):
             kv.split("=", 1) for kv in split.query.split("&") if "=" in kv
         )
         if path in ("/", "/index.html"):
-            body = ASSET.read_bytes()
+            body = ASSET.read_bytes().replace(
+                b"__HOME__", str(Path.home()).encode())
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -160,13 +169,14 @@ class Handler(BaseHTTPRequestHandler):
             if not result["valid"]:
                 self._json(400, result)
                 return
-            repos = load_repos()
-            root = result["root"]
-            if any(r["path"] == root for r in repos):
-                self._json(409, {"error": "already tracked", "root": root})
-                return
-            repos.append({"path": root})
-            save_repos(repos)
+            with _REPOS_LOCK:
+                repos = load_repos()
+                root = result["root"]
+                if any(r["path"] == root for r in repos):
+                    self._json(409, {"error": "already tracked", "root": root})
+                    return
+                repos.append({"path": root})
+                save_repos(repos)
             self._json(201, {"path": root})
 
         elif path == "/api/repos/validate":
@@ -192,13 +202,14 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/repos":
             repo_path = str(payload.get("path", "")).strip()
-            repos = load_repos()
-            before = len(repos)
-            repos = [r for r in repos if r["path"] != repo_path]
-            if len(repos) == before:
-                self._json(404, {"error": "not found"})
-                return
-            save_repos(repos)
+            with _REPOS_LOCK:
+                repos = load_repos()
+                before = len(repos)
+                repos = [r for r in repos if r["path"] != repo_path]
+                if len(repos) == before:
+                    self._json(404, {"error": "not found"})
+                    return
+                save_repos(repos)
             self._json(200, {"removed": repo_path})
         else:
             self.send_error(404)

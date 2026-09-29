@@ -304,10 +304,10 @@ def get_working_diff(path: str | Path, file: str) -> str:
         unstaged = ""
     combined = ""
     if staged:
-        combined += staged
+        combined += "--- staged ---\n" + staged
     if unstaged:
         if combined:
-            combined += "\n"
+            combined += "\n--- unstaged ---\n"
         combined += unstaged
     if not combined:
         return "(untracked or no changes)"
