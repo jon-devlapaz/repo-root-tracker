@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "detail-module",
+      "description": "src/repo_root_tracker/detail.py implements get_repo_detail, get_commit_diff, get_working_diff with graph lanes and truncation",
+      "verify": "Import and call against a temp git repo with merges",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_detail.py", "-v", "--tb=short"],
+        "timeout_seconds": 60
+      }
+    },
+    {
+      "id": "detail-endpoints",
+      "description": "GET /api/repo, /api/commit, /api/working-diff return correct JSON/text with proper error codes",
+      "verify": "Covered by test_detail.py live-server tests"
+    },
+    {
+      "id": "detail-ui",
+      "description": "Dashboard has hash-routed detail view with commits+graph, changes+diffs, branches; click-to-expand; back navigation",
+      "verify": "Inspect dashboard.html for view switching and detail rendering"
+    },
+    {
+      "id": "all-tests-pass",
+      "description": "Full suite passes including new detail tests",
+      "verify": "pytest tests/ exits 0",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
+        "timeout_seconds": 120
+      }
+    }
+  ]
+}

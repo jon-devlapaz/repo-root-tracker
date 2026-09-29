@@ -242,6 +242,101 @@
   .toast.error { border-color: var(--red); color: var(--red); }
   .toast.success { border-color: var(--green); color: var(--green); }
 
+  /* ---- Detail view ---- */
+  #back-btn { margin-bottom: 16px; }
+
+  #detail-header h2 {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-all;
+    margin-bottom: 4px;
+  }
+  #detail-header .sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .tab {
+    background: transparent; border: none;
+    color: var(--muted); font-size: 13px; font-weight: 500;
+    padding: 8px 14px; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+  }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab #changes-count {
+    background: var(--yellow); color: #000;
+    border-radius: 10px; padding: 0 7px; font-size: 11px; font-weight: 600;
+  }
+
+  .commit-row {
+    display: flex; gap: 10px; align-items: flex-start;
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 6px;
+    cursor: pointer; transition: border-color 0.15s;
+    background: var(--surface);
+  }
+  .commit-row:hover { border-color: var(--accent); }
+  .commit-row.merge { border-left: 3px solid var(--accent); }
+
+  .graph { display: flex; gap: 3px; padding-top: 3px; flex-shrink: 0; min-width: 20px; }
+  .lane { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .lane-0 { background: #5b8dee; } .lane-1 { background: #4ade80; }
+  .lane-2 { background: #fbbf24; } .lane-3 { background: #f87171; }
+  .lane-4 { background: #c084fc; } .lane-5 { background: #22d3ee; }
+  .lane-dim { opacity: 0.25; }
+
+  .commit-body { flex: 1; min-width: 0; }
+  .commit-subject { font-size: 13px; font-weight: 500; }
+  .commit-meta { font-size: 11px; color: var(--muted); margin-top: 2px; font-family: var(--mono); }
+  .commit-meta .author { color: var(--text); }
+  .commit-tags { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+  .tag-branch {
+    background: var(--surface2); border: 1px solid var(--accent);
+    color: var(--accent); border-radius: 4px;
+    font-size: 10px; padding: 0 6px; font-family: var(--mono);
+  }
+
+  .diff-box {
+    margin-top: 8px; background: #0a0c12;
+    border: 1px solid var(--border); border-radius: 6px;
+    overflow-x: auto; max-height: 500px; overflow-y: auto;
+  }
+  .diff-box pre {
+    font-family: var(--mono); font-size: 11px; line-height: 1.5;
+    padding: 10px 12px; white-space: pre;
+  }
+  .diff-add { color: var(--green); background: rgba(74,222,128,0.07); display: block; }
+  .diff-del { color: var(--red); background: rgba(248,113,113,0.07); display: block; }
+  .diff-hunk { color: var(--accent); display: block; }
+  .diff-head { color: var(--muted); display: block; }
+  .diff-ctx { color: #94a3b8; display: block; }
+
+  .file-row {
+    display: flex; gap: 10px; align-items: center;
+    padding: 8px 12px; border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 6px;
+    cursor: pointer; background: var(--surface);
+  }
+  .file-row:hover { border-color: var(--accent); }
+  .file-row .fname { flex: 1; font-family: var(--mono); font-size: 12px; word-break: break-all; }
+  .file-badge {
+    font-size: 10px; font-weight: 600; border-radius: 4px; padding: 1px 7px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .badge-staged { background: rgba(91,141,238,0.2); color: var(--accent); }
+  .badge-unstaged { background: rgba(251,191,36,0.2); color: var(--yellow); }
+  .badge-untracked { background: rgba(100,116,139,0.3); color: var(--muted); }
+
+  .branch-row {
+    display: flex; gap: 10px; align-items: center;
+    padding: 10px 12px; border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 6px; background: var(--surface);
+  }
+  .branch-row.current { border-color: var(--green); }
+  .branch-row .bname { font-family: var(--mono); font-size: 13px; font-weight: 600; }
+  .branch-row .bmeta { font-size: 11px; color: var(--muted); font-family: var(--mono); }
+  .branch-row .bstale { color: var(--yellow); font-size: 11px; }
+
   .spinner {
     display: inline-block;
     width: 14px; height: 14px;
@@ -272,7 +367,7 @@
   <span class="badge" id="count-badge">— repos</span>
 </header>
 
-<main>
+<main id="list-view">
   <div class="add-form">
     <input id="path-input" type="text" placeholder="/Users/you/dev/myproject  or  ~/dev/myproject" autocomplete="off" spellcheck="false">
     <button class="btn" id="add-btn" onclick="addRepo()">Add repo</button>
@@ -293,6 +388,19 @@
       <p>No repos tracked yet. Add one above.</p>
     </div>
   </div>
+</main>
+
+<main id="detail-view" style="display:none">
+  <button class="btn btn-ghost" id="back-btn" onclick="closeDetail()">← All repos</button>
+  <div id="detail-header"></div>
+  <div class="tabs">
+    <button class="tab active" data-tab="commits" onclick="switchTab('commits')">Commits</button>
+    <button class="tab" data-tab="changes" onclick="switchTab('changes')">Changes <span id="changes-count"></span></button>
+    <button class="tab" data-tab="branches" onclick="switchTab('branches')">Branches</button>
+  </div>
+  <div id="tab-commits" class="tab-pane"></div>
+  <div id="tab-changes" class="tab-pane" style="display:none"></div>
+  <div id="tab-branches" class="tab-pane" style="display:none"></div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -367,7 +475,7 @@
         stale = `<span class="repo-label stale" title="${s.stale_branches.map(b => b.name).join(', ')}">${s.stale_branches.length} stale</span>`;
       }
       const loading = (!s) ? '<span class="repo-label"><span class="spinner"></span></span>' : '';
-      return `<div class="repo-card" id="card-${i}">
+      return `<div class="repo-card" id="card-${i}" onclick="cardClick(event, ${i})" style="cursor:pointer">
         <div class="repo-status ${dot}" title="${label}"></div>
         <div class="repo-body">
           <div class="repo-path">${r.path}</div>
@@ -393,7 +501,6 @@
 
   function escapeHtml(s) {
     return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-  }
   }
 
   async function addRepo() {
@@ -473,7 +580,197 @@
     if (e.key === 'Enter') addRepo();
   });
 
-  load();
+  /* ---- Detail view ---- */
+  let detailPath = null;
+  let detailData = null;
+  const expandedCommits = new Set();
+  const expandedFiles = new Set();
+
+  function cardClick(event, i) {
+    if (event.target.closest('button')) return;
+    openRepo(repos[i].path);
+  }
+
+  function openRepo(path) {
+    location.hash = '#/repo/' + encodeURIComponent(path);
+  }
+
+  function closeDetail() {
+    location.hash = '#/';
+  }
+
+  async function route() {
+    const h = location.hash;
+    if (h.startsWith('#/repo/')) {
+      const path = decodeURIComponent(h.slice(7));
+      await showDetail(path);
+    } else {
+      document.getElementById('list-view').style.display = '';
+      document.getElementById('detail-view').style.display = 'none';
+      detailPath = null;
+    }
+  }
+
+  async function showDetail(path) {
+    detailPath = path;
+    expandedCommits.clear();
+    expandedFiles.clear();
+    document.getElementById('list-view').style.display = 'none';
+    document.getElementById('detail-view').style.display = '';
+    document.getElementById('detail-header').innerHTML =
+      `<h2>${escapeHtml(path)}</h2><div class="sub"><span class="spinner"></span> loading…</div>`;
+    document.getElementById('tab-commits').innerHTML = '';
+    document.getElementById('tab-changes').innerHTML = '';
+    document.getElementById('tab-branches').innerHTML = '';
+    switchTab('commits');
+    try {
+      const res = await fetch('/api/repo?path=' + encodeURIComponent(path));
+      if (!res.ok) throw new Error('not found');
+      detailData = await res.json();
+      renderDetail();
+    } catch {
+      document.getElementById('detail-header').innerHTML =
+        `<h2>${escapeHtml(path)}</h2><div class="sub" style="color:var(--red)">could not load repo detail</div>`;
+    }
+  }
+
+  function renderDetail() {
+    const d = detailData;
+    const dirty = d.changed_files && d.changed_files.length;
+    document.getElementById('detail-header').innerHTML =
+      `<h2>${escapeHtml(d.path)}</h2><div class="sub">on <strong>${escapeHtml(d.branch)}</strong> · ${d.commits.length} commits · ${d.branches.length} branches${dirty ? ` · <span style="color:var(--yellow)">${dirty} changed files</span>` : ' · clean'}</div>`;
+    document.getElementById('changes-count').textContent = dirty ? `(${dirty})` : '';
+    renderCommits();
+    renderChanges();
+    renderBranches();
+  }
+
+  function switchTab(name) {
+    document.querySelectorAll('.tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.tab === name));
+    ['commits', 'changes', 'branches'].forEach(n =>
+      document.getElementById('tab-' + n).style.display = n === name ? '' : 'none');
+  }
+
+  function graphHtml(lane, isMerge) {
+    let dots = '';
+    for (let i = 0; i <= Math.min(lane, 5); i++) {
+      const cls = i === lane ? `lane-${lane % 6}` : `lane-${i % 6} lane-dim`;
+      dots += `<div class="lane ${cls}"></div>`;
+    }
+    return `<div class="graph">${dots}</div>`;
+  }
+
+  function renderCommits() {
+    const el = document.getElementById('tab-commits');
+    const commits = detailData.commits;
+    if (!commits.length) { el.innerHTML = '<div class="empty"><p>No commits yet.</p></div>'; return; }
+    el.innerHTML = commits.map(c => {
+      const open = expandedCommits.has(c.hash);
+      const tags = (c.branches || []).map(b => `<span class="tag-branch">${escapeHtml(b)}</span>`).join('');
+      return `<div class="commit-row${c.is_merge ? ' merge' : ''}" onclick="toggleCommit('${c.hash}')">
+        ${graphHtml(c.lane, c.is_merge)}
+        <div class="commit-body">
+          <div class="commit-subject">${escapeHtml(c.subject)}</div>
+          <div class="commit-meta"><span class="author">${escapeHtml(c.author)}</span> · ${c.short} · ${c.relative}${c.is_merge ? ' · merge' : ''}</div>
+          ${tags ? `<div class="commit-tags">${tags}</div>` : ''}
+          <div id="diff-${c.hash}" style="display:${open ? '' : 'none'}">${open ? '<div class="diff-box"><pre>loading…</pre></div>' : ''}</div>
+        </div>
+      </div>`;
+    }).join('');
+    // Re-fetch open diffs after re-render
+    expandedCommits.forEach(h => loadCommitDiff(h));
+  }
+
+  async function toggleCommit(hash) {
+    if (expandedCommits.has(hash)) { expandedCommits.delete(hash); }
+    else { expandedCommits.add(hash); }
+    renderCommits();
+  }
+
+  async function loadCommitDiff(hash) {
+    const el = document.getElementById('diff-' + hash);
+    if (!el) return;
+    el.style.display = '';
+    try {
+      const res = await fetch('/api/commit?path=' + encodeURIComponent(detailPath) + '&hash=' + hash);
+      const text = await res.text();
+      el.innerHTML = `<div class="diff-box"><pre>${renderDiff(text)}</pre></div>`;
+    } catch {
+      el.innerHTML = '<div class="diff-box"><pre>failed to load diff</pre></div>';
+    }
+  }
+
+  function renderChanges() {
+    const el = document.getElementById('tab-changes');
+    const files = detailData.changed_files;
+    if (!files.length) { el.innerHTML = '<div class="empty"><p>Working tree is clean.</p></div>'; return; }
+    el.innerHTML = files.map(f => {
+      const badge = f.untracked ? '<span class="file-badge badge-untracked">untracked</span>'
+        : f.staged ? '<span class="file-badge badge-staged">staged</span>'
+        : '<span class="file-badge badge-unstaged">modified</span>';
+      const open = expandedFiles.has(f.path);
+      return `<div class="file-row" onclick="toggleFile('${escapeHtml(f.path).replace(/'/g, "&#39;")}')">
+        <div class="fname">${escapeHtml(f.path)}</div>${badge}
+      </div>
+      <div id="fdiff-${btoa(unescape(encodeURIComponent(f.path))).replace(/=/g, '')}" style="display:${open ? '' : 'none'}">${open ? '<div class="diff-box"><pre>loading…</pre></div>' : ''}</div>`;
+    }).join('');
+    expandedFiles.forEach(p => loadFileDiff(p));
+  }
+
+  async function toggleFile(path) {
+    if (expandedFiles.has(path)) { expandedFiles.delete(path); }
+    else { expandedFiles.add(path); }
+    renderChanges();
+  }
+
+  function fileDiffId(path) {
+    return 'fdiff-' + btoa(unescape(encodeURIComponent(path))).replace(/=/g, '');
+  }
+
+  async function loadFileDiff(path) {
+    const el = document.getElementById(fileDiffId(path));
+    if (!el) return;
+    el.style.display = '';
+    try {
+      const res = await fetch('/api/working-diff?path=' + encodeURIComponent(detailPath) + '&file=' + encodeURIComponent(path));
+      const text = await res.text();
+      el.innerHTML = `<div class="diff-box"><pre>${renderDiff(text)}</pre></div>`;
+    } catch {
+      el.innerHTML = '<div class="diff-box"><pre>failed to load diff</pre></div>';
+    }
+  }
+
+  function renderBranches() {
+    const el = document.getElementById('tab-branches');
+    const branches = detailData.branches;
+    if (!branches.length) { el.innerHTML = '<div class="empty"><p>No branches.</p></div>'; return; }
+    el.innerHTML = branches.map(b => {
+      const sync = b.has_upstream ? `↑${b.ahead} ↓${b.behind}` : 'no upstream';
+      const stale = b.stale ? '<span class="bstale">· stale</span>' : '';
+      const cur = b.current ? ' <span class="tag-branch">current</span>' : '';
+      return `<div class="branch-row${b.current ? ' current' : ''}">
+        <div class="lane ${b.current ? 'lane-1' : 'lane-dim'}" style="background:${b.current ? '' : 'var(--muted)'}"></div>
+        <div><div class="bname">${escapeHtml(b.name)}${cur}</div>
+        <div class="bmeta">${b.last_commit} · ${b.relative} · ${sync} ${stale}</div></div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderDiff(text) {
+    return text.split('\n').map(line => {
+      const esc = escapeHtml(line) || ' ';
+      if (line.startsWith('+') && !line.startsWith('+++')) return `<span class="diff-add">${esc}</span>`;
+      if (line.startsWith('-') && !line.startsWith('---')) return `<span class="diff-del">${esc}</span>`;
+      if (line.startsWith('@@')) return `<span class="diff-hunk">${esc}</span>`;
+      if (line.startsWith('diff ') || line.startsWith('index ') || line.startsWith('---') || line.startsWith('+++') || line.startsWith('commit ')) return `<span class="diff-head">${esc}</span>`;
+      return `<span class="diff-ctx">${esc}</span>`;
+    }).join('');
+  }
+
+  window.addEventListener('hashchange', route);
+
+  load().then(route);
 </script>
 </body>
 </html>

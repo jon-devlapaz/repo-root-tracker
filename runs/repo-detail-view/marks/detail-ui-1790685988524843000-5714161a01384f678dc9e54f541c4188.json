@@ -1,0 +1,7 @@
+{
+  "item": "detail-ui",
+  "result": "passed",
+  "evidence": "dashboard.html has hash-routed detail view (#/repo/<path>) with Commits/Changes/Branches tabs, graph lanes, inline diff expansion with syntax tinting, back navigation; node --check passes",
+  "candidate": "cfeeabdf5d867c24d7b3f3e95a77a873d21550ac3c3b79f17dfadff572b9656d",
+  "time_ns": 1790685988524843000
+}

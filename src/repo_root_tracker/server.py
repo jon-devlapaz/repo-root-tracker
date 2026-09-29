@@ -7,9 +7,10 @@ import json
 import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlsplit
+from urllib.parse import unquote, urlsplit
 
 from . import NotARepositoryError, find_root
+from .detail import get_commit_diff, get_repo_detail, get_working_diff
 from .status import GitNotAvailableError, get_repo_status
 
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
@@ -49,7 +50,11 @@ class Handler(BaseHTTPRequestHandler):
         if host not in ("127.0.0.1", "localhost"):
             self.send_error(403)
             return
-        path = urlsplit(self.path).path
+        split = urlsplit(self.path)
+        path = split.path
+        params = dict(
+            kv.split("=", 1) for kv in split.query.split("&") if "=" in kv
+        )
         if path in ("/", "/index.html"):
             body = ASSET.read_bytes()
             self.send_response(200)
@@ -62,12 +67,6 @@ class Handler(BaseHTTPRequestHandler):
             self._json(200, load_repos())
         elif path == "/api/repos/status":
             # ?path=<repo-root> — status signals for one repo
-            query = urlsplit(self.path).query
-            params = dict(
-                kv.split("=", 1) for kv in query.split("&") if "=" in kv
-            )
-            from urllib.parse import unquote
-
             repo_path = unquote(params.get("path", ""))
             if not repo_path:
                 self._json(400, {"error": "path query param is required"})
@@ -79,6 +78,44 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, get_repo_status(repo_path).to_dict())
             except GitNotAvailableError as e:
                 self._json(503, {"error": str(e)})
+        elif path == "/api/repo":
+            repo_path = unquote(params.get("path", ""))
+            if not repo_path:
+                self._json(400, {"error": "path query param is required"})
+                return
+            if not any(r["path"] == repo_path for r in load_repos()):
+                self._json(404, {"error": "not tracked"})
+                return
+            try:
+                self._json(200, get_repo_detail(repo_path).to_dict())
+            except RuntimeError as e:
+                self._json(500, {"error": str(e)})
+        elif path == "/api/commit":
+            repo_path = unquote(params.get("path", ""))
+            commit_hash = params.get("hash", "")
+            if not repo_path or not commit_hash:
+                self._json(400, {"error": "path and hash query params required"})
+                return
+            try:
+                diff = get_commit_diff(repo_path, commit_hash)
+                self._text(200, diff)
+            except ValueError as e:
+                self._json(400, {"error": str(e)})
+            except RuntimeError as e:
+                self._json(500, {"error": str(e)})
+        elif path == "/api/working-diff":
+            repo_path = unquote(params.get("path", ""))
+            file = unquote(params.get("file", ""))
+            if not repo_path or not file:
+                self._json(400, {"error": "path and file query params required"})
+                return
+            try:
+                diff = get_working_diff(repo_path, file)
+                self._text(200, diff)
+            except ValueError as e:
+                self._json(400, {"error": str(e)})
+            except RuntimeError as e:
+                self._json(500, {"error": str(e)})
         else:
             self.send_error(404)
 
@@ -152,6 +189,15 @@ class Handler(BaseHTTPRequestHandler):
         body = json.dumps(data).encode()
         self.send_response(code)
         self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        self.wfile.write(body)
+
+    def _text(self, code: int, text: str) -> None:
+        body = text.encode()
+        self.send_response(code)
+        self.send_header("Content-Type", "text/plain; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()

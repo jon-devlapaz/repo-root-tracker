@@ -1,0 +1,8 @@
+{
+  "inputs": "938240479f6ced6bd59113070ec1f25214fad0870b7e67e3c35e340807490c33",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "jondev",
+  "source": "User directive: 'i should be able to click into it and it shows an amazing git dashboard with the best UI'; prior autonomous authority granted for dashboard feature work",
+  "reason": "Scope matches user request; research-backed (commit+diff side-by-side, branch orientation); local git only"
+}
