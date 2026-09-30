@@ -62,11 +62,16 @@ def selected_tile(page):
     return page.locator('#board-view .board-select').first
 
 
+def click_plot(locator):
+    locator.locator('[data-tree-variant]').click()
+
+
 def test_board_routes(page):
     page.get_by_role('button', name='Board', exact=True).click()
     playwright.expect(page.locator('#board-view')).to_be_visible()
     playwright.expect(page.locator('#list-view')).not_to_be_visible()
-    selected_tile(page).click()
+    page.wait_for_function('!refreshingBoard')
+    click_plot(selected_tile(page))
     assert page.evaluate('location.hash') == '#/board'
     playwright.expect(page.locator('#board-inspector')).to_contain_text('dirty')
     page.locator('#board-open-details').click()
@@ -104,7 +109,7 @@ def test_board_upstream_badge(page):
     assert tiles.nth(4).get_attribute('data-stage') == 'healthy'
     assert tiles.nth(4).locator('[data-badge="no-upstream"]').is_visible()
     assert tiles.nth(3).locator('[data-badge="no-upstream"]').count() == 0
-    tiles.nth(4).locator('button').click()
+    click_plot(tiles.nth(4).locator('button'))
     assert 'No upstream configured' in page.locator('#board-inspector').inner_text()
 
 
@@ -153,7 +158,7 @@ def test_board_pin_marker(page):
 def test_board_tile_link_href(page):
     goto_board(page)
     for i, path in enumerate(PATHS):
-        page.locator('.board-select').nth(i).click()
+        click_plot(page.locator('.board-select').nth(i))
         assert page.locator('#board-open-details').get_attribute('href') == '#/repo/' + quote(path, safe='')
     assert page.locator('.board-label').count() == len(PATHS)
     assert '2 hours ago' in page.locator('.board-label').first.inner_text()
@@ -208,14 +213,14 @@ def test_board_pager_layout(page):
     many_repos(page)
     assert page.locator('.board-select').count() == 25
     assert page.locator('#board-next').is_visible()
-    assert 'Page 1 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Island 1 of 2' in page.locator('#board-page-status').inner_text()
 
 
 def test_board_pager_reset(page):
     many_repos(page)
     page.locator('#board-next').click()
     page.evaluate('repos = repos.slice(0,2); renderBoard();')
-    assert 'Page 1 of 1' in page.locator('#board-page-status').inner_text()
+    assert 'Island 1 of 1' in page.locator('#board-page-status').inner_text()
     assert page.locator('.board-select').count() == 2
 
 
@@ -223,15 +228,15 @@ def test_board_pager_persist(page):
     many_repos(page)
     page.route('**/api/repo?*', lambda route: route.fulfill(status=410, json={'error':'gone'}))
     page.locator('#board-next').click()
-    selected_tile(page).click()
+    click_plot(selected_tile(page))
     page.locator('#board-open-details').click()
     playwright.expect(page.locator('#back-btn')).to_be_visible()
     page.locator('#back-btn').click()
-    assert 'Page 2 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Island 2 of 2' in page.locator('#board-page-status').inner_text()
     page.wait_for_function("document.activeElement.id.startsWith('board-tile-')")
     page.locator('#board-refresh').click()
     page.wait_for_function('!refreshingBoard')
-    assert 'Page 2 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Island 2 of 2' in page.locator('#board-page-status').inner_text()
 
 
 def test_board_first_paint(page):
@@ -274,24 +279,24 @@ def test_board_worktree_labels(page):
     page.route('**/api/repos/status?*', status)
     page.evaluate('paths => { repos[0]._status.project_id = repos[1]._status.project_id = "/actual/git/common"; repos[0]._status.project_path = repos[1]._status.project_path = paths[0]; repos[1]._status.is_worktree = true; }', PATHS)
     goto_board(page)
+    assert page.locator('.board-family').count() == 0
+    page.locator('#board-next').click()
     assert page.locator('.board-family').count() == 1
     assert page.locator('.board-family .board-select').count() == 2
-    names = page.locator('.tile-name').all_text_contents()
-    assert names[:2] == ['dirty', 'feature']
-    assert 'Linked worktree' in page.locator('.board-label').nth(1).inner_text()
+    names = page.locator('.board-family .tile-name').all_text_contents()
+    assert names == ['dirty', 'feature']
+    assert 'Linked worktree' in page.locator('.board-family .board-label').nth(1).inner_text()
 
 
-def test_nameplates_never_overlap_and_remain_readable(page):
+def test_scene_has_accessible_labels_without_card_nameplates(page):
     many_repos(page)
     for width in [1280, 390]:
         page.set_viewport_size({'width':width,'height':900})
-        result = page.locator('.board-label').evaluate_all('''els => {
-          const rects = els.map(el => el.getBoundingClientRect());
-          return {block:els.every(el => getComputedStyle(el).display === 'block'), size:els.every(el => parseFloat(getComputedStyle(el.querySelector('.tile-name')).fontSize) >= 13),
-            inside:rects.every(r => r.left >= 0 && r.right <= innerWidth),
-            overlap:rects.some((a,i) => rects.slice(i+1).some(b => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top))};
-        }''')
-        assert result == {'block':True,'size':True,'inside':True,'overlap':False}
+        page.get_by_role('button', name='Fit island', exact=True).click()
+        assert page.locator('[data-island]').count() == 1
+        assert page.locator('.board-select').count() == 25
+        assert page.locator('.board-label').evaluate_all("els => els.every(el => getComputedStyle(el).clipPath === 'inset(50%)')")
+        assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
 
 
 def test_search_and_attention_dim_without_repositioning(page):
@@ -317,7 +322,7 @@ def test_local_cleanliness_and_github_blockers_stay_separate(page):
     tile = page.locator('.board-select').nth(3)
     assert 'Working tree clean' in tile.inner_text()
     assert '1 PR with blockers' in tile.inner_text()
-    tile.click()
+    click_plot(tile)
     assert '1 PR with blockers' in page.locator('#board-inspector').inner_text()
     page.get_by_label('Needs attention', exact=True).check()
     assert page.locator('.tile:not(.dimmed)').count() == 1
@@ -325,7 +330,7 @@ def test_local_cleanliness_and_github_blockers_stay_separate(page):
 
 def test_board_refresh_keeps_selection_and_positions(page):
     goto_board(page)
-    selected_tile(page).click()
+    click_plot(selected_tile(page))
     before = page.locator('.tile').evaluate_all('els => els.map(el => [el.dataset.path, el.getBoundingClientRect().x, el.getBoundingClientRect().y])')
     page.route('**/api/repos/status?*', lambda route: route.fulfill(json=status_for('/workspace/repos/clean')))
     page.locator('#board-refresh').click()

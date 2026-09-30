@@ -500,13 +500,7 @@
 
   /* Isometric board view */
   #board-view {
-    --board-healthy: #456b4b; --board-dirty: #456b4b; --board-sync: #456b4b;
-    --board-stale: #456b4b; --board-muted: #8b949e; --board-error: #8b949e;
-    --board-loading: #363d45; --board-gone: #1a1e24;
-    --board-trunk: #6b4426; --board-soil: #4a3423; --board-soil-dark: #382718;
-    --board-dirt-light: #4d4238; --board-dirt-dark: #33291f;
-    --board-canopy-dark: #2e7d3b; --board-canopy: #43a047; --board-canopy-light: #66c873;
-    --board-speck: rgba(0,0,0,.18);
+    --board-muted: #8b949e;
     max-width: 1100px; margin: 0 auto; padding: 0 16px 32px;
   }
   .board-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 16px 0 8px; }
@@ -518,13 +512,35 @@
   .board-tools label { font-size:12px; color:var(--body); }
   .board-legend { display:flex; flex-wrap:wrap; gap:16px; color:var(--muted); font-size:12px; margin:12px 0; }
   .board-workspace { display:grid; grid-template-columns:minmax(0,1fr) 280px; gap:20px; align-items:start; }
-  #board-stage { display:grid; grid-template-columns:repeat(auto-fill,minmax(165px,1fr)); gap:16px; }
+  #board-stage { position:relative; display:block; height:clamp(360px,65vh,620px); overflow:hidden; border-radius:18px; background:radial-gradient(ellipse at 55% 25%,#244d40 0%,#102e28 65%,#0b201d 100%); touch-action:none; }
+  #board-world { position:absolute; left:0; top:0; transform-origin:0 0; }
+  #board-terrain { position:absolute; inset:0; pointer-events:none; }
+  #board-view #board-world .tile { position:absolute; width:128px; height:148px; pointer-events:none; }
+  #board-view #board-world .board-select { width:128px; height:148px; border:0; padding:0; background:transparent; pointer-events:none; }
+  #board-view #board-world .board-select svg { display:block; width:128px; height:148px; margin:0; pointer-events:none; }
+  #board-view #board-world .board-select .tile-top { pointer-events:all; cursor:pointer; }
+  #board-view #board-world .island-tree * { pointer-events:visiblePainted; cursor:pointer; }
+  #board-view #board-world .board-select:hover, #board-view #board-world .board-select[aria-pressed="true"] { background:transparent; border:0; }
+  #board-view #board-world .board-label { position:absolute; width:1px; height:1px; padding:0; border:0; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+  #board-world .board-select:hover .tile-top, #board-world .board-select:focus-visible .tile-top, #board-world .board-select[aria-pressed="true"] .tile-top { fill:#dbe9b229; stroke:#e9edbe; stroke-width:2.5; }
+  #board-view #board-world .board-select[aria-pressed="true"] .island-tree .plot-outline { stroke:#58a6ff; stroke-width:2.5; fill:none; opacity:.9; }
+  #board-view #board-world .board-select { position:relative; }
+  #board-view #board-world .board-select[aria-pressed="true"] .island-tree .plot-flag { transform-box:fill-box; transform-origin:bottom left; }
+  .plot-ring, .plot-flag { pointer-events:none; }
+  #board-name-overlay { position:absolute; inset:0; pointer-events:none; z-index:25; }
+  .plot-name { position:absolute; max-width:120px; overflow:hidden; text-overflow:ellipsis; font-size:11px; font-weight:600; color:#e6edf3; background:#0d1117ed; border:1px solid #52665c; border-radius:5px; padding:2px 6px; white-space:nowrap; pointer-events:none; }
+  .plot-name[data-selected="true"] { max-width:240px; border-color:var(--accent); }
+  .plot-name[data-selected="true"]::before { content:'⚑ '; color:var(--accent); }
+  #board-view #board-world .board-select[aria-pressed="true"] .plot-name { border-color:var(--accent); }
+  #board-hover-tip { position:absolute; z-index:30; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:11px; font-weight:600; color:#e6edf3; background:#0d1117f2; border:1px solid var(--accent); border-radius:6px; padding:3px 8px; pointer-events:none; }
+  #board-caption { min-height:38px; padding:10px 2px; color:var(--body); font-size:13px; overflow-wrap:anywhere; }
+  #board-zoom-level { color:var(--muted); font-size:12px; min-width:38px; }
+  .board-camera-tools { display:flex; align-items:center; gap:6px; }
+  .board-camera-tools button { min-width:36px; min-height:36px; }
   .board-neighborhood { min-width:0; }
   .board-family { grid-column:span 2; border:1px dashed var(--border); border-radius:12px; padding:12px; }
-  .board-family-wide { grid-column:1 / -1; }
   .board-family h3 { overflow-wrap:anywhere; font-size:13px; margin-bottom:8px; color:var(--body); }
   .board-family h3 span { color:var(--muted); font-weight:400; }
-  .board-plots { display:grid; grid-template-columns:repeat(auto-fill,minmax(165px,1fr)); gap:12px; }
   #board-view .board-select { display:block; width:100%; text-align:left; border:1px solid transparent; border-radius:10px; background:transparent; padding:0; color:var(--text); cursor:pointer; }
   #board-view .board-select svg { width:160px; height:142px; margin:0 auto; }
   #board-view .board-select:hover { background:var(--surface); }
@@ -539,18 +555,29 @@
   #board-view .board-label .board-local-badge { color:var(--accent); }
   .board-gh-badge { color:var(--red-text); font-size:11px; margin-top:4px; }
   #board-inspector { position:sticky; top:16px; padding:18px; border:1px solid var(--border); background:var(--surface); border-radius:10px; min-width:0; }
-  #board-inspector h3 { font-size:17px; overflow-wrap:anywhere; }
+  #board-inspector h3 { font-size:17px; overflow-wrap:anywhere; padding-right:26px; }
+  #board-inspector .inspector-close { position:absolute; top:8px; right:8px; width:32px; height:32px; padding:0; font-size:20px; }
+  #board-inspector .board-family-gh { color:var(--body); }
+  #board-inspector .board-pr-list { border-left:2px solid var(--red-text); padding-left:10px; }
   #board-inspector p { margin:10px 0; font-size:12px; overflow-wrap:anywhere; }
   #board-inspector .inspector-path { color:var(--muted); font-family:var(--mono); font-size:11px; }
   #board-inspector a { display:inline-block; text-decoration:none; margin:4px 4px 0 0; }
+  #board-inspector .board-family-gh { color:var(--body); font-size:12px; margin:10px 0; }
+  #board-inspector .board-family-gh[data-blocked="true"] { color:var(--red-text); }
+  #board-inspector .board-family-gh strong { color:var(--text); }
+  #board-inspector .board-pr-item { margin:6px 0; }
+  #board-inspector .board-pr-item a { color:var(--accent); text-decoration:none; font-size:12px; }
+  #board-inspector .board-pr-item a:hover { text-decoration:underline; }
+  #board-inspector .board-pr-meta { color:var(--muted); font-size:11px; margin-top:2px; }
+  #board-inspector .board-pr-list { margin:8px 0; }
   #board-match-count { font-size:12px; color:var(--muted); }
   @media (max-width:850px) {
     .board-workspace { grid-template-columns:minmax(0,1fr); }
     #board-inspector { display:none; }
     #board-inspector .btn { min-height:44px; padding:10px; }
-    #board-inspector[data-selected="true"] { display:block; position:fixed; top:auto; bottom:16px; left:16px; right:16px; max-height:55vh; overflow:auto; z-index:50; box-shadow:0 8px 32px #000a; }
+    #board-inspector[data-selected="true"] { display:block; position:fixed; top:auto; bottom:16px; left:16px; right:16px; max-height:42vh; overflow:auto; z-index:50; box-shadow:0 8px 32px #000a; }
   }
-  @media (max-width:450px) { #board-stage, .board-plots { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } #board-view .board-select svg { width:130px; height:126px; } .board-family { padding:8px; } }
+  @media (max-width:450px) { #board-view .board-select svg { width:130px; height:126px; } .board-family { padding:8px; } }
   #board-view .tile svg { pointer-events:none; }
   #board-view .tile, #board-view .board-select { pointer-events:auto; }
   #board-view .tile a { display: block; }
@@ -566,7 +593,7 @@
   #board-view .tile text, #board-view .tile polygon, #board-view .tile circle,
   #board-view .tile rect, #board-view .tile line, #board-view .tile ellipse { pointer-events: none; }
   #board-view .tile a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 6px; }
-  .board-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }
+  .board-pager { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 12px 0; flex-wrap:wrap; }
   .board-pager[hidden] { display: none; }
   .board-label { position: absolute; text-align: center; container-type: inline-size; }
   .board-label span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -665,16 +692,17 @@
     <span id="board-match-count" role="status"></span>
   </div>
   <div class="board-legend"><span>✎ Local changes</span><span>↑↓ Cached upstream refs</span><span>● GitHub PR blockers</span><span>? Unchecked or unavailable</span></div>
-  <p class="local-note">Trees describe local Git only, not overall project health. Search dims other plots; their positions stay put.</p>
-  <div class="board-workspace"><div id="board-island-wrap"></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
+  <p class="local-note">Island colors identify groups, not health. Hover or select a numbered plot to identify it. Drag the landscape to pan; search dims other plots without moving them.</p>
+  <div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button></div>
+  <div class="board-pager" id="board-pager" hidden>
+    <button id="board-prev" class="btn btn-ghost" aria-label="Previous island" onclick="boardTurn(-1)">← Prev</button>
+    <span id="board-page-status" role="status" tabindex="-1">Island 1 of 1</span>
+    <button id="board-next" class="btn btn-ghost" aria-label="Next island" onclick="boardTurn(1)">Next →</button>
+  </div>
+  <div class="board-workspace"><div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
     <p>No repos tracked yet. Add a repository to grow the island.</p>
     <p><a id="board-empty-add" href="#/">Go to the list to add a repo</a></p>
-  </div>
-  <div class="board-pager" id="board-pager" hidden>
-    <button id="board-prev" class="btn btn-ghost" onclick="boardTurn(-1)">← Prev</button>
-    <span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span>
-    <button id="board-next" class="btn btn-ghost" onclick="boardTurn(1)">Next →</button>
   </div>
 </main>
 
@@ -1284,7 +1312,336 @@
   let refreshingBoard = false, boardSelectedPath = null;
   let boardLayoutSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
   const boardControllers = new Map();
-  const BOARD_PAGE_SIZE = 25, BOARD_TTW = 120, BOARD_TTH = 60;
+  const BOARD_PAGE_SIZE = 25;
+  const BOARD_ART_DIRECTION = Object.freeze({projection:'2:1', anchor:'ground-center', light:'top-left', shading:'soft cel SVG', tile:[120,60], depth:36,
+    palettes:[
+      {ground:'#95bc4d', light:'#bad978', left:'#80633c', right:'#5b472e', rock:'#a68b4a', dark:'#204f46', mid:'#367c69', high:'#80b6a0', trunk:'#725135', flower:'#f0d991'},
+      {ground:'#ead99b', light:'#f4e7bb', left:'#8b7545', right:'#635131', rock:'#b39a5a', dark:'#945027', mid:'#c57836', high:'#efb963', trunk:'#775433', flower:'#d6b86c'},
+      {ground:'#d8e8df', light:'#f0f4e9', left:'#8b8260', right:'#5f5c46', rock:'#aaa380', dark:'#4e8691', mid:'#91bdc2', high:'#d7eeeb', trunk:'#7c7767', flower:'#d6e4ee'},
+      {ground:'#668d59', light:'#97b979', left:'#64543c', right:'#433d2d', rock:'#897849', dark:'#846087', mid:'#bf91b3', high:'#eed2db', trunk:'#76614a', flower:'#f0e4c1'}
+    ]});
+  const [BOARD_TTW, BOARD_TTH] = BOARD_ART_DIRECTION.tile;
+  let boardScene = null, boardSceneSignature = '', boardCamera = {x:0,y:0,zoom:1}, boardFitPending = true, boardHoveredPath = null;
+  let boardNamesVisible = false;
+  const boardResizeObserver = new ResizeObserver(() => applyBoardCamera());
+
+  function boardGridToWorld(col, row) { return {x:(col-row)*BOARD_TTW/2, y:(col+row)*BOARD_TTH/2}; }
+  function boardWorldToGrid(x, y) { return {col:(x/(BOARD_TTW/2)+y/(BOARD_TTH/2))/2, row:(y/(BOARD_TTH/2)-x/(BOARD_TTW/2))/2}; }
+
+  function boardIslands(groups) {
+    const singles = groups.filter(g => g.paths.length === 1).flatMap(g => g.paths);
+    const families = (singles.length ? [{key:'workspace',name:'Workspace',paths:singles}] : []).concat(groups.filter(g => g.paths.length > 1));
+    return families.flatMap((g,themeIndex) => {
+      const chunks = [];
+      for (let i=0;i<g.paths.length;i+=BOARD_PAGE_SIZE) chunks.push({...g,familyPaths:g.paths,total:g.paths.length,paths:g.paths.slice(i,i+BOARD_PAGE_SIZE),themeIndex});
+      return chunks;
+    });
+  }
+
+  function makeBoardScene(groups) {
+    const g = boardIslands(groups)[boardPage-1];
+    if (!g) return {width:360,height:20,islands:[],plots:[]};
+    g.themeIndex %= BOARD_ART_DIRECTION.palettes.length;
+    g.theme = BOARD_ART_DIRECTION.palettes[g.themeIndex];
+    g.cols = Math.ceil(Math.sqrt(g.paths.length)); g.rows = Math.ceil(g.paths.length/g.cols);
+    g.width = (g.cols+g.rows)*BOARD_TTW/2+40;
+    g.height = (g.cols+g.rows)*BOARD_TTH/2+162;
+    const width = Math.max(320,g.width)+40;
+    g.x = (width-g.width)/2; g.y = 20;
+    g.origin = {x:g.rows*BOARD_TTW/2+20,y:100};
+    const order = boardNeighborhoods.flatMap(group=>group.paths);
+    const plots = g.paths.map((path,i) => {
+      const col=i%g.cols,row=Math.floor(i/g.cols),point=boardGridToWorld(col,row);
+      return {path,col,row,island:g,x:g.x+g.origin.x+point.x,y:g.y+g.origin.y+point.y,number:order.indexOf(path)+1};
+    });
+    plots.sort((a,b) => (a.row+a.col)-(b.row+b.col) || a.number-b.number);
+    return {width,height:g.y+g.height+18,islands:[g],plots};
+  }
+
+  function boardFamilyGithub(g) {
+    const seen = new Set(), prs = [];
+    const members = (g.familyPaths || g.paths).map(path => repos.find(r => r.path === path)).filter(Boolean);
+    members.forEach(repo => {
+      const info = repo._github;
+      if (!info || !info.has_github) return;
+      (info.prs || []).forEach(pr => {
+        const key = pr.number + '|' + (info.repo || repo._status?.github_repo || repo.path);
+        if (seen.has(key) || !prReasons(pr).length) return;
+        seen.add(key);
+        prs.push({pr, repo: repo.path, slug: info.repo});
+      });
+    });
+    const checking = members.some(repo => githubTasks.has(repo._status?.github_repo || repo.path));
+    const incomplete = members.some(repo => {
+      const info = repo._github;
+      return info && (info.gh_unavailable || info.errors?.length || info.pr_limit_reached);
+    });
+    const unchecked = members.some(repo => !repo._github &&
+      !(repo._status && Object.hasOwn(repo._status, 'github_repo') && !repo._status.github_repo));
+    const hasGithub = members.some(repo => repo._github?.has_github);
+    let label = prs.length ? prs.length + ' PR' + (prs.length===1?'':'s') + ' with blockers' :
+      incomplete ? 'GitHub incomplete' : checking ? 'GitHub checking…' : unchecked ? 'GitHub not checked' :
+      hasGithub ? 'No known PR blockers' : 'No GitHub remote';
+    if (prs.length && incomplete) label += ' · incomplete';
+    if (checking && (prs.length || incomplete)) label += ' · checking…';
+    if (unchecked && (prs.length || incomplete || checking)) label += ' · unchecked';
+    return {blocked: prs.length, prs, checking, incomplete, unchecked, label};
+  }
+
+  function boardFamilyBadge(g) {
+    if(g.key==='workspace')return '';
+    const f=boardFamilyGithub(g);
+    if (!f.blocked && !f.checking && !f.incomplete && !f.unchecked) return '';
+    const cx=g.x+g.width/2, cy=g.y+36;
+    let color='#8b949e', text='?';
+    if (f.blocked) { color='#d55755'; text=f.blocked; }
+    else if (f.checking) { color='#d29922'; text='…'; }
+    else if (f.incomplete) { color='#d29922'; text='!'; }
+    return `<g data-family-gh="${escapeHtml(g.key)}"><circle cx="${cx}" cy="${cy-3}" r="9" fill="${color}"/><text x="${cx}" y="${cy+1}" text-anchor="middle" font-size="11" fill="white">${text}</text><title>Project-wide GitHub: ${escapeHtml(f.label)}</title></g>`;
+  }
+
+  function boardTerrainSvg(g) {
+    const p=g.theme, D=BOARD_ART_DIRECTION.depth;
+    const point=(c,r) => { const s=boardGridToWorld(c,r); return {x:s.x+g.x+g.origin.x,y:s.y+g.y+g.origin.y}; };
+    const top=point(-.5,-.5),right=point(g.cols-.5,-.5),bottom=point(g.cols-.5,g.rows-.5),left=point(-.5,g.rows-.5);
+    const xy=v => v.x+','+v.y;
+    let rocks='';
+    [[left,bottom],[bottom,right]].forEach(([a,b],side) => {
+      for (let i=1;i<9;i++) {
+        const t=(i+((i%3)-1)*.13)/9;
+        rocks+=`<ellipse cx="${a.x+(b.x-a.x)*t}" cy="${a.y+(b.y-a.y)*t+D*(.35+((i+side)%3)*.13)}" rx="${3+i%4}" ry="${2+i%2}" fill="${p.rock}" opacity=".45"/>`;
+      }
+    });
+    const caption=g.name+' · '+g.paths.length+(g.paths.length<g.total?'/'+g.total:'');
+    const cap=Math.floor(g.width/9)-2;
+    const name=caption.length>cap?caption.slice(0,cap-1)+'…':caption;
+    return `<g data-island="${escapeHtml(g.key)}"><title>${escapeHtml(caption)}</title>`+
+      `<ellipse cx="${(left.x+right.x)/2}" cy="${bottom.y+D+4}" rx="${g.width*.42}" ry="12" fill="#071a1630"/>`+
+      `<polygon points="${xy(left)} ${xy(bottom)} ${bottom.x},${bottom.y+D} ${left.x},${left.y+D}" fill="${p.left}"/>`+
+      `<polygon points="${xy(bottom)} ${xy(right)} ${right.x},${right.y+D} ${bottom.x},${bottom.y+D}" fill="${p.right}"/>`+rocks+
+      `<polygon points="${xy(top)} ${xy(right)} ${xy(bottom)} ${xy(left)}" fill="${p.ground}"/>`+
+      `<polyline points="${xy(left)} ${xy(top)} ${xy(right)}" fill="none" stroke="${p.light}" stroke-width="4" stroke-linejoin="round"/>`+
+      g.paths.map((path,i) => {
+        const s=point(i%g.cols,Math.floor(i/g.cols)),x=s.x-37,y=s.y+5;
+        return `<ellipse cx="${x}" cy="${y+2}" rx="7" ry="3" fill="${p.light}" opacity=".35"/><path d="M${x-4} ${y}l-2 -5 M${x} ${y}v-7 M${x+3} ${y}l3 -4" stroke="${p.dark}" stroke-width="1.4" opacity=".35"/>`+(i%3===0?`<circle cx="${x+6}" cy="${y-6}" r="2" fill="${p.flower}"/><circle cx="${x+9}" cy="${y-2}" r="1.5" fill="${p.flower}"/>`:'');
+      }).join('')+
+      `<text x="${g.x+g.width/2}" y="${g.y+14}" text-anchor="middle" font-size="13" font-family="monospace" fill="#dbe9d3">${escapeHtml(name)}</text>`+boardFamilyBadge(g)+'</g>';
+  }
+
+  function boardTreeSprite(repo, b, pose, cx, gy) {
+    const p=pose.island.theme;
+    if (b.stage === 'gone') return `<g class="island-tree"><ellipse cx="${cx}" cy="${gy}" rx="17" ry="8" fill="${p.dark}" opacity=".3"/><text x="${cx}" y="${gy-4}" text-anchor="middle" fill="#dde4da">×</text></g>`;
+    let canopy='';
+    if (pose.island.themeIndex===1 || pose.island.themeIndex===3) {
+      canopy=`<circle cx="${cx-11}" cy="${gy-43}" r="18" fill="${p.dark}"/><circle cx="${cx+11}" cy="${gy-43}" r="18" fill="${p.dark}"/><circle cx="${cx}" cy="${gy-55}" r="22" fill="${p.mid}"/><circle cx="${cx-7}" cy="${gy-63}" r="13" fill="${p.high}"/>`;
+    } else {
+      for (let k=2;k>=0;k--) {
+        const top=gy-78+k*17,base=gy-48+k*17,w=14+k*8;
+        canopy+=`<path d="M${cx} ${top} Q${cx+10} ${top+12} ${cx+w} ${base-3} Q${cx+8} ${base+3} ${cx} ${base} Q${cx-8} ${base+3} ${cx-w} ${base-3} Q${cx-10} ${top+12} ${cx} ${top}" fill="${p.dark}"/>`+
+          `<path d="M${cx} ${top} Q${cx-10} ${top+12} ${cx-w} ${base-3} L${cx} ${base-7}Z" fill="${p.mid}"/>`+
+          `<path d="M${cx} ${top} L${cx-7} ${top+14} L${cx+3} ${top+12}Z" fill="${p.high}"/>`;
+      }
+    }
+    const seed=[...repo.path].reduce((h,c)=>(h*31+c.charCodeAt(0))>>>0,0);
+    const scale=.91+(seed%3)*.045;
+    canopy=`<g data-tree-variant="${seed%3}" transform="translate(${cx} ${gy}) scale(${scale}) translate(${-cx} ${-gy})">${canopy}</g>`;
+    const paused=b.stage==='error'||b.stage==='loading';
+    const conflicted=!!repo._status?.dirty?.kinds?.conflicted;
+    const work=b.stage==='attention-dirty' && !conflicted ? `<g data-marker="local-work"><rect x="${cx+22}" y="${gy-12}" width="19" height="5" rx="1" fill="#76bee3"/><path d="M${cx+25} ${gy-7}v10 M${cx+38} ${gy-7}v10" stroke="#76bee3" stroke-width="3"/></g>` : '';
+    const blocked=pose.island.key==='workspace' ? boardGithub(repo).blocked : 0;
+    const badge=blocked ? `<g data-repo-gh="${escapeHtml(repo.path)}"><circle cx="${cx+25}" cy="${gy+10}" r="9" fill="#d55755"/><text x="${cx+25}" y="${gy+14}" text-anchor="middle" font-size="11" fill="white">${blocked}</text></g>` : '';
+    const selected=boardSelectedPath===repo.path;
+    const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+2}" rx="24" ry="11"/>` : '';
+    const flag=selected ? `<g class="plot-flag" transform="translate(${cx-35},${gy-42})"><line x1="0" y1="0" x2="0" y2="38" stroke="#b8dcff" stroke-width="2"/><polygon points="0,0 17,5 0,11" fill="#58a6ff"/></g>` : '';
+    return `<g class="island-tree"><ellipse cx="${cx+3}" cy="${gy+3}" rx="22" ry="10" fill="${p.dark}" opacity=".22"/>${outline}`+
+      (conflicted?`<g data-marker="local-conflict"><circle cx="${cx-24}" cy="${gy+8}" r="9" fill="#d55755"/><text x="${cx-24}" y="${gy+12}" text-anchor="middle" font-size="12" fill="white">!</text></g>`:'')+
+      `<g ${paused?'style="filter:grayscale(1);opacity:.55"':''}><rect x="${cx-3}" y="${gy-29}" width="6" height="29" rx="1" fill="${p.trunk}"/>${canopy}</g>${work}${badge}${flag}</g>`;
+  }
+
+  function applyBoardCamera() {
+    const stage=document.getElementById('board-stage'),world=document.getElementById('board-world');
+    if (!stage || !world || !boardScene || !stage.clientWidth) return;
+    const w=stage.clientWidth,h=stage.clientHeight;
+    if (boardFitPending) { boardCamera.zoom=Math.max(.35,Math.min(1.5,(w-24)/boardScene.width,(h-24)/boardScene.height)); boardCamera.x=0;boardCamera.y=0;boardFitPending=false; }
+    const sizeX=boardScene.width*boardCamera.zoom,sizeY=boardScene.height*boardCamera.zoom;
+    boardCamera.x=Math.round(sizeX<w?(w-sizeX)/2:Math.max(w-sizeX,Math.min(0,boardCamera.x)));
+    boardCamera.y=Math.round(sizeY<h?(h-sizeY)/2:Math.max(h-sizeY,Math.min(0,boardCamera.y)));
+    world.style.transform=`translate(${boardCamera.x}px,${boardCamera.y}px) scale(${boardCamera.zoom})`;
+    document.getElementById('board-zoom-level').textContent=Math.round(boardCamera.zoom*100)+'%';
+    layoutBoardNames();
+  }
+
+  function layoutBoardNames() {
+    const layer=document.getElementById('board-name-overlay'),stage=document.getElementById('board-stage');
+    if(!layer||!stage||!boardScene)return;
+    layer.replaceChildren();
+    const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
+    leaders.setAttribute('width',stage.clientWidth);leaders.setAttribute('height',stage.clientHeight);
+    leaders.style.position='absolute';layer.append(leaders);
+    const occupied=boardScene.islands.map(g=>({x:(g.x+g.width/2)*boardCamera.zoom+boardCamera.x-75,y:(g.y+14)*boardCamera.zoom+boardCamera.y-12,w:150,h:22}));
+    const plots=boardScene.plots.filter(p=>boardNamesVisible||p.path===boardSelectedPath).sort((a,b)=>Number(b.path===boardSelectedPath)-Number(a.path===boardSelectedPath));
+    for(const plot of plots){
+      const repo=repos.find(r=>r.path===plot.path),s=repo._status||{};
+      const full=s.is_worktree?(s.branch||repoName(repo.path)):repoName(repo.path);
+      const label=document.createElement('span');
+      label.className='plot-name';label.dataset.path=plot.path;label.dataset.selected=String(plot.path===boardSelectedPath);
+      label.textContent=(boardNamesVisible?plot.number+' · ':'')+full;label.title=repo.path+' · '+(s.branch||'Branch not checked');
+      layer.append(label);
+      const w=label.offsetWidth,h=label.offsetHeight;
+      const anchorX=plot.x*boardCamera.zoom+boardCamera.x,anchorY=(plot.y-80)*boardCamera.zoom+boardCamera.y;
+      let x=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2)),y=Math.max(8,anchorY-h-4);
+      const candidates=[];
+      for(let row=-6;row<=6;row++)for(let col=-3;col<=3;col++){
+        const px=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2+col*(w+6)));
+        const py=Math.max(8,Math.min(stage.clientHeight-h-8,anchorY-h-4+row*(h+5)));
+        candidates.push({x:px,y:py,cost:Math.hypot(px+w/2-anchorX,py+h-anchorY)});
+      }
+      candidates.sort((a,b)=>a.cost-b.cost);
+      const place=candidates.find(c=>!occupied.some(r=>c.x<r.x+r.w+4&&c.x+w+4>r.x&&c.y<r.y+r.h+4&&c.y+h+4>r.y));
+      if(place){x=place.x;y=place.y;}
+      else {label.remove();continue;}
+      label.style.left=x+'px';label.style.top=y+'px';
+      const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+      line.setAttribute('x1',x+w/2);line.setAttribute('y1',y+h);
+      line.setAttribute('x2',anchorX);line.setAttribute('y2',anchorY+12);
+      line.setAttribute('stroke',plot.path===boardSelectedPath?'#58a6ff':'#a5c2b4');
+      line.setAttribute('stroke-opacity','.45');line.setAttribute('stroke-width','1');leaders.append(line);
+      occupied.push({x,y,w,h});
+    }
+  }
+
+  function fitBoardCamera() { boardFitPending=true;applyBoardCamera(); }
+  function zoomBoardAt(factor,x,y) {
+    const old=boardCamera.zoom,next=Math.max(.35,Math.min(2.5,old*factor));
+    boardCamera.x=x-(x-boardCamera.x)*next/old;boardCamera.y=y-(y-boardCamera.y)*next/old;boardCamera.zoom=next;
+    boardFitPending=false;applyBoardCamera();
+  }
+  function zoomBoardBy(factor) { const s=document.getElementById('board-stage');if(s)zoomBoardAt(factor,s.clientWidth/2,s.clientHeight/2); }
+  function boardScreenToWorld(x,y) { return {x:(x-boardCamera.x)/boardCamera.zoom,y:(y-boardCamera.y)/boardCamera.zoom}; }
+  function boardSpriteContains(plot, world) {
+    const button=document.getElementById('board-tile-'+encodeURIComponent(plot.path));
+    if (!button) return false;
+    const tile=button.parentElement,svg=button.querySelector('svg');
+    const point=new DOMPoint(world.x-parseFloat(tile.style.left),world.y-parseFloat(tile.style.top));
+    const screen=point.matrixTransform(svg.getScreenCTM());
+    return [...svg.querySelectorAll('.island-tree path, .island-tree circle, .island-tree rect, .island-tree ellipse, .island-tree polygon, .island-tree line')].some(shape => {
+      const local=screen.matrixTransform(shape.getScreenCTM().inverse()),style=getComputedStyle(shape);
+      return (style.fill!=='none' && style.fillOpacity!=='0' && shape.isPointInFill(local)) ||
+        (style.stroke!=='none' && style.strokeOpacity!=='0' && shape.isPointInStroke(local));
+    });
+  }
+  function pickBoardPlot(x,y) {
+    if (!boardScene) return null;
+    const world=boardScreenToWorld(x,y);
+    for (const plot of [...boardScene.plots].reverse()) {
+      if (boardSpriteContains(plot,world)) return plot.path;
+    }
+    for (const g of boardScene.islands) {
+      const local={x:world.x-g.x-g.origin.x,y:world.y-g.y-g.origin.y};
+      const grid=boardWorldToGrid(local.x,local.y),col=Math.round(grid.col),row=Math.round(grid.row);
+      if(col<0||row<0||col>=g.cols||row>=g.rows)continue;
+      const center=boardGridToWorld(col,row);
+      if(Math.abs(local.x-center.x)/(BOARD_TTW/2)+Math.abs(local.y-center.y)/(BOARD_TTH/2)>1.001)continue;
+      return g.paths[row*g.cols+col] || null;
+    }
+    return null;
+  }
+
+  function revealBoardPlot(path) {
+    const plot=boardScene?.plots.find(p => p.path===path),stage=document.getElementById('board-stage');
+    if (!plot||!stage) return;
+    const x=plot.x*boardCamera.zoom+boardCamera.x,y=plot.y*boardCamera.zoom+boardCamera.y;
+    if(x<30||x>stage.clientWidth-30||y<80||y>stage.clientHeight-30) {
+      boardCamera.x=stage.clientWidth/2-plot.x*boardCamera.zoom;boardCamera.y=stage.clientHeight/2-plot.y*boardCamera.zoom;applyBoardCamera();
+    }
+  }
+  function locateBoardPlot(path) {
+    const plot=boardScene?.plots.find(p=>p.path===path),stage=document.getElementById('board-stage');
+    if(!plot||!stage)return;
+    boardCamera.x=stage.clientWidth/2-plot.x*boardCamera.zoom;
+    boardCamera.y=stage.clientHeight/2-(plot.y-35)*boardCamera.zoom;
+    boardFitPending=false;applyBoardCamera();
+    document.getElementById('board-tile-'+encodeURIComponent(path))?.focus({preventScroll:true});
+  }
+
+  function renderIsometricScene(groups) {
+    const signature=JSON.stringify([boardPage,groups.map(g => [g.key,g.paths])]);
+    if(signature!==boardSceneSignature){boardFitPending=true;boardSceneSignature=signature;}
+    boardScene=makeBoardScene(groups);
+    const plots=boardScene.plots;
+    const terrain=boardScene.islands.map(boardTerrainSvg).join('');
+    const islands=boardScene.islands.map(g => `<div class="board-neighborhood ${g.key==='workspace'?'':'board-family'}" data-project="${escapeHtml(g.key)}" style="position:absolute;left:0;top:0;width:100%;height:100%;padding:0;border:0;pointer-events:none;">`+
+      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { const repo=repos.find(r=>r.path===p.path);return boardTileSvg(repo,boardState(repo),{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
+    let stage=document.getElementById('board-stage');
+    if (!stage) {
+      stage=document.createElement('div');stage.id='board-stage';
+      document.getElementById('board-island-wrap').append(stage);
+      bindBoardInteractions(stage);
+      boardResizeObserver.disconnect();boardResizeObserver.observe(stage);
+    }
+    stage.innerHTML=`<div id="board-world" style="width:${boardScene.width}px;height:${boardScene.height}px;"><svg id="board-terrain" width="${boardScene.width}" height="${boardScene.height}" role="presentation" aria-hidden="true">${terrain}</svg>${islands}</div><div id="board-name-overlay"></div><div id="board-hover-tip" hidden></div>`;
+    applyBoardCamera();
+    updateBoardCaption(boardHoveredPath || boardSelectedPath);
+  }
+
+  function bindBoardInteractions(stage) {
+    let drag=null,moved=false;
+    stage.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,cx:boardCamera.x,cy:boardCamera.y};moved=false;});
+    stage.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>4){moved=true;stage.setPointerCapture(e.pointerId);}if(!moved)return;boardCamera.x=drag.cx+dx;boardCamera.y=drag.cy+dy;boardFitPending=false;applyBoardCamera();});
+    const end=()=>{drag=null;};stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
+    stage.addEventListener('click',e=>{
+      if (moved) {moved=false;e.preventDefault();e.stopImmediatePropagation();return;}
+      if (e.detail===0) return;
+      e.preventDefault();e.stopImmediatePropagation();
+      const r=stage.getBoundingClientRect(),path=pickBoardPlot(e.clientX-r.left,e.clientY-r.top);
+      if(path)selectBoardRepo(path,e);
+    },{capture:true});
+    stage.addEventListener('wheel',e=>{if(!e.ctrlKey&&!e.metaKey)return;e.preventDefault();const r=stage.getBoundingClientRect();zoomBoardAt(Math.exp(-e.deltaY*.002),e.clientX-r.left,e.clientY-r.top);},{passive:false});
+    const hoverTip=(path,anchor)=>{
+      const tip=document.getElementById('board-hover-tip');
+      if(!tip||!path){if(tip)tip.hidden=true;return;}
+      const repo=repos.find(r=>r.path===path),plot=boardScene?.plots.find(p=>p.path===path);
+      if(!repo||!plot){tip.hidden=true;return;}
+      const st=repo._status||{};
+      tip.textContent=(st.is_worktree?(st.branch||repoName(repo.path)):repoName(repo.path))+(st.branch&&!st.is_worktree?' \u00b7 '+st.branch:'');
+      tip.title=repo.path+(st.branch?' \u00b7 '+st.branch:'');
+      const sx=plot.x*boardCamera.zoom+boardCamera.x,sy=plot.y*boardCamera.zoom+boardCamera.y-96*boardCamera.zoom;
+      tip.hidden=false;
+      const x=Math.max(8,Math.min(stage.clientWidth-tip.offsetWidth-8,sx-tip.offsetWidth/2));
+      tip.style.left=x+'px';tip.style.top=Math.max(8,sy)+'px';
+      if(anchor&&anchor.getBoundingClientRect)anchor.setAttribute('aria-description',tip.textContent);
+    };
+    const caption=e=>{const button=e.target.closest('.board-select');if(!button)return;const path=button.dataset.path;boardHoveredPath=path;updateBoardCaption(path);hoverTip(path,button);};
+    stage.addEventListener('focusin',caption);
+    let hoverRaf=0;
+    stage.addEventListener('mousemove',e=>{
+      if(drag||hoverRaf)return;
+      hoverRaf=requestAnimationFrame(()=>{
+        hoverRaf=0;
+        const r=stage.getBoundingClientRect();
+        const path=pickBoardPlot(e.clientX-r.left,e.clientY-r.top);
+        if(path){boardHoveredPath=path;updateBoardCaption(path);hoverTip(path,null);}
+        else {boardHoveredPath=null;hoverTip(null);updateBoardCaption(boardSelectedPath);}
+      });
+    });
+    stage.addEventListener('focusout',()=>hoverTip(null));
+    stage.addEventListener('mouseleave',()=>{boardHoveredPath=null;hoverTip(null);updateBoardCaption(boardSelectedPath);});
+    updateBoardCaption(boardHoveredPath || boardSelectedPath);
+  }
+
+  function toggleBoardNames() {
+    boardNamesVisible = !boardNamesVisible;
+    const btn = document.getElementById('board-names-toggle');
+    btn.setAttribute('aria-pressed', String(boardNamesVisible));
+    renderBoard();
+  }
+
+  function updateBoardCaption(path, kind) {
+    const repo=repos.find(r=>r.path===path);
+    const selected = kind === 'selected' || (kind === undefined && path === boardSelectedPath);
+    const label = repo ? (selected ? 'Selected' : 'Hover preview') + ' · ' + repoName(repo.path) + ' · ' + (repo._status?.branch||'Branch not checked') + ' · ' + boardState(repo).summary + ' · ' + boardGithub(repo).label : 'Hover or select a plot to identify its repository.';
+    document.getElementById('board-caption').textContent=label;
+  }
 
   function repoStage(res, status) {
     if (res && res.status === 410) return {stage: 'gone', summary: 'Gone from disk'};
@@ -1340,9 +1697,11 @@
   function selectBoardRepo(path, event) {
     if (!repos.some(r => r.path === path)) return;
     boardSelectedPath = path;
-    const order = boardNeighborhoods.flatMap(g => g.paths);
-    boardPage = Math.floor(order.indexOf(path) / BOARD_PAGE_SIZE) + 1;
+    boardHoveredPath = null;
+    const islandIndex = boardIslands(boardNeighborhoods).findIndex(g => g.paths.includes(path));
+    if (islandIndex >= 0) boardPage = islandIndex + 1;
     renderBoard();
+    revealBoardPlot(path);
     if (event?.detail === 0 || matchMedia('(max-width:850px)').matches) document.querySelector('#board-inspector h3')?.focus({preventScroll:true});
   }
 
@@ -1365,69 +1724,31 @@
     const el = document.getElementById('board-inspector');
     el.dataset.selected = String(!!repo);
     if (!repo) { el.innerHTML = '<h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p>'; return; }
-    const s = repo._status || {}, b = boardState(repo), gh = boardGithub(repo);
+    const s = repo._status || {}, b = boardState(repo);
     const sync = s.sync?.has_upstream === true ? '↑' + s.sync.ahead + ' ahead · ↓' + s.sync.behind + ' behind cached upstream refs' : s.sync?.has_upstream === false ? 'No upstream configured' : 'Sync state unavailable';
     const href = '#/repo/' + encodeURIComponent(repo.path);
-    el.innerHTML = `<h3 id="board-inspector-title" tabindex="-1">${escapeHtml(repoName(repo.path))}</h3><p class="inspector-path">${escapeHtml(repo.path)}</p>` +
+    const short = shortHome(repo.path);
+    const localChanges = s.dirty?.is_clean === false && !s.error && !s.gone;
+    const family = boardNeighborhoods.find(g => g.paths.includes(repo.path));
+    const familyGh = boardFamilyGithub(family || {paths:[repo.path]});
+    const familyInfo = `<p class="board-family-gh" data-blocked="${!!familyGh.blocked}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
+      (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '');
+    el.innerHTML = `<h3 id="board-inspector-title" tabindex="-1">${escapeHtml(repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
       `<p>${escapeHtml(s.branch || 'Branch not checked')}${s.is_worktree ? ' · Linked worktree' : ''}</p>` +
       `<p><strong>Local Git</strong><br>${escapeHtml(b.summary)}</p>` +
       `<p>${escapeHtml(s.error || !s.dirty ? 'Sync state unavailable' : sync)}</p>` +
-      `<p class="${gh.blocked ? 'board-gh-badge' : ''}"><strong>GitHub</strong><br>${escapeHtml(gh.label)}</p>` +
+      `${familyInfo}` +
       `<p>${repoCheckingLabel(repo)}${repo._github?.checked_at ? '<br>' + checkedTime(repo._github.checked_at, 'GitHub checked') : ''}</p>` +
       `<a id="board-open-details" class="btn btn-ghost" href="${href}">Open details</a>` +
+      (localChanges ? `<a id="board-open-changes" class="btn btn-ghost" href="${href}?tab=changes">View changes</a>` : '') +
       `<a id="board-open-github" class="btn btn-ghost" href="${href}?tab=github">View GitHub</a>` +
-      '<button class="btn btn-ghost" onclick="clearBoardSelection()">Close panel</button>';
+      `<button class="btn btn-ghost" onclick="locateBoardPlot(boardSelectedPath)">Locate on island</button>` +
+      '<button class="btn btn-ghost inspector-close" aria-label="Close panel" onclick="clearBoardSelection()">×</button>';
   }
 
   function boardBranchLine(status) {
     if (!status || !status.branch) return '';
     return status.branch + (status.last_commit?.relative ? ' · ' + status.last_commit.relative : '');
-  }
-
-  function boardSoil(cx, gy) {
-    return `<ellipse cx="${cx}" cy="${gy}" rx="27" ry="13" fill="var(--board-soil)"/>` +
-      `<ellipse cx="${cx}" cy="${gy - 1}" rx="20" ry="9" fill="var(--board-soil-dark)"/>`;
-  }
-
-  function boardSignPost(cx, gy, h) {
-    return `<rect x="${cx - 2}" y="${gy - h}" width="4" height="${h}" fill="var(--board-trunk)"/>`;
-  }
-
-  function boardSignBoard(cx, top, color, glyph) {
-    return `<rect x="${cx - 17}" y="${top}" width="34" height="22" rx="4" fill="#3a2e22" stroke="${color}" stroke-width="2"/>` + glyph;
-  }
-
-  function boardMarker(stage, cx, gy, color) {
-    if (stage === 'healthy')
-      return boardSoil(cx, gy) +
-        `<rect x="${cx - 3}" y="${gy - 30}" width="6" height="24" fill="var(--board-trunk)"/>` +
-        `<circle cx="${cx - 9}" cy="${gy - 36}" r="12" fill="var(--board-canopy-dark)"/>` +
-        `<circle cx="${cx + 9}" cy="${gy - 36}" r="12" fill="var(--board-canopy-dark)"/>` +
-        `<circle cx="${cx}" cy="${gy - 42}" r="15" fill="var(--board-canopy)"/>` +
-        `<circle cx="${cx - 4}" cy="${gy - 48}" r="8" fill="var(--board-canopy-light)"/>` +
-        `<circle cx="${cx + 5}" cy="${gy - 44}" r="2" fill="#dff3dd"/><circle cx="${cx - 7}" cy="${gy - 38}" r="1.6" fill="#dff3dd"/>`;
-    if (stage === 'attention-dirty')
-      return boardMarker('healthy', cx, gy, color) +
-        `<g data-marker="local-work"><rect x="${cx + 20}" y="${gy - 13}" width="21" height="5" rx="1" fill="var(--accent)"/><path d="M${cx + 23} ${gy - 8}v12 M${cx + 37} ${gy - 8}v12" stroke="var(--accent)" stroke-width="3"/></g>`;
-    if (stage === 'attention-sync' || stage === 'attention-stale') return boardMarker('healthy', cx, gy, color);
-    if (stage === 'loading')
-      return boardSoil(cx, gy) +
-        `<ellipse cx="${cx}" cy="${gy}" rx="33" ry="16" fill="none" stroke="var(--board-muted)" stroke-width="2.5" stroke-dasharray="5,4"/>`;
-    if (stage === 'error')
-      return `<ellipse cx="${cx}" cy="${gy}" rx="27" ry="13" fill="var(--board-soil-dark)"/>` +
-        `<polyline points="${cx - 14},${gy - 4} ${cx - 4},${gy + 1} ${cx + 6},${gy - 5} ${cx + 15},${gy + 2}" fill="none" stroke="rgba(0,0,0,.5)" stroke-width="1.8"/>` +
-        boardSignPost(cx, gy, 34) +
-        boardSignBoard(cx, gy - 58, color,
-          `<line x1="${cx - 6}" y1="${gy - 53}" x2="${cx + 6}" y2="${gy - 41}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>` +
-          `<line x1="${cx + 6}" y1="${gy - 53}" x2="${cx - 6}" y2="${gy - 41}" stroke="${color}" stroke-width="3" stroke-linecap="round"/>`);
-    return `<polygon points="${cx},${gy - 30} ${cx + 22},${gy} ${cx},${gy + 30} ${cx - 22},${gy}" fill="none" stroke="var(--board-muted)" stroke-width="1.5" stroke-dasharray="4,3"/>` +
-      `<text x="${cx}" y="${gy + 5}" text-anchor="middle" font-size="14" fill="var(--board-muted)">×</text>`;
-  }
-
-  function boardStageColor(stage) {
-    return {healthy: 'var(--board-healthy)', 'attention-dirty': 'var(--board-dirty)',
-      'attention-sync': 'var(--board-sync)', 'attention-stale': 'var(--board-stale)',
-      loading: 'var(--board-loading)', error: 'var(--board-error)', gone: 'var(--board-gone)'}[stage];
   }
 
   function boardLabel(repo, b) {
@@ -1441,9 +1762,8 @@
       `<span class="${gh.blocked ? 'board-gh-badge' : 'tile-status'}">${gh.blocked ? '● ' : ''}${escapeHtml(gh.label)}</span></span>`;
   }
 
-  function boardTileSvg(repo, b) {
+  function boardTileSvg(repo, b, pose) {
     const TW = BOARD_TTW, TH = BOARD_TTH;
-    const color = boardStageColor(b.stage);
     const disp = boardDisplayStatus(repo, b);
     const pinned = (organization.pins || []).includes(repo.path);
     const noUpstream = b.stage === 'healthy' && b.status?.sync?.has_upstream === false;
@@ -1455,29 +1775,19 @@
     const pts = `${cx},${topY} ${cx + TW / 2},${topY + TH / 2} ${cx},${topY + TH} ${cx - TW / 2},${topY + TH / 2}`;
     const pin = pinned ? `<text class="tile-pin" x="12" y="${topY + TH / 2 + 5}">★</text>` : '';
     const badge = noUpstream ? `<g data-badge="no-upstream"><circle cx="${W - 12}" cy="14" r="7" fill="#21262d" stroke="var(--board-muted)" stroke-width="1.5"/><text class="tile-badge" x="${W - 12}" y="17.5" text-anchor="middle" font-size="9" fill="var(--board-muted)">~</text></g>` : '';
-    const speckSpots = [[-32, 16], [24, 38], [-6, 46], [34, 12], [-40, 34]];
-    const seed = repo.path.length % 5;
-    const specks = (b.stage === 'gone') ? '' : [0, 1, 2].map(i => {
-      const [sx, sy] = speckSpots[(seed + i * 2) % 5];
-      return `<ellipse cx="${cx + sx}" cy="${topY + sy}" rx="4" ry="2" fill="var(--board-speck)"/>`;
-    }).join('');
-    const sides = (b.stage === 'gone') ? '' :
-      `<polygon points="${cx - TW / 2},${topY + TH / 2} ${cx},${topY + TH} ${cx},${topY + TH + 14} ${cx - TW / 2},${topY + TH / 2 + 14}" fill="var(--board-dirt-light)"/>` +
-      `<polygon points="${cx + TW / 2},${topY + TH / 2} ${cx},${topY + TH} ${cx},${topY + TH + 14} ${cx + TW / 2},${topY + TH / 2 + 14}" fill="var(--board-dirt-dark)"/>`;
-    const topFill = (b.stage === 'gone')
-      ? `<polygon class="tile-top" points="${pts}" fill="${color}" stroke="var(--board-muted)" stroke-width="1" stroke-dasharray="5,3"/>`
-      : `<polygon class="tile-top" points="${pts}" fill="${color}" stroke="rgba(0,0,0,.5)" stroke-width="1.5"/>` +
-        `<polyline points="${cx - TW / 2},${topY + TH / 2} ${cx},${topY} ${cx + TW / 2},${topY + TH / 2}" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="2"/>`;
+    const topFill = `<polygon class="tile-top" points="${pts}" fill="transparent" stroke="transparent" stroke-width="2"/>`;
+    const number = `<circle cx="${cx}" cy="${gy+17}" r="10" fill="${pose.island.theme.dark}" opacity=".9"/><text x="${cx}" y="${gy+21}" text-anchor="middle" font-size="12" fill="#f3f4df">${pose.number}</text>`;
     const label = escapeHtml(repo.path + (disp?.branch ? ' · ' + disp.branch : '') + ': ' + b.summary + ' · ' + boardGithub(repo).label + (pinned ? ' · pinned' : '') + (noUpstream ? ' · no upstream' : ''));
-    return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" data-path="${escapeHtml(repo.path)}">` +
+    return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" data-path="${escapeHtml(repo.path)}" data-col="${pose.col}" data-row="${pose.row}" style="left:${pose.x-cx}px;top:${pose.y-gy}px;z-index:${pose.depth};">` +
       `<button type="button" class="board-select" id="${id}" data-path="${escapeHtml(repo.path)}" aria-label="${label}" title="${label}" aria-pressed="${boardSelectedPath === repo.path}" aria-controls="board-inspector" onclick="selectBoardRepo(${escapeHtml(JSON.stringify(repo.path))}, event)">` +
       `<svg viewBox="0 0 ${W} ${H - 32}" role="presentation" aria-hidden="true">` +
-      sides + topFill + specks + boardMarker(disp?.dirty?.kinds?.conflicted ? 'error' : b.stage, cx, gy, disp?.dirty?.kinds?.conflicted ? 'var(--red-text)' : color) + pin + badge +
-      `</svg>${boardLabel(repo, b)}</button></div>`;
+      topFill + number + pin + badge + boardTreeSprite(repo, b, pose, cx, gy) + `</svg>${boardLabel(repo, b)}</button></div>`;
   }
 
   function boardTurn(d) {
     boardPage += d;
+    boardHoveredPath = null;
+    boardSelectedPath = null;
     renderBoard();
     document.getElementById('board-page-status').focus({preventScroll: true});
   }
@@ -1490,13 +1800,14 @@
       ? document.activeElement.id : null;
     const empty = document.getElementById('board-empty');
     const pager = document.getElementById('board-pager');
-    const pages = Math.max(1, Math.ceil(repos.length / BOARD_PAGE_SIZE));
-    boardPage = Math.min(Math.max(1, boardPage), pages);
     if (!repos.length) {
       boardSelectedPath = null;
       boardLayoutSignature = '';
       boardLayoutReady = false;
       boardNeighborhoods = [];
+      boardScene=null;boardSceneSignature='';boardFitPending=true;boardHoveredPath=null;
+      boardResizeObserver.disconnect();
+      updateBoardCaption(null);
       wrap.innerHTML = '';
       empty.hidden = false;
       pager.hidden = true;
@@ -1521,16 +1832,13 @@
       boardLayoutSignature = signature;
       boardLayoutReady = ready;
     }
-    const paths = boardNeighborhoods.flatMap(g => g.paths).slice((boardPage - 1) * BOARD_PAGE_SIZE, boardPage * BOARD_PAGE_SIZE);
-    const groups = boardNeighborhoods.map(g => ({...g, paths:g.paths.filter(path => paths.includes(path))})).filter(g => g.paths.length);
-    wrap.innerHTML = '<div id="board-stage">' + groups.map(g => {
-      const total = boardNeighborhoods.find(n => n.key === g.key).paths.length;
-      const family = total > 1;
-      return `<section class="board-neighborhood ${family ? 'board-family' + (g.paths.length > 2 ? ' board-family-wide' : '') : ''}" data-project="${escapeHtml(g.key)}">` +
-        (family ? `<h3>${escapeHtml(g.name)} <span>· ${g.paths.length < total ? g.paths.length + ' of ' : ''}${total} tracked checkouts</span></h3><div class="board-plots">` : '') +
-        g.paths.map(path => { const repo = repos.find(r => r.path === path); return boardTileSvg(repo, boardState(repo)); }).join('') +
-        (family ? '</div>' : '') + '</section>';
-    }).join('') + '</div>';
+    const islands = boardIslands(boardNeighborhoods);
+    const pages = Math.max(1,islands.length);
+    boardPage = Math.min(Math.max(1,boardPage),pages);
+    const activeIsland = islands[boardPage-1];
+    if (!activeIsland.paths.includes(boardSelectedPath)) boardSelectedPath = null;
+    if (!activeIsland.paths.includes(boardHoveredPath)) boardHoveredPath = null;
+    renderIsometricScene(boardNeighborhoods);
     renderBoardInspector();
     const matches = repos.filter(boardMatches).length;
     document.getElementById('board-match-count').textContent = matches + ' of ' + repos.length + ' matching' + (document.getElementById('board-search').value ? ' · Enter to select' : '');
@@ -1538,7 +1846,7 @@
     ghButton.disabled = refreshingGithub || refreshingBoard || refreshingLocal || repos.some(r => !r._status || r._checking);
     ghButton.textContent = refreshingGithub ? 'Checking GitHub…' : organization.githubEnabled ? 'Refresh GitHub' : 'Check GitHub';
     const status = document.getElementById('board-page-status');
-    status.textContent = `Page ${boardPage} of ${pages}`;
+    status.textContent = `${activeIsland.name} · Island ${boardPage} of ${pages}`;
     pager.hidden = pages < 2;
     document.getElementById('board-prev').disabled = boardPage <= 1;
     document.getElementById('board-next').disabled = boardPage >= pages;
@@ -1637,7 +1945,8 @@
       const [encoded, query = ''] = h.slice(7).split('?');
       const path = decodeURIComponent(encoded);
       await showDetail(path);
-      if (detailPath === path && new URLSearchParams(query).get('tab') === 'github') switchTab('github');
+      const tab = new URLSearchParams(query).get('tab');
+      if (detailPath === path && ['commits','changes','branches','github'].includes(tab)) switchTab(tab);
     } else if (h === '#/board' || h.startsWith('#/board?')) {
       detailRequest++;
       githubRequest++;

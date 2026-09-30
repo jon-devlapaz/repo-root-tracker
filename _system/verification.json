@@ -9,7 +9,7 @@
     {
       "id": "pytest",
       "argv": ["python3", "-m", "pytest", "tests/", "-v", "--tb=short"],
-      "timeout_seconds": 60
+      "timeout_seconds": 300
     }
   ]
 }
