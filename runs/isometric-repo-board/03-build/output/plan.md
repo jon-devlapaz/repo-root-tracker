@@ -1,0 +1,43 @@
+# Plan: Isometric repo board
+
+**Derived from:** `02-design/output/spec.md` (approved, Stage 2; base `fb686a6`)
+**Status:** draft
+**Implementer:** agent (human decision 2026-09-30; single writer — no other code-writing in the worktree; clean-room accountability sits with the implementer until the independent diff review)
+
+## 1. Files That Change
+
+- Edit: `src/repo_root_tracker/dashboard.html` — `board-view` section, `renderBoard()`, `repoStage()` (R3 pseudocode verbatim), `#/board` router branch + `boardScrollY` + origin-aware `closeDetail`, List|Board toggle, palette `/board/i` command, `#board-refresh`, pager, empty state. No other product files change; no backend changes.
+- Create: `tests/test_board.py` — Playwright proof tests on the `test_dashboard.py` mocked-routes pattern with the §4-admitted deltas.
+- No changes to: `server.py`, `status.py`, `detail.py`, `github.py`, existing tests, routes, `/api/*` shapes.
+
+## 2. Order of Work
+
+1. **Isolated checkout.** Confirm `git rev-parse HEAD` in this checkout (expected `fb686a6`; spec base). `git worktree add ../repo-root-tracker-isometric-repo-board <base>` using that HEAD (spec §4 allows `fb686a6` or later). Record the worktree base HEAD in the run notes. If this checkout's HEAD has moved past `fb686a6`, rebase the worktree branch onto it before merging and re-run the full suite. Require a clean unrelated tree before merging (`git status` shows no delta outside `src/`, `tests/`, and this run's files). All code-writing happens in the worktree, one writer. No skill installs needed (spec §3: no capability gaps); no shared writable skill symlinks.
+2. **Test scaffolding first.** `tests/test_board.py` fixtures: 26-entry `/api/repos` mock, zero-entry variant, per-path status fixtures including `stale_branches` arrays and field-sparse mocks, plus `**/api/repo?*` (per `test_repo_links_keep_detail_navigation`) and `**/api/github?*` mocks where board→detail tests touch them, `new URL(...).searchParams` parsing in all new mocks, `wait_for_function` tile-count readiness, and localStorage seeding via `add_init_script`/`evaluate` for pin tests (spec §4, no further review needed). Test function stems SHALL be exactly (checklist `-k` selectors depend on them — do not rename): `test_board_routes`, `test_board_tile_count_and_order`, `test_board_stage_mapping`, `test_board_upstream_badge`, `test_board_stage_precedence`, `test_board_keyboard_nav`, `test_board_focus_visible`, `test_board_pin_marker`, `test_board_tile_link_href`, `test_board_tile_a11y_names`, `test_board_reduced_motion`, `test_board_refresh`, `test_board_empty_state`, `test_board_pager_layout`, `test_board_pager_reset`, `test_board_pager_persist`, `test_board_first_paint`, `test_board_palette_command`, `test_board_worktree_labels`. Confirm new tests fail for the right reason (no `#board-view` yet).
+3. **Core render.** `repoStage()` mapper + tile markup (`data-stage`, `data-badge`, `board-tile-<enc>` ids, `tile` class, link href, text status line, branch·relative label) + parametric 2:1 grid/island in `#board-view`.
+4. **Router + toggle.** Three-way `route()`, origin-aware `closeDetail`, per-view scroll, List|Board header toggle, focus restoration with `#board-refresh` fallback. Preserve `?tab=github` deep-links for board-opened details (existing `switchTab` contract, dashboard.html:1191). Do not disturb `refreshOnReturn` (window focus / visibilitychange, dashboard.html:1787–1788): it must not double-fire board snapshot fetches — board status refresh stays exclusively behind `#board-refresh` (see step 5).
+5. **Behaviors.** Snapshot fetch per board visit. Refresh guard per human decision 2026-09-30: **Refresh disabled while any tile fetch is outstanding; per-tile AbortController timeout 10 s; hung tiles resolve to `error`.** `gone`-revisit rule (leave-and-return). Per-page layout + pager (`#board-prev`/`#board-next`, `role=status` + `tabindex=-1`, focus moves to the status node on page change, programmatic focus), slab viewBox computed from rows/cols per §2 relations. Empty state, palette `/board/i` first-item command (branch required in `paletteOpen` — command items have no `.path`), ★ pin marker (guarded store read + accessible text), worktree labels (guarded fields).
+6. **A11y pass.** `:focus-visible` outlines, `role=img` + `aria-label` per tile, pinned state in accessible text, `prefers-reduced-motion`, keyboard Enter navigation, 390 px overflow check.
+7. **Green + gates.** Full `python3 -m pytest tests/ -v` green in the worktree (existing suite must stay green — router regression is the top risk); clean-room diff of board SVG code against groveboard `app.js @5ab3380` (`renderTileSvg`/`renderGroveIslandSvg`) with a clean result recorded; R8 predicates at both viewports.
+8. **Merge + formal verify.** No remote/forge/CI governs this repo (verified 2026-09-30: no remote, no `.github/`, branch `impl/repo-root-tracker`), so: reviewed direct merge of worktree `src/`+`tests/` changes into this checkout (human decision 2026-09-30), recording the merge HEAD. Require a clean unrelated tree first (seed-me deletions stay out of this run's merge). Do NOT copy `runs/` content between checkouts — receipts live only here. After the human records Stage-3 approval, mark `clean-room-diff` **in this checkout** via `sdlc.py mark isometric-repo-board clean-room-diff passed --evidence '<reviewer> diffed <board code range> vs groveboard app.js@5ab3380 renderTileSvg/renderGroveIslandSvg on <date>: <result>'`, then run `_system/scripts/verify.sh isometric-repo-board` **in this checkout** for the binding receipt. Product-code failures: fix in the worktree, re-run the worktree suite, re-merge, re-verify here. Spec/checklist/plan changes: STOP — escalate to the human; any edit to `02-design/output/spec.md` or `checklist.json` stales Stage-2/3 approvals and requires re-approval before further `verify` runs. Never edit the spec inside the worktree and merge it silently.
+
+## 3. Risks & Blast Radius
+
+- **Router regression (highest).** `route()`/`closeDetail`/`showDetail` edits touch list + detail navigation. Mitigation: existing `test_dashboard.py` + `test_detail.py` stay green on every iteration; board tests assert origin-aware return explicitly.
+- **Single-file growth.** `dashboard.html` ~89 KB + board section; parse cost is inside the R8 clock by design. No bundling change.
+- **R8 flake.** 1000 ms `wait_for_selector` gate on shared CI; mitigation: generous timeout (not `performance.now` assertion), localhost only, failure means investigate — not silence.
+- **Clean-room contamination.** Implementer may have read groveboard proportions; mitigation: parametric-only rule (R9), diff gate before merge, record result.
+- **Precedence bugs.** Dirty/sync/stale overlap; mitigation: dedicated precedence test with combined fixtures + `has_upstream=false` corner.
+- Blast radius is frontend-only; backend, API shapes, existing routes, and tracked data are untouched. Worst case is a broken board view — list/detail remain, and the toggle makes the board unreachable without affecting defaults.
+
+## 4. Proof of Correctness
+
+- Unit/proof tests: `python3 -m pytest tests/test_board.py -v` in the worktree ( checklist `check` entries run each proof target; see `checklist.json`).
+- Full suite: `python3 -m pytest tests/ -v` (existing + new, zero page errors via fixture teardowns).
+- Reproduction test: N/A (feature, not a bug; no `lock-tests`).
+- Binding verification: `_system/scripts/verify.sh isometric-repo-board` post-merge (runs `pip install -e .` + full pytest with the 300 s timeout per `_system/verification.json` — raised from 60 s by human decision 2026-09-30 after measuring 34 s for the current 121-test suite — writes receipt under `runs/isometric-repo-board/04-test/output/`). Worst-case wall-clock of all checklist `check`s is ~30 min (10×120 s + 180 s + 2×240 s) plus config checks; disclosed, not hidden.
+- Human gates outside receipts: clean-room diff result, screenshot "obvious at a glance" at Stage-05 handoff.
+
+## 5. Implementation Checklist
+
+Lives in `checklist.json` (definitions with id/description/verify); mark items only with `sdlc.py mark`. Every automated proof carries a `check` (argv + timeout) that `verify` runs — no marks needed for those. The `clean-room-diff` item is attested (human review, no automated proof) and must be marked passed with nonempty evidence **after Stage-3 approval and before `verify` passes** — `verify` fails with `Checklist incomplete` otherwise (`mark` rejects `check`-bearing items, so never mark those — `verify` runs them). R8 flakes on shared CI are owned by the implementer first (investigate, never silence); escalate to the human if the 1000 ms gate proves systematically unmeetable.

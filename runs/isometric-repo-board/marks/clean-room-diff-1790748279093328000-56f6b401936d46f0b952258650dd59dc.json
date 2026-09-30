@@ -1,0 +1,7 @@
+{
+  "item": "clean-room-diff",
+  "result": "passed",
+  "evidence": "Independent reviewer diffed dashboard.html board JS 1223-1472 + CSS 501-531 + palette vs groveboard app.js@5ab3380 renderTileSvg/renderGroveIslandSvg on 2026-09-30: one P0 (trunk hex #5d3c20) found and remediated to --board-trunk #6b4426 (verified absent from groveboard); re-diff clean, all other geometry/names/colors original.",
+  "candidate": "3bacf213bc6b1ba03bd8d298d31cc4f89509388bff40db260ecd005342315ae5",
+  "time_ns": 1790748279093328000
+}

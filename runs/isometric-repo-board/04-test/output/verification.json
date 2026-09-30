@@ -1,0 +1,26 @@
+{
+  "result": "passed",
+  "candidate": {
+    "head": "fb686a629b7f00eb9a01df690610444098eee2c4",
+    "tree": "d878551eddfa4b864a32cacccb6b41ffbb88f8702ecacc74bd07062df57a4d04"
+  },
+  "inputs": "7046a8413aa83732cd11e713245f02562c803cf759398c529e3d94bd5401a346",
+  "policy": "0dd9673bb69f75e174a1d795c8fad12a55164fef5f8f3e8125930a4f96e33b8a",
+  "test_lock": null,
+  "checklist": "657eb1ae71446e870e866a5a608d673c00614448ed427d901a33ed0650df7d6c",
+  "checklist_items": {
+    "board-routes": "proven",
+    "board-tiles": "proven",
+    "stage-mapping": "proven",
+    "stage-precedence": "proven",
+    "tile-access": "proven",
+    "board-refresh": "proven",
+    "board-empty-state": "proven",
+    "board-pager": "proven",
+    "board-first-paint": "proven",
+    "board-palette": "proven",
+    "board-worktree-labels": "proven",
+    "clean-room-diff": "attested"
+  },
+  "log": "c8601ac4ce360d1087e17b7826254e2dc1cea1fface36f2ef0dbfe6bbdbfca28"
+}

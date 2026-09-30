@@ -1,0 +1,109 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "board-routes",
+      "description": "Route switching #/ <-> #/board <-> #/repo with in-session per-view scroll and origin-aware detail return (R1)",
+      "verify": "Board toggle, hash back/forward, and board-opened detail returning to #/board per spec R1.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_routes", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "board-tiles",
+      "description": "Exactly N tiles in /api/repos order; list sort/grouping/filters do not affect the board (R2)",
+      "verify": "N tiles for N tracked repos, API order under non-default list sort, no omissions or extras.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_tile_count_and_order", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "stage-mapping",
+      "description": "data-stage mapping for dirty/ahead-behind/stale/clean/loading/error/no-upstream-badge/gone fixtures incl. sparse mocks (R3)",
+      "verify": "R3 pseudocode verbatim: optional-chained guards, 410-first precedence, has_upstream guard, muted badge on healthy.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_stage_mapping or test_board_upstream_badge", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "stage-precedence",
+      "description": "Precedence dirty > sync > stale; 410 beats other failures; has_upstream=false with ahead=0 stays healthy (R3)",
+      "verify": "Combined-signal fixtures resolve to the first matching stage per R3 table order.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_stage_precedence", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "tile-access",
+      "description": "Tile link href, labels, status line, a11y names, keyboard nav, :focus-visible, pin accessible text, reduced motion (R4)",
+      "verify": "Full R4 access contract incl. D1/D3 decisions and accessible-name fix: href trio, branch.relative text, status-line presence, role=img names, keyboard Enter, :focus-visible, pin text, reduced motion.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_keyboard_nav or test_board_focus_visible or test_board_pin_marker or test_board_tile_link_href or test_board_tile_a11y_names or test_board_reduced_motion", "-v"],
+        "timeout_seconds": 240
+      }
+    },
+    {
+      "id": "board-refresh",
+      "description": "Snapshot fetch, guarded Refresh (no double-fire, hung-tile timeout), gone-revisit rule (R5)",
+      "verify": "Refresh disabled-or-abort, per-tile timeout, gone tiles require leave-and-return revisit.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_refresh", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "board-empty-state",
+      "description": "Zero tracked repos renders explicit empty state pointing at add-repo flow (R6)",
+      "verify": "Zero-entry /api/repos mock renders empty state, never a blank island.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_empty_state", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "board-pager",
+      "description": "Per-page layout, 25-per-page pager with reset-on-refresh, persist-across-detail-back, and programmatic focus move (R7)",
+      "verify": "26-repo fixture: layout math, pager controls, Page x of y status, reset on Refresh, persistence across detail-back, focus to status node.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_pager_layout or test_board_pager_reset or test_board_pager_persist", "-v"],
+        "timeout_seconds": 240
+      }
+    },
+    {
+      "id": "board-first-paint",
+      "description": "R8 budget gate at 1280x900 and 390x844 incl. mobile overflow check, zero page errors",
+      "verify": "Correctness AND budget: wait_for_function tile-count == N plus wait_for_selector 1000ms gate from navigation start at both viewports, scrollWidth check at 390px, zero page errors.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_first_paint", "-v"],
+        "timeout_seconds": 180
+      }
+    },
+    {
+      "id": "board-palette",
+      "description": "Palette /board/i query offers Board view first item navigating to #/board; repo-jump unchanged (R1)",
+      "verify": "Palette command behavior per R1 grounding on renderPalette/paletteOpen.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_palette_command", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "board-worktree-labels",
+      "description": "Worktree tiles disambiguated via project_path/is_worktree when present, short path otherwise (R2)",
+      "verify": "Field-present and field-absent fixtures both label correctly, one tile per tracked path.",
+      "check": {
+        "argv": ["python3", "-m", "pytest", "tests/test_board.py", "-k", "test_board_worktree_labels", "-v"],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "clean-room-diff",
+      "description": "Stage-03 review diffs board SVG code against groveboard renderTileSvg/renderGroveIslandSvg @5ab3380 with a clean result (R9)",
+      "verify": "Attested: human reviewer confirms no copied markup, path data, or numeric constants; parametric 2:1 projection only. Record result as mark evidence."
+    }
+  ]
+}

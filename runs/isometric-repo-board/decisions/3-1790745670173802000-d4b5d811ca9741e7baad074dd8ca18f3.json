@@ -1,0 +1,8 @@
+{
+  "inputs": "7046a8413aa83732cd11e713245f02562c803cf759398c529e3d94bd5401a346",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "Jonathan",
+  "source": "zed",
+  "reason": "approved; implement per plan using llm-coding-guidelines."
+}
