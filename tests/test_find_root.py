@@ -17,6 +17,10 @@ from repo_root_tracker import NotARepositoryError, find_root
 
 def git_init(path: Path) -> None:
     subprocess.run(["git", "init", str(path)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(path), "config", "user.name", "Test"],
+                   check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(path), "config", "user.email", "test@example.invalid"],
+                   check=True, capture_output=True)
 
 
 # ---------------------------------------------------------------------------
