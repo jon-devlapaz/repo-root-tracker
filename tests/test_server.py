@@ -207,3 +207,36 @@ def test_malformed_repos_file_shapes(isolated_config: Path) -> None:
     assert load_repos() == []
     REPOS_FILE.write_text("{broken json")
     assert load_repos() == []
+
+
+def test_dashboard_home_value_is_json_encoded_and_guard_preserved(live_server, monkeypatch):
+    monkeypatch.setattr(srv.Path, 'home', lambda: Path("/Users/it's-home"))
+    status, body = _get(live_server + '/')
+    assert status == 200
+    assert 'const HOME_DIR = "/Users/it\'s-home";' in body
+    assert "HOME_DIR !== '__HOME__'" in body
+
+
+def test_non_git_directory_is_not_reported_as_clean(live_server, tmp_path):
+    save_repos([{'path': str(tmp_path)}])
+    url = live_server + '/api/repos/status?path=' + urllib.parse.quote(str(tmp_path))
+    with pytest.raises(urllib.error.HTTPError) as error:
+        urllib.request.urlopen(url, timeout=5)
+    assert error.value.code == 503
+    assert 'error' in json.loads(error.value.read())
+
+
+def test_github_refresh_is_explicit(live_server, tmp_path, monkeypatch):
+    from repo_root_tracker.github import GithubInfo
+    save_repos([{'path': str(tmp_path)}])
+    calls = []
+
+    def github(path, *, refresh=False):
+        calls.append(refresh)
+        return GithubInfo()
+
+    monkeypatch.setattr(srv, 'get_github_info', github)
+    url = live_server + '/api/github?path=' + urllib.parse.quote(str(tmp_path))
+    assert _get(url)[0] == 200
+    assert _get(url + '&refresh=1')[0] == 200
+    assert calls == [False, True]

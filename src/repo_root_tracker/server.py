@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -66,7 +67,7 @@ class Handler(BaseHTTPRequestHandler):
         )
         if path in ("/", "/index.html"):
             body = ASSET.read_bytes().replace(
-                b"__HOME__", str(Path.home()).encode())
+                b'"__HOME__"', json.dumps(str(Path.home())).replace("<", "\\u003c").encode(), 1)
             self.send_response(200)
             self.send_header("Content-Type", "text/html; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
@@ -88,7 +89,7 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(200, get_repo_status(repo_path).to_dict())
             except NotARepositoryError as e:
                 self._json(410, {"error": str(e), "gone": True})
-            except GitNotAvailableError as e:
+            except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
                 self._json(503, {"error": str(e)})
         elif path == "/api/repo":
             repo_path = unquote(params.get("path", ""))
@@ -112,7 +113,7 @@ class Handler(BaseHTTPRequestHandler):
             if not any(r["path"] == repo_path for r in load_repos()):
                 self._json(404, {"error": "not tracked"})
                 return
-            self._json(200, get_github_info(repo_path).to_dict())
+            self._json(200, get_github_info(repo_path, refresh=params.get("refresh") == "1").to_dict())
         elif path == "/api/commit":
             repo_path = unquote(params.get("path", ""))
             commit_hash = params.get("hash", "")

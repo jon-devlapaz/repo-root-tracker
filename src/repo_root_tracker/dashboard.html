@@ -83,7 +83,92 @@
   .kbd-hint { font-size: 12px; color: var(--muted); }
   .kbd-hint kbd { margin: 0 2px; }
 
-  main { max-width: 900px; margin: 0 auto; padding: 24px; }
+  main { max-width: 1100px; margin: 0 auto; padding: 24px; }
+  #detail-view { max-width: 900px; }
+  button, input, select { font-family: var(--font); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .overview { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .overview h2 { color: var(--text); font-size: 24px; }
+  .overview p, .local-note { color: var(--muted); font-size: 12px; }
+  .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .toolbar input, .toolbar select, .collection-select, dialog input {
+    background: var(--surface); color: var(--text); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px; font-size: 13px; min-width: 0;
+  }
+  .toolbar input { flex: 1; min-width: 180px; }
+  .toolbar label { color: var(--muted); font-size: 12px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .filters .filter { border-radius: 20px; }
+  .filter[aria-pressed="true"] { color: var(--accent); border-color: var(--accent); background: rgba(88,166,255,.1); }
+  .filter span { margin-left: 5px; font-variant-numeric: tabular-nums; opacity: .75; }
+  .local-note { margin: 12px 0; }
+  .refresh-bar, .bulk-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0; }
+  .refresh-bar p { flex: 1; font-size: 12px; color: var(--muted); }
+  .attention-panel { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; }
+  .attention-panel summary { cursor: pointer; color: var(--text); font-weight: 600; }
+  .attention-item { display: flex; align-items: center; gap: 12px; justify-content: space-between; padding: 10px 0; border-top: 1px solid var(--border); }
+  .attention-item:first-child { margin-top: 12px; }
+  .attention-item strong { color: var(--text); font-size: 13px; }
+  .attention-item p { color: var(--muted); font-size: 12px; }
+  .attention-item a { color: var(--accent); text-decoration: none; font-size: 12px; white-space: nowrap; }
+  .bulk-bar { background: var(--surface2); padding: 12px; border-radius: 8px; }
+  .bulk-bar[hidden] { display: none; }
+  .bulk-bar select { width: auto; margin: 0; max-width: 200px; }
+  .repo-select { accent-color: var(--accent); width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+  .project-family { padding: 8px 12px; border-left: 2px solid var(--accent-dim); margin-bottom: 8px; }
+  .project-family .collection-toggle { font-size: 12px; color: var(--muted); }
+  .freshness { font-size: 11px; color: var(--muted); }
+  .gh-signal { color: var(--red-text); font-size: 11px; text-decoration: none; }
+  .gh-signal.pending { color: var(--muted); }
+  .file-row { width: 100%; text-align: left; color: var(--text); font-family: var(--mono); }
+  .file-row .file-badge { white-space: normal; }
+  .warning-note { color: var(--yellow); font-size: 12px; margin: 8px 0; }
+  .pin-button, .repo-menu summary { min-width: 36px; min-height: 36px; }
+  #clear-filters { margin-left: auto; }
+  #clear-filters[hidden] { display: none; }
+  .collection { margin-bottom: 16px; }
+  .collection-heading { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .collection-toggle { flex: 1; text-align: left; background: none; border: none; color: var(--text); padding: 8px 0; font-size: 14px; font-weight: 600; cursor: pointer; }
+  .collection-toggle .group-count { color: var(--muted); font-weight: 400; margin-left: 8px; }
+  .repo-name { color: var(--text); font-size: 14px; font-weight: 600; text-decoration: none; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .repo-name:hover { color: var(--accent); text-decoration: underline; }
+  .repo-card .repo-path { color: var(--muted); font-size: 11px; margin-top: 2px; }
+  .repo-signals { display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap; max-width: 260px; }
+  .repo-label.changed { color: var(--yellow); }
+  .repo-label.unavailable { color: var(--red-text); }
+  .pin-button { background: none; border: none; color: var(--muted); font-size: 19px; cursor: pointer; padding: 4px; }
+  .pin-button[aria-pressed="true"] { color: var(--yellow); }
+  .repo-menu { position: relative; }
+  .repo-menu summary { cursor: pointer; list-style: none; padding: 4px 10px; border-radius: 5px; color: var(--muted); }
+  .repo-menu summary::-webkit-details-marker { display: none; }
+  .repo-menu summary:hover { background: var(--surface2); color: var(--text); }
+  .menu-panel { position: absolute; right: 0; top: 30px; z-index: 20; width: 220px; padding: 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface2); box-shadow: 0 8px 24px #0008; }
+  .menu-panel label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  .collection-select { width: 100%; margin-bottom: 10px; }
+  .menu-panel button { width: 100%; margin-top: 6px; text-align: left; }
+  dialog { margin: auto; width: min(420px, calc(100% - 32px)); padding: 24px; background: var(--surface); color: var(--text); border: 1px solid var(--border); border-radius: 12px; }
+  dialog::backdrop { background: #0009; }
+  dialog h2 { font-size: 18px; margin-bottom: 16px; }
+  dialog label { display: block; margin-bottom: 6px; }
+  dialog input { width: 100%; }
+  .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  #collection-error { color: var(--red-text); font-size: 12px; margin-top: 8px; }
+  @media (max-width: 650px) {
+    main { padding: 16px; }
+    header { padding: 12px 16px; }
+    .kbd-hint { display: none; }
+    .overview { align-items: flex-start; }
+    .overview h2 { font-size: 21px; }
+    #list-view .repo-card { flex-wrap: wrap; gap: 8px; padding: 10px 12px; }
+    #list-view .repo-body { flex-basis: calc(100% - 52px); }
+    #list-view.organizing .repo-body { flex-basis: calc(100% - 78px); }
+    .pin-button, .repo-menu summary { min-width: 44px; min-height: 44px; }
+    .attention-item { align-items: flex-start; }
+    .repo-signals { margin-left: 28px; max-width: none; justify-content: flex-start; }
+    .repo-actions { margin-left: auto; }
+    .toolbar input { flex-basis: 100%; }
+    .add-form input { min-width: 0; }
+  }
 
   .add-form {
     background: var(--surface);
@@ -147,6 +232,7 @@
 
   /* ---- Repo cards ---- */
   .repo-list { display: flex; flex-direction: column; gap: 8px; }
+  .repo-list[hidden] { display: none; }
 
   .repo-card {
     background: var(--surface);
@@ -156,7 +242,6 @@
     display: flex;
     align-items: center;
     gap: 12px;
-    cursor: pointer;
     transition: border-color .12s;
   }
   .repo-card:hover { border-color: var(--accent); }
@@ -410,7 +495,8 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; } }
-  .repo-card, .commit-row { animation: fadeIn .18s ease; }
+  .commit-row { animation: fadeIn .18s ease; }
+  @media (prefers-reduced-motion: reduce) { .commit-row { animation: none; } }
 </style>
 </head>
 <body>
@@ -432,32 +518,76 @@
 </header>
 
 <main id="list-view">
+  <div class="overview">
+    <div><h2>Projects</h2><p>A quieter home for your Git repositories.</p></div>
+    <button class="btn btn-ghost" onclick="openCollectionDialog()">+ Collection</button>
+  </div>
+  <div class="toolbar">
+    <input id="repo-search" type="search" aria-label="Search projects by name or path" placeholder="Search projects by name or path…" oninput="render()">
+    <label>Group by <select id="repo-grouping" onchange="setGrouping(this.value)"><option value="collection">Collection</option><option value="folder">Folder</option><option value="project">Git project</option><option value="none">None</option></select></label>
+    <label>Sort <select id="repo-sort" onchange="setSort(this.value)"><option value="name">Name</option><option value="recent">Recent commit</option></select></label>
+  </div>
+  <div class="filters" id="repo-filters" aria-label="Project filters"></div>
+  <div class="refresh-bar">
+    <p id="local-freshness" role="status">Checking local Git…</p>
+    <button id="github-refresh" class="btn btn-ghost" onclick="refreshGithubAll(true)">Check GitHub</button>
+    <button id="clear-filters" class="btn btn-ghost" onclick="clearRepoFilters()" hidden>Clear search and filters</button>
+  </div>
+  <details class="attention-panel" id="attention-panel">
+    <summary id="attention-heading">GitHub attention · not checked</summary>
+    <div id="attention-list"></div>
+  </details>
+  <div class="section-header">
+    <h2 id="visible-count" role="status" aria-live="polite">Tracked repositories</h2>
+    <div><button id="organize-button" class="btn btn-ghost" onclick="toggleOrganizing()" aria-pressed="false">Organize repos</button> <button id="local-refresh" class="btn btn-ghost" onclick="revalidateAll()">Refresh local Git</button></div>
+  </div>
+  <div class="bulk-bar" id="bulk-bar" hidden>
+    <span id="selection-count" role="status">0 selected</span>
+    <button class="btn btn-ghost" onclick="selectMatching()">Select matching</button>
+    <select id="bulk-collection" class="collection-select" aria-label="Collection for selected repos"></select>
+    <button id="bulk-move" class="btn btn-ghost" onclick="moveSelected()">Move selected</button>
+    <button class="btn btn-ghost" onclick="clearSelection()">Clear selection</button>
+    <button class="btn btn-ghost" onclick="toggleOrganizing()">Done</button>
+  </div>
+  <div class="repo-list" id="repo-list"></div>
+  <p class="local-note" id="local-note">Pins and collections are saved only in this browser. Removing a repo here never deletes its files.</p>
   <div class="add-form">
-    <input id="path-input" type="text" placeholder="/Users/you/dev/myproject  or  ~/dev/myproject" autocomplete="off" spellcheck="false">
+    <input id="path-input" aria-label="Repository path to track" type="text" placeholder="/Users/you/dev/myproject  or  ~/dev/myproject" autocomplete="off" spellcheck="false">
     <button class="btn" id="add-btn" onclick="addRepo()">Add repo</button>
   </div>
 
-  <div class="section-header">
-    <h2>Tracked repositories</h2>
-    <button class="btn btn-ghost" onclick="revalidateAll()">Re-validate all</button>
-  </div>
-
-  <div class="repo-list" id="repo-list"></div>
 </main>
 
+<dialog id="collection-dialog" aria-labelledby="collection-dialog-title">
+  <form onsubmit="saveCollection(event)">
+    <h2 id="collection-dialog-title">New collection</h2>
+    <label for="collection-name">Collection name</label>
+    <input id="collection-name" required maxlength="60" autocomplete="off">
+    <p id="collection-error" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('collection-dialog').close()">Cancel</button>
+      <button class="btn" type="submit">Save collection</button>
+    </div>
+  </form>
+</dialog>
+
 <main id="detail-view" style="display:none">
-  <button class="btn btn-ghost" id="back-btn" onclick="closeDetail()">← All repos</button>
-  <div id="detail-header"></div>
-  <div class="tabs">
-    <button class="tab active" data-tab="commits" onclick="switchTab('commits')">Commits</button>
-    <button class="tab" data-tab="changes" onclick="switchTab('changes')">Changes <span id="changes-count"></span></button>
-    <button class="tab" data-tab="branches" onclick="switchTab('branches')">Branches</button>
-    <button class="tab" data-tab="github" onclick="switchTab('github')">GitHub <span id="github-count"></span></button>
+  <div class="refresh-bar">
+    <button class="btn btn-ghost" id="back-btn" onclick="closeDetail()">← All repos</button>
+    <button id="detail-refresh" class="btn btn-ghost" onclick="showDetail(detailPath, true)">Refresh local detail</button>
+    <span id="detail-freshness" class="freshness"></span>
   </div>
-  <div id="tab-commits" class="tab-pane"></div>
-  <div id="tab-changes" class="tab-pane" style="display:none"></div>
-  <div id="tab-branches" class="tab-pane" style="display:none"></div>
-  <div id="tab-github" class="tab-pane" style="display:none"></div>
+  <div id="detail-header"></div>
+  <div class="tabs" role="tablist" aria-label="Repository details">
+    <button id="tab-button-commits" role="tab" aria-controls="tab-commits" aria-selected="true" class="tab active" data-tab="commits" onclick="switchTab('commits')">Commits</button>
+    <button id="tab-button-changes" role="tab" aria-controls="tab-changes" aria-selected="false" class="tab" data-tab="changes" onclick="switchTab('changes')">Changes <span id="changes-count"></span></button>
+    <button id="tab-button-branches" role="tab" aria-controls="tab-branches" aria-selected="false" class="tab" data-tab="branches" onclick="switchTab('branches')">Branches</button>
+    <button id="tab-button-github" role="tab" aria-controls="tab-github" aria-selected="false" class="tab" data-tab="github" onclick="switchTab('github')">GitHub <span id="github-count"></span></button>
+  </div>
+  <div id="tab-commits" role="tabpanel" aria-labelledby="tab-button-commits" class="tab-pane"></div>
+  <div id="tab-changes" role="tabpanel" aria-labelledby="tab-button-changes" class="tab-pane" style="display:none"></div>
+  <div id="tab-branches" role="tabpanel" aria-labelledby="tab-button-branches" class="tab-pane" style="display:none"></div>
+  <div id="tab-github" role="tabpanel" aria-labelledby="tab-button-github" class="tab-pane" style="display:none"></div>
 </main>
 
 <div id="palette-overlay" onclick="if(event.target===this)closePalette()">
@@ -479,7 +609,7 @@
       .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   }
 
-  const HOME_DIR = '__HOME__';
+  const HOME_DIR = "__HOME__";
   function shortHome(p) {
     if (p === HOME_DIR) return '~';
     if (HOME_DIR !== '__HOME__' && p.startsWith(HOME_DIR + '/')) return '~' + p.slice(HOME_DIR.length);
@@ -503,94 +633,492 @@
     setTimeout(() => { el.className = 'toast'; }, 2500);
   }
 
+  const ORGANIZATION_KEY = 'repo-root-tracker.organization.v1';
+  let organization = {pins: [], collections: [], assignments: {}, collapsed: [], grouping: 'collection', sort: 'name', githubEnabled: false};
+  let storageWarning = '';
+  try {
+    const saved = JSON.parse(localStorage.getItem(ORGANIZATION_KEY));
+    if (saved !== null) {
+      if (!saved || !Array.isArray(saved.pins) || !saved.pins.every(p => typeof p === 'string') ||
+          !Array.isArray(saved.collections) || !saved.collections.every(c => c && typeof c.id === 'string' && typeof c.name === 'string') ||
+          !saved.assignments || typeof saved.assignments !== 'object' || Array.isArray(saved.assignments) ||
+          !Object.values(saved.assignments).every(id => typeof id === 'string') ||
+          !Array.isArray(saved.collapsed) || !saved.collapsed.every(id => typeof id === 'string')) throw new Error('Invalid preferences');
+      organization = {...organization, ...saved};
+      if (!['collection', 'folder', 'project', 'none'].includes(organization.grouping)) organization.grouping = 'collection';
+      if (!['name', 'recent'].includes(organization.sort)) organization.sort = 'name';
+    }
+  } catch { storageWarning = 'Saved organization could not be loaded. Changes will be kept for this session until they can be saved.'; }
+  let repoFilter = 'all';
+  let editingCollection = null;
+  let organizing = false, refreshingLocal = false, refreshingGithub = false;
+  let viewSignature = '', attentionAutoOpened = false;
+  const RESUME_COOLDOWN_MS = 60000;
+  let resumeRefreshing = false, lastResumeRefreshAt = 0;
+  const searchCollapsed = new Set(), selectedRepos = new Set(), githubTasks = new Map();
+  let matchingEntries = [];
+  const FILTERS = [['all', 'All'], ['pinned', '★ Pinned'], ['changed', 'Changed'], ['sync', 'Sync needed'], ['attention', 'GitHub attention'], ['unavailable', 'Unavailable']];
+
+  function ageLabel(date) {
+    const age = Math.max(0, Date.now() - Date.parse(date));
+    if (!Number.isFinite(age)) return 'not checked';
+    const minutes = Math.floor(age / 60000);
+    return minutes < 1 ? 'just now' : minutes < 60 ? minutes + 'm ago' : minutes < 1440 ? Math.floor(minutes / 60) + 'h ago' : Math.floor(minutes / 1440) + 'd ago';
+  }
+
+  function checkedTime(date, prefix = 'Checked') {
+    return date ? `<span class="freshness">${prefix} <time data-checked="${escapeHtml(date)}" datetime="${escapeHtml(date)}" title="${escapeHtml(date)}">${ageLabel(date)}</time></span>` : '<span class="freshness">Not checked</span>';
+  }
+
+  function prReasons(pr) {
+    const reasons = [];
+    if (pr.ci && pr.ci.state === 'fail') {
+      const count = pr.ci.failing || (pr.ci.total - pr.ci.passing);
+      reasons.push(count + ' failing check' + (count === 1 ? '' : 's'));
+    }
+    if (pr.review_decision === 'CHANGES_REQUESTED') reasons.push('Changes requested');
+    if (pr.mergeable === 'CONFLICTING') reasons.push('Merge conflict');
+    return reasons;
+  }
+
+  async function fetchGithub(repo, refresh = false) {
+    const slug = repo._status && repo._status.github_repo;
+    const key = slug || repo.path;
+    if (githubTasks.has(key)) return githubTasks.get(key);
+    const task = (async () => {
+      let info;
+      try {
+        const res = await fetch('/api/github?path=' + encodeURIComponent(repo.path) + (refresh ? '&refresh=1' : ''));
+        if (!res.ok) throw new Error('GitHub request failed');
+        info = await res.json();
+        if (!Array.isArray(info.prs) || !Array.isArray(info.issues)) throw new Error('Invalid GitHub response');
+        info.errors = info.errors || [];
+      } catch {
+        info = {has_github: false, gh_unavailable: true, prs: [], issues: [], errors: ['GitHub could not be checked. Check the server, gh authentication, connectivity, and repository access.']};
+      }
+      repos.forEach(r => {
+        if (r === repo || (slug && r._status && r._status.github_repo === slug)) {
+          r._github = info;
+          r._githubCheckedAt = new Date().toISOString();
+        }
+      });
+      return info;
+    })();
+    githubTasks.set(key, task);
+    render();
+    try { return await task; }
+    finally { githubTasks.delete(key); render(); }
+  }
+
+  async function refreshGithubAll(force = false) {
+    if (refreshingGithub) return;
+    if (force) { organization.githubEnabled = true; persistOrganization(); }
+    refreshingGithub = true;
+    render();
+    const unique = new Map();
+    repos.forEach(r => { if (r._status && !r._status.error && r._status.github_repo) unique.set(r._status.github_repo, r); });
+    const queue = [...unique.values()];
+    try {
+      await Promise.all(Array.from({length: Math.min(3, queue.length)}, async () => {
+        while (queue.length) await fetchGithub(queue.shift(), force);
+      }));
+    } finally { refreshingGithub = false; render(); }
+  }
+
+  function renderAttention() {
+    const seen = new Set(), items = [];
+    let unknown = 0, partial = 0, checked = 0;
+    repos.forEach((r, i) => {
+      const slug = r._status && r._status.github_repo;
+      if (!slug || seen.has(slug)) return;
+      seen.add(slug);
+      const info = r._github;
+      if (!info) { unknown++; return; }
+      checked++;
+      if (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached) partial++;
+      (info.prs || []).forEach(pr => { const reasons = prReasons(pr); if (reasons.length) items.push({r, i, pr, reasons}); });
+    });
+    const heading = document.getElementById('attention-heading');
+    heading.textContent = 'GitHub attention · ' + (items.length ? items.length + ' PR' + (items.length === 1 ? '' : 's') + ' with blockers' : checked ? 'no known PR blockers' : 'not checked') + (refreshingGithub ? ' · checking…' : '') + (unknown ? ' · ' + unknown + ' unchecked' : '') + (partial ? ' · ' + partial + ' incomplete' : '');
+    const panel = document.getElementById('attention-panel');
+    if (items.length && !attentionAutoOpened) { panel.open = true; attentionAutoOpened = true; }
+    document.getElementById('attention-list').innerHTML = items.slice(0, 5).map(({r, pr, reasons}) =>
+      `<div class="attention-item"><div><strong>${escapeHtml(repoName(r.path))} · PR #${pr.number}${pr.draft ? ' · draft' : ''}</strong><p>${escapeHtml(pr.title)}</p><p>${escapeHtml(reasons.join(' · '))}</p>${checkedTime(r._github.checked_at, 'GitHub checked')}</div><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">View PR ↗</a></div>`).join('') +
+      (items.length > 5 ? `<p class="local-note">${items.length - 5} more PRs with blockers. Use the GitHub attention filter and open a repo’s GitHub tab.</p>` : '') +
+      `<p class="local-note">${unknown || !checked ? 'Check GitHub to load PR signals. ' : ''}${partial ? 'Some GitHub data is unavailable; absence of a blocker is not an all-clear. ' : ''}This is repository-wide PR health, not a personalized review queue. Issues and ordinary local changes are not treated as blockers.</p>`;
+    const button = document.getElementById('github-refresh');
+    button.disabled = refreshingGithub || refreshingLocal || repos.some(r => !r._status || r._checking);
+    button.textContent = refreshingGithub ? 'Checking GitHub…' : organization.githubEnabled ? 'Refresh GitHub' : 'Check GitHub';
+  }
+
+  function toggleOrganizing() {
+    organizing = !organizing;
+    if (!organizing) selectedRepos.clear();
+    render();
+  }
+  function selectRepo(i, checked) {
+    checked ? selectedRepos.add(repos[i].path) : selectedRepos.delete(repos[i].path);
+    render();
+  }
+  function selectMatching() { matchingEntries.forEach(({r}) => selectedRepos.add(r.path)); render(); }
+  function clearSelection() { selectedRepos.clear(); render(); }
+  function moveSelected() {
+    const id = document.getElementById('bulk-collection').value;
+    if (!id || !selectedRepos.size) return;
+    if (id !== 'unsorted' && !organization.collections.some(c => c.id === id)) return;
+    selectedRepos.forEach(path => {
+      if (id === 'unsorted') delete organization.assignments[path];
+      else organization.assignments[path] = id;
+    });
+    toast('Moved ' + selectedRepos.size + ' repos', 'success');
+    selectedRepos.clear();
+    persistOrganization();
+  }
+
+  function renderBulk() {
+    selectedRepos.forEach(path => { if (!repos.some(r => r.path === path)) selectedRepos.delete(path); });
+    const outside = [...selectedRepos].filter(path => !matchingEntries.some(({r}) => r.path === path)).length;
+    document.getElementById('list-view').classList.toggle('organizing', organizing);
+    document.getElementById('organize-button').setAttribute('aria-pressed', String(organizing));
+    document.getElementById('bulk-bar').hidden = !organizing;
+    document.getElementById('selection-count').textContent = selectedRepos.size + ' selected' + (outside ? ' · ' + outside + ' outside current filter' : '');
+    const select = document.getElementById('bulk-collection');
+    const value = select.value;
+    select.innerHTML = '<option value="">Choose collection…</option><option value="unsorted">Unsorted</option>' + organization.collections.map(c => `<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+    select.value = value;
+    document.getElementById('bulk-move').disabled = !selectedRepos.size;
+  }
+
+  function persistOrganization() {
+    try {
+      localStorage.setItem(ORGANIZATION_KEY, JSON.stringify(organization));
+      storageWarning = '';
+    } catch { storageWarning = 'Browser storage is unavailable. Organization changes last only for this session.'; }
+    render();
+  }
+
+  function setGrouping(value) { organization.grouping = value; persistOrganization(); }
+  function setSort(value) { organization.sort = value; persistOrganization(); }
+  function setFilter(value) { repoFilter = value; render(); }
+
+  function togglePin(i) {
+    const path = repos[i].path;
+    organization.pins = organization.pins.includes(path)
+      ? organization.pins.filter(p => p !== path) : [...organization.pins, path];
+    persistOrganization();
+  }
+
+  function assignCollection(i, id) {
+    if (id) organization.assignments[repos[i].path] = id;
+    else delete organization.assignments[repos[i].path];
+    persistOrganization();
+  }
+
+  function toggleCollection(key) {
+    if (document.getElementById('repo-search').value.trim() || repoFilter !== 'all') {
+      searchCollapsed.has(key) ? searchCollapsed.delete(key) : searchCollapsed.add(key);
+      render();
+      return;
+    }
+    organization.collapsed = organization.collapsed.includes(key)
+      ? organization.collapsed.filter(k => k !== key) : [...organization.collapsed, key];
+    persistOrganization();
+  }
+
+  function openCollectionDialog(index = null) {
+    editingCollection = index;
+    document.getElementById('collection-dialog-title').textContent = index === null ? 'New collection' : 'Rename collection';
+    document.getElementById('collection-name').value = index === null ? '' : organization.collections[index].name;
+    document.getElementById('collection-error').textContent = '';
+    document.getElementById('collection-dialog').showModal();
+    document.getElementById('collection-name').focus();
+  }
+
+  function saveCollection(event) {
+    event.preventDefault();
+    const name = document.getElementById('collection-name').value.trim();
+    if (!name || organization.collections.some((c, i) => i !== editingCollection && c.name.toLowerCase() === name.toLowerCase())) {
+      document.getElementById('collection-error').textContent = 'Choose a nonempty, unique collection name.';
+      return;
+    }
+    if (editingCollection === null) organization.collections.push({id: Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''), name});
+    else organization.collections[editingCollection].name = name;
+    document.getElementById('collection-dialog').close();
+    persistOrganization();
+    toast('Collection saved. Use Organize repos to move several repos at once.', 'success');
+  }
+
+  function deleteCollection(index) {
+    const collection = organization.collections[index];
+    if (!confirm('Delete collection “' + collection.name + '”? Its repos will move to Unsorted; no files will be deleted.')) return;
+    organization.collections.splice(index, 1);
+    for (const [path, id] of Object.entries(organization.assignments)) {
+      if (id === collection.id) delete organization.assignments[path];
+    }
+    organization.collapsed = organization.collapsed.filter(k => k !== 'collection:' + collection.id);
+    persistOrganization();
+  }
+
+  function matchesFilter(r, filter) {
+    const s = r._status;
+    if (filter === 'pinned') return organization.pins.includes(r.path);
+    if (filter === 'changed') return !!(s && !s.error && !s.gone && s.dirty && !s.dirty.is_clean);
+    if (filter === 'sync') return !!(s && !s.error && !s.gone && s.sync && s.sync.has_upstream && (s.sync.ahead || s.sync.behind));
+    if (filter === 'attention') return !!(r._github && (r._github.prs || []).some(pr => prReasons(pr).length));
+    if (filter === 'unavailable') return !!(s && (s.error || s.gone));
+    return true;
+  }
+
+  function filterCount(candidates, key) {
+    const count = candidates.filter(r => matchesFilter(r, key)).length;
+    const unknown = key === 'attention' && candidates.some(r => !r._status || (r._status.github_repo && (!r._github || r._github.gh_unavailable || (r._github.errors && r._github.errors.length) || r._github.pr_limit_reached)));
+    return unknown ? (count ? count + ' + ?' : '?') : count;
+  }
+
+  function repoName(path) { return path.split('/').filter(Boolean).pop() || path; }
+
+  function groupedRepos(entries) {
+    const groups = new Map();
+    const add = (key, name, index = null) => {
+      if (!groups.has(key)) groups.set(key, {key, name, index, entries: []});
+      return groups.get(key);
+    };
+    if (entries.some(({r}) => organization.pins.includes(r.path))) add('pinned', '★ Pinned');
+    if (organization.grouping === 'collection' && repoFilter === 'all' && !document.getElementById('repo-search').value.trim()) {
+      organization.collections.forEach((c, i) => add('collection:' + c.id, c.name, i));
+    }
+    for (const entry of entries) {
+      const {r} = entry;
+      if (organization.pins.includes(r.path)) { add('pinned', '★ Pinned').entries.push(entry); continue; }
+      if (organization.grouping === 'project') {
+        const status = r._status || {};
+        add('project:' + (status.project_id || r.path), repoName(status.project_path || r.path)).entries.push(entry);
+      } else if (organization.grouping === 'folder') {
+        const folder = r.path.slice(0, r.path.lastIndexOf('/')) || '/';
+        add('folder:' + folder, shortHome(folder)).entries.push(entry);
+      } else if (organization.grouping === 'none') {
+        add('all', 'Projects').entries.push(entry);
+      } else {
+        const index = organization.collections.findIndex(c => c.id === organization.assignments[r.path]);
+        const c = organization.collections[index];
+        add(c ? 'collection:' + c.id : 'unsorted', c ? c.name : 'Unsorted', c ? index : null).entries.push(entry);
+      }
+    }
+    return [...groups.values()];
+  }
+
   /* ---------- list view ---------- */
   async function load() {
     const res = await fetch('/api/repos');
     repos = (await res.json()).map(r => ({...r, _status: null}));
     render();
-    repos.forEach((_, i) => fetchStatus(i));
+    checkLocalRepos().then(() => {
+      if (organization.githubEnabled) refreshGithubAll();
+    });
+  }
+
+  async function runLimited(items, work) {
+    const queue = [...items];
+    await Promise.all(Array.from({length: Math.min(3, queue.length)}, async () => {
+      while (queue.length) await work(queue.shift());
+    }));
+  }
+
+  async function checkLocalRepos() {
+    await runLimited(repos, async repo => {
+      const i = repos.indexOf(repo);
+      if (i !== -1) await fetchStatus(i);
+    });
+  }
+
+  async function refreshOnReturn() {
+    if (document.visibilityState !== 'visible' || detailPath || organizing || document.querySelector('dialog[open]') || resumeRefreshing || refreshingLocal || refreshingGithub || githubTasks.size || !repos.length || repos.some(r => !r._status || r._checking)) return;
+    const now = Date.now();
+    if (lastResumeRefreshAt && now >= lastResumeRefreshAt && now - lastResumeRefreshAt < RESUME_COOLDOWN_MS) return;
+    const stale = date => !date || !Number.isFinite(Date.parse(date)) || now < Date.parse(date) || now - Date.parse(date) >= RESUME_COOLDOWN_MS;
+    const localDue = repos.some(r => stale(r._checkedAt));
+    const githubDue = organization.githubEnabled && repos.some(r => r._status.github_repo && !r._status.error && stale(r._github?.checked_at || r._githubCheckedAt));
+    if (!localDue && !githubDue) return;
+    resumeRefreshing = true;
+    lastResumeRefreshAt = now;
+    try {
+      if (localDue) await revalidateAll(true);
+      if (organization.githubEnabled && (localDue || githubDue)) await refreshGithubAll();
+    } finally { resumeRefreshing = false; }
   }
 
   async function fetchStatus(i) {
-    try {
-      const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repos[i].path));
-      if (res.status === 410) {
-        repos[i]._status = {error: true, gone: true, detail: (await res.json()).error};
-      } else {
-        repos[i]._status = res.ok ? await res.json() : {error: true};
-      }
-    } catch { repos[i]._status = {error: true}; }
+    const repo = repos[i];
+    if (!repo) return;
+    const request = (repo._statusRequest || 0) + 1;
+    repo._statusRequest = request;
+    repo._checking = true;
     render();
+    try {
+      const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repo.path));
+      const data = await res.json();
+      if (repo._statusRequest !== request) return;
+      repo._status = res.ok ? data : {error: true, gone: res.status === 410, detail: data.error};
+      if (res.ok && Object.hasOwn(data, 'github_repo') && repo._github && repo._github.repo !== data.github_repo) delete repo._github;
+      repo._checkedAt = data.checked_at || new Date().toISOString();
+    } catch {
+      if (repo._statusRequest === request) { repo._status = {error: true, detail: 'Could not check local Git'}; repo._checkedAt = new Date().toISOString(); }
+    } finally {
+      if (repo._statusRequest === request) repo._checking = false;
+      render();
+    }
   }
 
   function dirtyLabel(d) {
     const parts = [];
-    if (d.staged) parts.push(d.staged + ' staged');
-    if (d.modified) parts.push(d.modified + ' modified');
-    if (d.untracked) parts.push(d.untracked + ' untracked');
+    if (d.kinds && Object.keys(d.kinds).length) {
+      Object.entries(d.kinds).forEach(([kind, count]) => { if (count) parts.push(count + ' ' + kind); });
+      if (d.staged) parts.push(d.staged + ' staged');
+    } else {
+      if (d.staged) parts.push(d.staged + ' staged');
+      if (d.modified) parts.push(d.modified + ' modified');
+      if (d.untracked) parts.push(d.untracked + ' untracked');
+    }
     return parts.join(' · ') || 'dirty';
   }
 
+  function renderRepo(r, i) {
+    const s = r._status;
+    const pinned = organization.pins.includes(r.path);
+    const name = escapeHtml(repoName(r.path));
+    let dot = 'status-unknown', label = 'Checking…', tone = '';
+    if (s && (s.gone || s.error)) { dot = 'status-missing'; label = s.gone ? 'Gone from disk' : 'Status unavailable'; tone = 'unavailable'; }
+    else if (s && s.dirty) {
+      dot = s.dirty.is_clean ? 'status-ok' : 'status-dirty';
+      label = s.dirty.is_clean ? 'Working tree clean' : dirtyLabel(s.dirty);
+      tone = s.dirty.is_clean ? '' : 'changed';
+    } else if (s) label = 'Status unknown';
+    const sync = s && s.sync;
+    const syncLabel = sync && sync.has_upstream && (sync.ahead || sync.behind)
+      ? `<span class="repo-label" title="${sync.ahead} commits ahead, ${sync.behind} behind cached upstream refs. Last fetch in this checkout: ${s.last_fetch_at ? ageLabel(s.last_fetch_at) : 'unknown'}.">↑${sync.ahead} ↓${sync.behind}</span>` : '';
+    const collectionId = organization.assignments[r.path];
+    const options = '<option value="">Unsorted</option>' + organization.collections.map(c =>
+      `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
+    const stale = s && s.stale_branches && s.stale_branches.length
+      ? `<span class="repo-label stale" title="${escapeHtml(s.stale_branches.map(b => b.name).join(', '))}">${s.stale_branches.length} stale</span>` : '';
+    const info = r._github;
+    const blocked = info ? (info.prs || []).filter(pr => prReasons(pr).length).length : 0;
+    const checkingGithub = githubTasks.has((s && s.github_repo) || r.path);
+    const incompleteGithub = info && (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached);
+    const githubLabel = checkingGithub ? 'GitHub checking…' : !info ? (s && s.github_repo ? 'GitHub not checked' : '') : blocked ? blocked + ' PR' + (blocked === 1 ? '' : 's') + ' with blockers' + (incompleteGithub ? ' · incomplete' : '') : incompleteGithub ? 'GitHub incomplete' : info.has_github ? 'No known PR blockers' : '';
+    const githubSignal = githubLabel ? `<a class="gh-signal ${blocked ? '' : 'pending'}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
+    return `<article class="repo-card" id="card-${i}">
+      ${organizing ? `<input class="repo-select" type="checkbox" id="select-${encodeURIComponent(r.path)}" aria-label="Select ${name}" ${selectedRepos.has(r.path) ? 'checked' : ''} onchange="selectRepo(${i}, this.checked)">` : ''}
+      <button id="pin-${encodeURIComponent(r.path)}" class="pin-button" aria-label="${pinned ? 'Unpin' : 'Pin'} ${name}" aria-pressed="${pinned}" onclick="togglePin(${i})">${pinned ? '★' : '☆'}</button>
+      <div class="repo-body">
+        <a id="repo-link-${encodeURIComponent(r.path)}" class="repo-name" href="#/repo/${encodeURIComponent(r.path)}" title="${escapeHtml(r.path)}">${name}</a>
+        <div class="repo-path" title="${escapeHtml(r.path)}">${escapeHtml(shortHome(r.path))}</div>
+        ${s && s.branch ? `<div class="repo-meta"><span class="branch">${escapeHtml(s.branch)}</span>${s.last_commit && s.last_commit.relative ? `<span class="rel" title="Last commit">${escapeHtml(s.last_commit.relative)}</span>` : ''}${s.is_worktree ? `<span class="rel">Worktree of ${escapeHtml(repoName(s.project_path || r.path))}</span>` : ''}</div>` : ''}
+      </div>
+      <div class="repo-signals"><span class="repo-status ${dot}" aria-hidden="true"></span><span class="repo-label ${tone}">${escapeHtml(label)}</span>${syncLabel}${stale}${githubSignal}${repoCheckingLabel(r)}${info && info.checked_at ? checkedTime(info.checked_at, 'GitHub checked') : ''}</div>
+      <div class="repo-actions"><details class="repo-menu" data-path="${escapeHtml(r.path)}">
+        <summary id="menu-${encodeURIComponent(r.path)}" aria-label="Actions for ${name}">•••</summary>
+        <div class="menu-panel">
+          <label for="collection-${i}">Collection</label>
+          <select class="collection-select" id="collection-${i}" onchange="assignCollection(${i}, this.value)">${options}</select>
+          <button class="btn btn-ghost" onclick="validate(${i})">Re-check status</button>
+          <button class="btn btn-ghost btn-danger" onclick="removeRepo(${i})">Remove from tracker</button>
+        </div>
+      </details></div>
+    </article>`;
+  }
+
+  function repoCheckingLabel(r) {
+    return r._checking ? '<span class="freshness">Refreshing local Git…</span>' : checkedTime(r._checkedAt, r._status && r._status.error ? 'Local check attempted' : 'Local checked');
+  }
+
+  function groupCollapsed(key) {
+    return document.getElementById('repo-search').value.trim() || repoFilter !== 'all'
+      ? searchCollapsed.has(key) : organization.collapsed.includes(key);
+  }
+
+  function renderFamilyEntries(group) {
+    if (organization.grouping === 'project') return group.entries.map(({r, i}) => renderRepo(r, i)).join('');
+    const families = new Map();
+    group.entries.forEach(entry => {
+      const key = (entry.r._status && entry.r._status.project_id) || entry.r.path;
+      if (!families.has(key)) families.set(key, []);
+      families.get(key).push(entry);
+    });
+    return [...families.entries()].map(([id, entries]) => {
+      if (entries.length === 1) return renderRepo(entries[0].r, entries[0].i);
+      entries.sort((a, b) => Number(!!a.r._status.is_worktree) - Number(!!b.r._status.is_worktree));
+      const key = 'family:' + group.key + ':' + id;
+      const collapsed = groupCollapsed(key);
+      const control = 'family-' + encodeURIComponent(key);
+      const path = entries[0].r._status.project_path || entries[0].r.path;
+      return `<div class="project-family"><button id="toggle-${encodeURIComponent(key)}" class="collection-toggle" aria-expanded="${!collapsed}" aria-controls="${control}" onclick="toggleCollection(${escapeHtml(JSON.stringify(key))})">${collapsed ? '▸' : '▾'} ${escapeHtml(repoName(path))} · ${entries.length} tracked checkouts</button><div id="${control}" class="repo-list" ${collapsed ? 'hidden' : ''}>${entries.map(({r, i}) => renderRepo(r, i)).join('')}</div></div>`;
+    }).join('');
+  }
+
   function render() {
-    // Don't clobber the list while the user is in detail view
     if (detailPath) return;
     const list = document.getElementById('repo-list');
     const badge = document.getElementById('count-badge');
     badge.textContent = repos.length + ' repo' + (repos.length !== 1 ? 's' : '');
-
-    if (!repos.length) {
-      list.innerHTML = `<div class="empty">
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-          <rect x="8" y="12" width="24" height="20" rx="3" stroke="#8b949e" stroke-width="1.5"/>
-          <path d="M14 12V9a2 2 0 012-2h8a2 2 0 012 2v3" stroke="#8b949e" stroke-width="1.5"/>
-          <path d="M20 20v4M18 22h4" stroke="#8b949e" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-        <p>No repos tracked yet. Add one above, or press <kbd>⌘K</kbd>.</p>
-      </div>`;
+    document.getElementById('repo-grouping').value = organization.grouping;
+    document.getElementById('repo-sort').value = organization.sort;
+    document.getElementById('local-note').textContent = storageWarning || 'Pins and collections are saved only in this browser. Removing a repo here never deletes its files.';
+    const openMenus = [...list.querySelectorAll('details[open]')].map(el => el.dataset.path);
+    const focused = document.activeElement;
+    const focusId = (list.contains(focused) || document.getElementById('repo-filters').contains(focused)) ? focused.id : '';
+    const q = document.getElementById('repo-search').value.trim().toLowerCase();
+    const signature = repoFilter + '\\0' + q;
+    if (signature !== viewSignature) { searchCollapsed.clear(); viewSignature = signature; }
+    document.getElementById('clear-filters').hidden = !q && repoFilter === 'all';
+    const candidates = repos.filter(r => !q || r.path.toLowerCase().includes(q));
+    document.getElementById('repo-filters').innerHTML = FILTERS.map(([key, name]) =>
+      `<button id="filter-${key}" class="btn btn-ghost filter" aria-pressed="${repoFilter === key}" onclick="setFilter('${key}')">${name}<span>${filterCount(candidates, key)}</span></button>`).join('');
+    const entries = repos.map((r, i) => ({r, i})).filter(({r}) => (!q || r.path.toLowerCase().includes(q)) && matchesFilter(r, repoFilter));
+    entries.sort((a, b) => {
+      if (organization.sort === 'recent') {
+        const date = r => Date.parse(r._status && r._status.last_commit && r._status.last_commit.date) || 0;
+        const delta = date(b.r) - date(a.r);
+        if (delta) return delta;
+      }
+      return repoName(a.r.path).localeCompare(repoName(b.r.path)) || a.r.path.localeCompare(b.r.path);
+    });
+    matchingEntries = entries;
+    renderBulk();
+    renderAttention();
+    const pending = repos.filter(r => !r._status || r._checking).length;
+    const dates = repos.map(r => r._checkedAt).filter(Boolean).sort();
+    const errors = repos.filter(r => r._status && r._status.error).length;
+    document.getElementById('local-freshness').innerHTML = (pending ? 'Checking ' + pending + ' local repos. ' : dates.length ? checkedTime(dates[0], 'Local Git checked') + ' · ' : '') + (errors ? errors + ' local checks unavailable. ' : '') + 'Ahead/behind uses local refs; refreshing does not fetch remotes.';
+    document.getElementById('local-refresh').disabled = refreshingLocal;
+    document.getElementById('local-refresh').textContent = refreshingLocal ? 'Refreshing…' : 'Refresh local Git';
+    document.getElementById('visible-count').textContent = entries.length + ' of ' + repos.length + ' projects' + (pending ? ' · checking ' + pending : '');
+    const groups = groupedRepos(entries);
+    if (!entries.length && !groups.length) {
+      list.innerHTML = `<div class="empty"><p>${repos.length ? 'No projects match your search or filter.' : 'No repos tracked yet. Add a repository path below.'}</p></div>`;
       return;
     }
-
-    list.innerHTML = repos.map((r, i) => {
-      const s = r._status;
-      let dot = 'status-unknown', label = '';
-      if (s && s.gone) { dot = 'status-missing'; label = 'gone from disk'; }
-      else if (s && s.error) { dot = 'status-missing'; label = 'error'; }
-      else if (s && s.dirty) {
-        if (s.dirty.is_clean) { dot = 'status-ok'; label = 'clean'; }
-        else { dot = 'status-dirty'; label = dirtyLabel(s.dirty); }
-      }
-      let meta = '';
-      if (s && s.branch) {
-        const c = s.last_commit || {};
-        meta = `<div class="repo-meta"><span class="branch">${escapeHtml(s.branch)}</span>`;
-        if (c.hash) meta += `<span class="rel">${c.hash} · ${c.relative || ''}</span>`;
-        meta += '</div>';
-        if (c.subject) meta += `<div class="repo-subject">${escapeHtml(c.subject)}</div>`;
-      }
-      let extra = '';
-      if (s && s.sync) {
-        extra += s.sync.has_upstream
-          ? `<span class="repo-label">↑${s.sync.ahead} ↓${s.sync.behind}</span>`
-          : '<span class="repo-label">no upstream</span>';
-      }
-      if (s && s.stale_branches && s.stale_branches.length) {
-        extra += `<span class="repo-label stale" title="${s.stale_branches.map(b => b.name).join(', ')}">${s.stale_branches.length} stale</span>`;
-      }
-      const loading = (!s) ? '<span class="repo-label"><span class="spinner"></span></span>' : '';
-      const displayPath = escapeHtml(shortHome(r.path)).replace('~', '<span class="home">~</span>');
-      return `<div class="repo-card" id="card-${i}" onclick="cardClick(event, ${i})">
-        <div class="repo-status ${dot}" title="${label}"></div>
-        <div class="repo-body">
-          <div class="repo-path">${displayPath}</div>
-          ${meta}
+    list.innerHTML = groups.map((g, n) => {
+      const collapsed = groupCollapsed(g.key);
+      const pinnedAbove = g.index !== null ? entries.filter(({r}) => organization.pins.includes(r.path) && organization.assignments[r.path] === organization.collections[g.index].id).length : 0;
+      const countLabel = pinnedAbove ? (g.entries.length + pinnedAbove) + ' · ' + pinnedAbove + ' pinned above' : g.entries.length;
+      const key = escapeHtml(JSON.stringify(g.key));
+      return `<section class="collection">
+        <div class="collection-heading">
+          <button id="toggle-${encodeURIComponent(g.key)}" class="collection-toggle" aria-expanded="${!collapsed}" aria-controls="group-${n}" onclick="toggleCollection(${key})">${collapsed ? '▸' : '▾'} ${escapeHtml(g.name)}<span class="group-count">${countLabel}</span></button>
+          ${g.index !== null ? `<button class="btn btn-ghost" aria-label="Rename ${escapeHtml(g.name)}" onclick="openCollectionDialog(${g.index})">Rename</button><button class="btn btn-ghost btn-danger" aria-label="Delete collection ${escapeHtml(g.name)}" onclick="deleteCollection(${g.index})">Delete</button>` : ''}
         </div>
-        ${label ? `<span class="repo-label">${label}</span>` : ''}${extra}${loading}
-        <div class="repo-actions">
-          <button class="btn btn-ghost" onclick="validate(${i})">check</button>
-          <button class="btn btn-ghost btn-danger" onclick="removeRepo(${i})">remove</button>
-        </div>
-      </div>`;
+        <div id="group-${n}" class="repo-list" ${collapsed ? 'hidden' : ''}>${g.entries.length ? renderFamilyEntries(g) : pinnedAbove ? '<p class="local-note">This collection’s repos are shown in Pinned above.</p>' : '<p class="local-note">Use Organize repos or a repo’s ••• menu to move repos into this collection.</p>'}</div>
+      </section>`;
     }).join('');
+    list.querySelectorAll('details').forEach(el => { el.open = openMenus.includes(el.dataset.path); });
+    if (focusId) document.getElementById(focusId)?.focus({preventScroll: true});
+  }
+
+  function clearRepoFilters() {
+    repoFilter = 'all';
+    document.getElementById('repo-search').value = '';
+    render();
   }
 
   async function addRepo() {
@@ -620,57 +1148,70 @@
     }
   }
 
-  async function validate(i) {
-    const res = await fetch('/api/repos/validate', {
-      method: 'POST', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({path: repos[i].path})
-    });
-    const data = await res.json();
-    if (!data.valid) { repos[i]._status = {error: true}; render(); return; }
-    await fetchStatus(i);
-  }
+  async function validate(i) { await fetchStatus(i); }
 
-  async function revalidateAll() {
-    await Promise.all(repos.map((_, i) => validate(i)));
-    toast('All repos re-validated', 'success');
+  async function revalidateAll(quiet = false) {
+    if (refreshingLocal) return;
+    refreshingLocal = true;
+    render();
+    try { await checkLocalRepos(); }
+    finally { refreshingLocal = false; render(); }
+    const errors = repos.filter(r => r._status && r._status.error).length;
+    if (!quiet) toast(errors ? errors + ' local checks unavailable' : 'Local Git refreshed; remote refs were not fetched', errors ? 'error' : 'success');
   }
 
   async function removeRepo(i) {
     const path = repos[i].path;
+    if (!confirm('Remove ' + repoName(path) + ' from the tracker? Its files will not be deleted.')) return;
     const res = await fetch('/api/repos', {
       method: 'DELETE', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({path})
     });
-    if (res.ok) { repos.splice(i, 1); render(); toast('Removed', 'success'); }
+    if (res.ok) { repos = repos.filter(r => r.path !== path); render(); toast('Removed', 'success'); }
+    else toast('Could not remove repo', 'error');
   }
 
   /* ---------- detail view ---------- */
   let detailPath = null;
   let detailData = null;
+  let detailRequest = 0, githubRequest = 0, activeTab = 'commits';
+  let listScrollY = 0, lastOpenedPath = null;
   let selectedCommit = 0;
   const expandedCommits = new Set();
   const expandedFiles = new Set();
 
-  function cardClick(event, i) {
-    if (event.target.closest('button')) return;
-    location.hash = '#/repo/' + encodeURIComponent(repos[i].path);
-  }
   function closeDetail() { location.hash = '#/'; }
 
   async function route() {
     const h = location.hash;
     if (h.startsWith('#/repo/')) {
-      await showDetail(decodeURIComponent(h.slice(7)));
+      const [encoded, query = ''] = h.slice(7).split('?');
+      const path = decodeURIComponent(encoded);
+      await showDetail(path);
+      if (detailPath === path && new URLSearchParams(query).get('tab') === 'github') switchTab('github');
     } else {
+      detailRequest++;
+      githubRequest++;
       detailPath = null;
+      detailData = null;
       document.getElementById('list-view').style.display = '';
       document.getElementById('detail-view').style.display = 'none';
       render();
+      const link = lastOpenedPath && document.getElementById('repo-link-' + encodeURIComponent(lastOpenedPath));
+      (link && link.getClientRects().length ? link : document.getElementById('repo-search')).focus({preventScroll: true});
+      window.scrollTo(0, listScrollY);
     }
   }
 
-  async function showDetail(path) {
+  async function showDetail(path, refresh = false) {
+    if (!path) return;
+    const request = ++detailRequest;
+    githubRequest++;
+    if (!detailPath) listScrollY = window.scrollY;
+    const tab = refresh ? activeTab : 'commits';
     detailPath = path;
+    lastOpenedPath = path;
+    detailData = null;
     selectedCommit = 0;
     expandedCommits.clear();
     expandedFiles.clear();
@@ -683,36 +1224,54 @@
     document.getElementById('tab-branches').innerHTML = '';
     document.getElementById('tab-github').innerHTML = '';
     document.getElementById('github-count').textContent = '';
+    document.getElementById('changes-count').textContent = '';
+    document.getElementById('detail-freshness').textContent = 'Checking local Git…';
+    document.getElementById('detail-refresh').disabled = true;
     githubData = null; githubLoadedForPath = null;
-    switchTab('commits');
+    switchTab(tab);
+    if (!refresh) { document.getElementById('back-btn').focus({preventScroll: true}); window.scrollTo(0, 0); }
     try {
       const res = await fetch('/api/repo?path=' + encodeURIComponent(path));
+      const data = await res.json();
+      if (detailPath !== path || request !== detailRequest) return;
       if (res.status === 410) {
-        const err = await res.json();
+        const err = data;
         document.getElementById('detail-header').innerHTML =
           `<h2>${escapeHtml(shortHome(path))}</h2>` +
           `<div class="sub" style="color:var(--red-text)">⚠ ${escapeHtml(err.error || 'repo gone from disk')}</div>` +
           `<button class="btn btn-ghost btn-danger" onclick="untrackCurrent()">Remove from tracked list</button>`;
+        document.getElementById('detail-freshness').textContent = 'Local detail unavailable';
         return;
       }
       if (!res.ok) throw new Error();
-      detailData = await res.json();
+      detailData = data;
       detailData.graph = layoutGraph(detailData.commits);
+      document.getElementById('detail-freshness').innerHTML = checkedTime(data.checked_at || new Date().toISOString(), 'Local detail checked');
       renderDetail();
+      if (refresh) {
+        const index = repos.findIndex(r => r.path === path);
+        if (index !== -1) await fetchStatus(index);
+      }
     } catch {
+      if (detailPath !== path || request !== detailRequest) return;
       document.getElementById('detail-header').innerHTML =
-        `<h2>${escapeHtml(shortHome(path))}</h2><div class="sub" style="color:var(--red-text)">could not load repo detail</div>`;
+        `<h2>${escapeHtml(shortHome(path))}</h2><div class="sub" style="color:var(--red-text)">Could not load repo detail. Use Refresh local detail to retry.</div>`;
+      document.getElementById('detail-freshness').textContent = 'Local detail unavailable';
+    } finally {
+      if (detailPath === path && request === detailRequest) document.getElementById('detail-refresh').disabled = false;
     }
   }
 
   async function untrackCurrent() {
     if (!detailPath) return;
+    const path = detailPath;
+    if (!confirm('Remove this missing repo from the tracker? No files will be deleted.')) return;
     const res = await fetch('/api/repos', {
       method: 'DELETE', headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({path: detailPath})
+      body: JSON.stringify({path})
     });
     if (res.ok) {
-      repos = repos.filter(r => r.path !== detailPath);
+      repos = repos.filter(r => r.path !== path);
       toast('Removed gone repo', 'success');
       closeDetail();
     }
@@ -725,7 +1284,7 @@
       `<h2>${escapeHtml(shortHome(d.path))}</h2>` +
       `<div class="sub" title="${escapeHtml(d.path)}">on <strong>${escapeHtml(d.branch)}</strong> · ` +
       `${d.commits.length} commits · ${d.branches.length} branches` +
-      (dirty ? ` · <span style="color:var(--yellow)">${dirty} changed</span>` : ' · clean') + '</div>';
+      (dirty ? ` · <span style="color:var(--yellow)">${dirty} changed</span>` : ' · working tree clean') + '</div>';
     document.getElementById('changes-count').textContent = dirty ? `(${dirty})` : '';
     renderCommits();
     renderChanges();
@@ -733,33 +1292,49 @@
   }
 
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach(t =>
-      t.classList.toggle('active', t.dataset.tab === name));
+    activeTab = name;
+    document.querySelectorAll('.tab').forEach(t => {
+      const selected = t.dataset.tab === name;
+      t.classList.toggle('active', selected);
+      t.setAttribute('aria-selected', String(selected));
+      t.tabIndex = selected ? 0 : -1;
+    });
     ['commits', 'changes', 'branches', 'github'].forEach(n =>
       document.getElementById('tab-' + n).style.display = n === name ? '' : 'none');
-    if (name === 'github' && detailPath && !githubLoadedForPath) loadGithub();
+    if (name === 'github' && detailPath && githubLoadedForPath !== detailPath) loadGithub();
   }
 
   let githubData = null, githubLoadedForPath = null;
 
-  async function loadGithub() {
+  async function loadGithub(refresh = false) {
+    const path = detailPath;
+    if (!path) return;
+    const request = ++githubRequest;
+    const repo = repos.find(r => r.path === path) || {path};
     const el = document.getElementById('tab-github');
     el.innerHTML = '<div class="empty"><p><span class="spinner"></span> loading from GitHub…</p></div>';
-    try {
-      const res = await fetch('/api/github?path=' + encodeURIComponent(detailPath));
-      githubData = await res.json();
-      githubLoadedForPath = detailPath;
-      renderGithub();
-    } catch {
-      el.innerHTML = '<div class="empty"><p>Could not reach GitHub.</p></div>';
-    }
+    const info = await fetchGithub(repo, refresh);
+    if (detailPath !== path || request !== githubRequest) return;
+    githubData = info;
+    githubLoadedForPath = path;
+    renderGithub();
+  }
+
+  function ciSummary(ci) {
+    if (!ci || ci.state === 'none') return 'No checks';
+    const parts = [];
+    if (ci.state === 'fail') parts.push((ci.failing || (ci.total - ci.passing)) + ' failing');
+    if (ci.pending) parts.push(ci.pending + ' pending');
+    else if (ci.state === 'pending') parts.push('Checks pending');
+    if (ci.passing) parts.push(ci.passing + ' passing');
+    return parts.join(' · ');
   }
 
   function ciBadge(ci) {
-    if (!ci || ci.state === 'none') return '<span class="ci-badge ci-none" title="no checks">–</span>';
-    if (ci.state === 'pass') return `<span class="ci-badge ci-pass" title="${ci.passing}/${ci.total} passing">✓</span>`;
-    if (ci.state === 'fail') return `<span class="ci-badge ci-fail" title="${ci.total - ci.passing}/${ci.total} failing">✗</span>`;
-    return `<span class="ci-badge ci-pending" title="${ci.passing}/${ci.total} done">…</span>`;
+    const state = ci && ci.state || 'none';
+    const label = escapeHtml(ciSummary(ci));
+    const icon = {pass: '✓', fail: '✗', pending: '…', none: '–'}[state] || '?';
+    return `<span role="img" aria-label="${label}" class="ci-badge ci-${state}" title="${label}">${icon}</span>`;
   }
 
   function renderGithub() {
@@ -767,33 +1342,39 @@
     const g = githubData;
     const total = g.prs.length + g.issues.length;
     document.getElementById('github-count').textContent = g.has_github && total ? `(${total})` : '';
+    const controls = `<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button>${checkedTime(g.checked_at, g.errors && g.errors.length ? 'GitHub check attempted' : 'GitHub checked')}</div>`;
+    const warnings = (g.errors || []).map(error => `<p class="warning-note">${escapeHtml(error)}</p>`).join('');
     if (!g.has_github) {
-      el.innerHTML = g.gh_unavailable
-        ? '<div class="empty"><p><code>gh</code> is not available — install and run <code>gh auth login</code> to see PRs and issues.</p></div>'
-        : '<div class="empty"><p>No GitHub remote for this repo.</p></div>';
+      el.innerHTML = controls + warnings + (g.gh_unavailable
+        ? '<div class="empty"><p>GitHub data is unavailable. Check gh authentication, connectivity, and repository access, then refresh.</p></div>'
+        : '<div class="empty"><p>No GitHub remote for this repo.</p></div>');
       return;
     }
-    let html = `<div class="gh-section-title">Open pull requests (${g.prs.length}) · <a href="${g.repo_url}/pulls" target="_blank" rel="noopener" style="color:var(--accent);text-transform:none">${escapeHtml(g.repo)}</a></div>`;
+    const prsUnavailable = (g.errors || []).some(error => error.startsWith('Pull requests'));
+    const issuesUnavailable = (g.errors || []).some(error => error.startsWith('Issues'));
+    let html = controls + warnings + `<div class="gh-section-title">Open pull requests (${prsUnavailable ? 'unknown' : g.prs.length}) · <a href="${escapeHtml(g.repo_url)}/pulls" target="_blank" rel="noopener" style="color:var(--accent);text-transform:none">${escapeHtml(g.repo)}</a></div>`;
     html += g.prs.length ? g.prs.map(pr =>
       `<div class="pr-row">${ciBadge(pr.ci)}
         <div class="pr-body">
-          <div class="pr-title"><a href="${pr.url}" target="_blank" rel="noopener">${escapeHtml(pr.title)}</a></div>
-          <div class="pr-meta">${pr.branch ? `<span class="branch" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0 8px;font-size:11px;color:var(--accent)">${escapeHtml(pr.branch)}</span> · ` : ''}${pr.ci.total ? `${pr.ci.passing}/${pr.ci.total} checks` : 'no checks'}</div>
+          <div class="pr-title"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">${escapeHtml(pr.title)}</a></div>
+          <div class="pr-meta">${pr.branch ? `<span class="branch" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:0 8px;font-size:11px;color:var(--accent)">${escapeHtml(pr.branch)}</span> · ` : ''}${escapeHtml(ciSummary(pr.ci))}${pr.review_decision === 'CHANGES_REQUESTED' ? ' · Changes requested' : ''}${pr.mergeable === 'CONFLICTING' ? ' · Merge conflict' : ''}${pr.draft ? ' · Draft' : ''}</div>
         </div>
         <span class="pr-num">#${pr.number}</span>
-        <a class="ext-link" href="${pr.url}" target="_blank" rel="noopener" title="open on github">↗</a>
+        <a class="ext-link" href="${escapeHtml(pr.url)}" target="_blank" rel="noopener" title="open on github">↗</a>
       </div>`).join('')
-      : '<div class="empty"><p>No open pull requests.</p></div>';
-    html += `<div class="gh-section-title">Open issues (${g.issues.length})</div>`;
+      : `<div class="empty"><p>${prsUnavailable ? 'Pull requests unavailable.' : 'No open pull requests.'}</p></div>`;
+    if (g.pr_limit_reached) html += `<p class="warning-note">Showing up to ${escapeHtml(String(g.pr_limit || 20))} open PRs. Open the repository on GitHub for the complete list.</p>`;
+    html += `<div class="gh-section-title">Open issues (${issuesUnavailable ? 'unknown' : g.issues.length})</div>`;
     html += g.issues.length ? g.issues.map(i =>
       `<div class="issue-row">
         <div class="issue-body">
-          <div class="issue-title"><a href="${i.url}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a></div>
+          <div class="issue-title"><a href="${escapeHtml(i.url)}" target="_blank" rel="noopener">${escapeHtml(i.title)}</a></div>
         </div>
         <span class="pr-num">#${i.number}</span>
-        <a class="ext-link" href="${i.url}" target="_blank" rel="noopener" title="open on github">↗</a>
+        <a class="ext-link" href="${escapeHtml(i.url)}" target="_blank" rel="noopener" title="open on github">↗</a>
       </div>`).join('')
-      : '<div class="empty"><p>No open issues.</p></div>';
+      : `<div class="empty"><p>${issuesUnavailable ? 'Issues unavailable.' : 'No open issues.'}</p></div>`;
+    if (g.issue_limit_reached) html += '<p class="warning-note">Showing up to 20 open issues. Open the repository on GitHub for the complete list.</p>';
     el.innerHTML = html;
   }
 
@@ -907,17 +1488,17 @@
   /* ----- changes ----- */
   function renderChanges() {
     const el = document.getElementById('tab-changes');
-    const files = detailData.changed_files;
+    const files = detailData ? detailData.changed_files : [];
     if (!files.length) { el.innerHTML = '<div class="empty"><p>Working tree is clean.</p></div>'; return; }
     el.innerHTML = files.map(f => {
-      const badge = f.untracked ? '<span class="file-badge badge-untracked">untracked</span>'
-        : f.staged ? '<span class="file-badge badge-staged">staged</span>'
-        : '<span class="file-badge badge-unstaged">modified</span>';
+      const kind = f.kind || (f.untracked ? 'untracked' : 'modified');
+      const label = f.staged ? (f.index_kind || kind) + ' · staged' + (f.worktree_kind ? ' + ' + f.worktree_kind + ' unstaged' : '') : kind;
+      const badge = `<span class="file-badge ${f.untracked ? 'badge-untracked' : f.staged ? 'badge-staged' : 'badge-unstaged'}">${escapeHtml(label)}</span>`;
       const open = expandedFiles.has(f.path);
-      const safe = escapeHtml(f.path).replace(/'/g, '&#39;');
-      return `<div class="file-row" onclick="toggleFile('${safe}')">
-        <div class="fname">${escapeHtml(f.path)}</div>${badge}
-      </div>
+      const safe = escapeHtml(JSON.stringify(f.path));
+      return `<button id="file-button-${encodeURIComponent(f.path)}" class="file-row" aria-expanded="${open}" aria-controls="${fileDiffId(f.path)}" onclick="toggleFile(${safe})">
+        <span class="fname">${f.original_path ? escapeHtml(f.original_path) + ' → ' : ''}${escapeHtml(f.path)}</span>${badge}
+      </button>
       <div id="${fileDiffId(f.path)}" style="display:${open ? '' : 'none'}">${open ? '<div class="diff-box"><pre>loading…</pre></div>' : ''}</div>`;
     }).join('');
     expandedFiles.forEach(p => loadFileDiff(p));
@@ -926,6 +1507,7 @@
   async function toggleFile(path) {
     expandedFiles.has(path) ? expandedFiles.delete(path) : expandedFiles.add(path);
     renderChanges();
+    document.getElementById('file-button-' + encodeURIComponent(path))?.focus({preventScroll: true});
   }
   function fileDiffId(path) {
     return 'fdiff-' + btoa(unescape(encodeURIComponent(path))).replace(/=/g, '');
@@ -969,7 +1551,7 @@
     if (!branches.length) { el.innerHTML = '<div class="empty"><p>No branches.</p></div>'; return; }
     const locals = branches.filter(b => b.kind !== 'remote');
     const remotes = branches.filter(b => b.kind === 'remote');
-    let html = '';
+    let html = '<p class="local-note">Remote branches and ahead/behind use cached local refs. Refreshing does not fetch remotes.</p>';
     if (locals.length) {
       html += `<div class="branch-group">Local (${locals.length})</div>` +
         locals.map(branchRow).join('');
@@ -1139,10 +1721,24 @@
     else if (e.key === 'Enter') { paletteOpen(); }
   });
 
+  document.addEventListener('click', e => {
+    const current = e.target.closest('.repo-menu');
+    document.querySelectorAll('.repo-menu[open]').forEach(menu => {
+      if (menu !== current) menu.open = false;
+    });
+  });
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Escape') return;
+    document.querySelectorAll('.repo-menu[open]').forEach(menu => {
+      menu.open = false;
+      if (menu.contains(document.activeElement)) menu.querySelector('summary').focus();
+    });
+  });
+
   /* ---------- global keyboard ---------- */
   document.addEventListener('keydown', e => {
     const inPalette = document.getElementById('palette-overlay').classList.contains('open');
-    const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement?.tagName || '');
+    const typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName || '');
     if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       inPalette ? closePalette() : openPalette();
@@ -1158,6 +1754,8 @@
       return;
     }
     if (!detailPath) return;
+    if (e.key === 'Enter' && document.activeElement?.closest('button, a, summary')) return;
+    if (['j', 'k', 'Enter'].includes(e.key) && activeTab !== 'commits') return;
     if (e.key === 'j') { selectCommit(selectedCommit + 1); }
     else if (e.key === 'k') { selectCommit(selectedCommit - 1); }
     else if (e.key === 'Enter') {
@@ -1174,8 +1772,25 @@
     if (e.key === 'Enter') addRepo();
   });
 
+  document.querySelector('.tabs').addEventListener('keydown', e => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(e.key)) return;
+    e.preventDefault();
+    const tabs = [...document.querySelectorAll('.tab')];
+    const index = tabs.findIndex(tab => tab.dataset.tab === activeTab);
+    const next = e.key === 'Home' ? 0 : e.key === 'End' ? tabs.length - 1 : (index + (e.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
+    switchTab(tabs[next].dataset.tab);
+    tabs[next].focus();
+  });
+  setInterval(() => {
+    document.querySelectorAll('time[data-checked]').forEach(el => { el.textContent = ageLabel(el.dataset.checked); });
+  }, 30000);
+  window.addEventListener('focus', refreshOnReturn);
+  document.addEventListener('visibilitychange', refreshOnReturn);
   window.addEventListener('hashchange', route);
-  load().then(route);
+  load().then(route).catch(() => {
+    document.getElementById('local-freshness').textContent = 'Tracked repositories could not be loaded. Reload to retry.';
+    document.getElementById('repo-list').innerHTML = '<div class="empty"><p>Dashboard server unavailable. Your tracked repos have not been changed.</p></div>';
+  });
 </script>
 </body>
 </html>

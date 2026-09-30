@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 from . import NotARepositoryError
+from .changes import ChangedFile, parse_changes
 from .status import _relative
 
 MAX_COMMITS = 30
@@ -42,19 +43,13 @@ class BranchInfo:
 
 
 @dataclass
-class ChangedFile:
-    path: str = ""
-    staged: bool = False
-    untracked: bool = False
-
-
-@dataclass
 class RepoDetail:
     path: str = ""
     branch: str = ""
     commits: list[Commit] = field(default_factory=list)
     branches: list[BranchInfo] = field(default_factory=list)
     changed_files: list[ChangedFile] = field(default_factory=list)
+    checked_at: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -249,26 +244,8 @@ def get_repo_detail(path: str | Path) -> RepoDetail:
         pass
 
     # Working-tree changed files
-    try:
-        out = _run(repo, "status", "--porcelain=v1")
-        for line in out.splitlines():
-            if not line:
-                continue
-            x, y = line[0], line[1]
-            fpath = line[3:]
-            # Handle renames: "R  old -> new"
-            if " -> " in fpath:
-                fpath = fpath.split(" -> ", 1)[1]
-            # Strip quotes git adds for special chars
-            if fpath.startswith('"') and fpath.endswith('"'):
-                fpath = fpath[1:-1]
-            detail.changed_files.append(ChangedFile(
-                path=fpath,
-                staged=(x not in (" ", "?", "!")),
-                untracked=(x == "?" and y == "?"),
-            ))
-    except RuntimeError:
-        pass
+    detail.changed_files = parse_changes(_run(repo, "status", "--porcelain=v1", "-z"))
+    detail.checked_at = datetime.now(timezone.utc).isoformat()
 
     return detail
 

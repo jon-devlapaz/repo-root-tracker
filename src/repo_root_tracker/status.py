@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from . import NotARepositoryError
+from .changes import parse_changes
+from .github import _github_remote
 
 STALE_DAYS = 30
 
@@ -26,6 +28,7 @@ class DirtyState:
     staged: int = 0
     untracked: int = 0
     is_clean: bool = True
+    kinds: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass
@@ -49,6 +52,12 @@ class RepoStatus:
     dirty: DirtyState = field(default_factory=DirtyState)
     sync: SyncState = field(default_factory=SyncState)
     stale_branches: list[StaleBranch] = field(default_factory=list)
+    checked_at: str = ""
+    last_fetch_at: str = ""
+    project_id: str = ""
+    project_path: str = ""
+    is_worktree: bool = False
+    github_repo: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -114,6 +123,17 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     if not repo.is_dir():
         raise NotARepositoryError(f"path does not exist: {repo}")
     status = RepoStatus(path=str(repo))
+    common = Path(_run(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+    status.project_id = str(common)
+    worktrees = _run(repo, "worktree", "list", "--porcelain", "-z").split("\0")
+    status.project_path = next((item[9:] for item in worktrees if item.startswith("worktree ")), str(repo))
+    status.is_worktree = str(repo) != status.project_path
+    status.github_repo = _github_remote(repo) or ""
+    fetch_head = Path(_run(repo, "rev-parse", "--path-format=absolute", "--git-path", "FETCH_HEAD"))
+    try:
+        status.last_fetch_at = datetime.fromtimestamp(fetch_head.stat().st_mtime, timezone.utc).isoformat()
+    except FileNotFoundError:
+        pass
 
     # Branch
     try:
@@ -132,26 +152,13 @@ def get_repo_status(path: str | Path) -> RepoStatus:
         pass
 
     # Dirty state — porcelain v1, XY status codes
-    try:
-        out = _run(repo, "status", "--porcelain=v1")
-        for line in out.splitlines():
-            if not line:
-                continue
-            x, y = line[0], line[1]
-            if x == "?" and y == "?":
-                status.dirty.untracked += 1
-            else:
-                if x not in (" ", "?"):
-                    status.dirty.staged += 1
-                if y not in (" ", "?"):
-                    status.dirty.modified += 1
-        status.dirty.is_clean = (
-            status.dirty.modified == 0
-            and status.dirty.staged == 0
-            and status.dirty.untracked == 0
-        )
-    except RuntimeError:
-        pass
+    changes = parse_changes(_run(repo, "status", "--porcelain=v1", "-z"))
+    for change in changes:
+        status.dirty.kinds[change.kind] = status.dirty.kinds.get(change.kind, 0) + 1
+        status.dirty.untracked += int(change.untracked)
+        status.dirty.staged += int(change.staged)
+        status.dirty.modified += int(bool(change.worktree_kind))
+    status.dirty.is_clean = not changes
 
     # Sync — ahead/behind vs upstream
     try:
@@ -187,4 +194,5 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     except RuntimeError:
         pass
 
+    status.checked_at = datetime.now(timezone.utc).isoformat()
     return status
