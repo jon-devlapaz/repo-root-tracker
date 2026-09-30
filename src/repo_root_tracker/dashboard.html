@@ -31,6 +31,9 @@
     --warning-fill: #785c28;
     --purple: #c5b1de;
     --cyan: #a0d8cf;
+    --blue: #a3caed;
+    --blue-bg: color-mix(in srgb, var(--blue) 13%, transparent);
+    --sync-fill: #31546d;
     --text: #edf2e9;
     --body: #c5d4c9;
     --muted: #a0b5a8;
@@ -160,7 +163,7 @@
   .repo-card .repo-path { color: var(--muted); font-size: 11px; margin-top: 2px; }
   .repo-signals { display: flex; gap: 10px; align-items: center; justify-content: flex-end; flex-wrap: wrap; max-width: 260px; }
   .repo-label.changed { color: var(--yellow); }
-  .repo-label.unavailable { color: var(--red-text); }
+  .repo-label.unavailable { color: var(--yellow); }
   .pin-button { background: none; border: none; color: var(--muted); font-size: 19px; cursor: pointer; padding: 4px; }
   .pin-button[aria-pressed="true"] { color: var(--yellow); }
   .repo-menu { position: relative; }
@@ -288,7 +291,8 @@
   .repo-status { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .status-ok { background: var(--green); }
   .status-dirty { background: var(--yellow); }
-  .status-missing { background: var(--red); }
+  .status-missing { background: var(--yellow); }
+  .status-blocked { background: var(--red-text); }
   .status-unknown { background: var(--muted); }
 
   .repo-body { flex: 1; min-width: 0; }
@@ -651,6 +655,25 @@
   #board-page-status:focus { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
   #board-empty { text-align: center; padding: 48px 16px; color: var(--muted); }
   @media (prefers-reduced-motion: reduce) { #board-view * { animation: none !important; transition: none !important; } }
+  [data-tone] { --signal:var(--muted); --signal-bg:var(--surface2); --signal-fill:var(--surface2); }
+  [data-tone="clean"] { --signal:var(--green); --signal-bg:var(--green-bg); --signal-fill:var(--accent-dim); }
+  [data-tone="changed"], [data-tone="stale"], [data-tone="unavailable"] { --signal:var(--yellow); --signal-bg:var(--yellow-bg); --signal-fill:var(--warning-fill); }
+  [data-tone="blocked"] { --signal:var(--red-text); --signal-bg:var(--red-bg); --signal-fill:var(--danger-fill); }
+  [data-tone="sync"] { --signal:var(--blue); --signal-bg:var(--blue-bg); --signal-fill:var(--sync-fill); }
+  .repo-card[data-tone]:not([data-tone="clean"]):not([data-tone="unknown"]) { box-shadow:inset 3px 0 var(--signal); }
+  .attention-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 8px; border:1px solid color-mix(in srgb,var(--signal) 35%,transparent); border-radius:20px; color:var(--signal); background:var(--signal-bg); text-decoration:none; }
+  .attention-pill[data-tone="clean"], .attention-pill[data-tone="unknown"] { border-color:transparent; background:transparent; color:var(--body); padding:3px 0; }
+  .gh-signal[data-tone="unknown"] { color:var(--muted); }
+  .gh-signal:hover { text-decoration:underline; }
+  .filter[data-tone]:not([data-tone="neutral"]) { color:var(--signal); }
+  .filter[data-tone]:not([data-tone="neutral"])[aria-pressed="true"] { border-color:var(--signal); background:var(--signal-bg); }
+  .status-ring { stroke:var(--signal); opacity:.8; pointer-events:none; }
+  .plot-number:not([data-tone="clean"]) circle { fill:var(--signal-fill); }
+  #board-inspector[data-tone]:not([data-tone="clean"]):not([data-tone="unknown"]) { box-shadow:inset 3px 0 var(--signal); }
+  #board-inspector .attention-summary { border-left:3px solid var(--signal); border-radius:0 var(--radius-control) var(--radius-control) 0; padding:8px 10px; background:var(--signal-bg); color:var(--signal); }
+  #board-inspector .attention-summary[data-tone="clean"], #board-inspector .attention-summary[data-tone="unknown"] { background:transparent; border-color:var(--border); color:var(--body); }
+  #board-inspector .inspector-sync[data-tone="sync"], .board-legend [data-tone] { color:var(--signal); }
+  #board-attention { accent-color:var(--red-text); }
 </style>
 </head>
 <body>
@@ -736,7 +759,7 @@
     <label title="Known PR blockers, local conflicts, or unavailable repos—not ordinary changes."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
     <span id="board-match-count" role="status"></span>
   </div>
-  <div class="board-legend"><span>✎ Local changes</span><span>↑↓ Cached upstream refs</span><span>● GitHub PR blockers</span><span>? Unchecked or unavailable</span></div>
+  <div class="board-legend"><span data-tone="changed">✎ Local changes</span><span data-tone="sync">↑↓ Cached upstream refs</span><span data-tone="blocked">● PR blockers / conflicts</span><span data-tone="unavailable">⚠ Unavailable</span><span data-tone="unknown">? Unchecked</span></div>
   <p class="local-note">Island colors identify groups, not health. Hover or select a numbered plot to identify it. Drag the landscape to pan; search dims other plots without moving them.</p>
   <div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button></div>
   <div class="board-pager" id="board-pager" hidden>
@@ -1162,6 +1185,21 @@
     return parts.join(' · ') || 'dirty';
   }
 
+  function localAttentionTone(repo) {
+    const s = repo._status;
+    if (!s) return 'unknown';
+    if (!s.error && !s.gone && s.dirty?.kinds?.conflicted) return 'blocked';
+    const stage = repoStage({ok:!s.error && !s.gone, status:s.gone ? 410 : 200}, s).stage;
+    return {healthy:'clean', 'attention-dirty':'changed', 'attention-sync':'sync', 'attention-stale':'stale', gone:'unavailable', error:'unavailable', loading:'unknown'}[stage];
+  }
+
+  function repoAttentionTone(repo, github = boardGithub(repo)) {
+    const local = localAttentionTone(repo);
+    if (local === 'blocked' || github.blocked) return 'blocked';
+    if (local === 'unavailable' || github.incomplete) return 'unavailable';
+    return local;
+  }
+
   function renderRepo(r, i) {
     const s = r._status;
     const pinned = organization.pins.includes(r.path);
@@ -1171,11 +1209,12 @@
     else if (s && s.dirty) {
       dot = s.dirty.is_clean ? 'status-ok' : 'status-dirty';
       label = s.dirty.is_clean ? 'Working tree clean' : dirtyLabel(s.dirty);
-      tone = s.dirty.is_clean ? '' : 'changed';
+      tone = s.dirty.is_clean ? 'clean' : 'changed';
+      if (s.dirty.kinds?.conflicted) { dot = 'status-blocked'; tone = 'blocked'; label = 'Local conflict · ' + dirtyLabel(s.dirty); }
     } else if (s) label = 'Status unknown';
     const sync = s && s.sync;
     const syncLabel = sync && sync.has_upstream && (sync.ahead || sync.behind)
-      ? `<span class="repo-label" title="${sync.ahead} commits ahead, ${sync.behind} behind cached upstream refs. Last fetch in this checkout: ${s.last_fetch_at ? ageLabel(s.last_fetch_at) : 'unknown'}.">↑${sync.ahead} ↓${sync.behind}</span>` : '';
+      ? `<span class="repo-label attention-pill" data-tone="sync" title="${sync.ahead} commits ahead, ${sync.behind} behind cached upstream refs. Last fetch in this checkout: ${s.last_fetch_at ? ageLabel(s.last_fetch_at) : 'unknown'}.">↑${sync.ahead} ↓${sync.behind}</span>` : '';
     const collectionId = organization.assignments[r.path];
     const options = '<option value="">Unsorted</option>' + organization.collections.map(c =>
       `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
@@ -1186,8 +1225,9 @@
     const checkingGithub = githubTasks.has((s && s.github_repo) || r.path);
     const incompleteGithub = info && (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached);
     const githubLabel = checkingGithub ? 'GitHub checking…' : !info ? (s && s.github_repo ? 'GitHub not checked' : '') : blocked ? blocked + ' PR' + (blocked === 1 ? '' : 's') + ' with blockers' + (incompleteGithub ? ' · incomplete' : '') : incompleteGithub ? 'GitHub incomplete' : info.has_github ? 'No known PR blockers' : '';
-    const githubSignal = githubLabel ? `<a class="gh-signal ${blocked ? '' : 'pending'}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
-    return `<article class="repo-card" id="card-${i}">
+    const githubTone = blocked ? 'blocked' : incompleteGithub ? 'unavailable' : 'unknown';
+    const githubSignal = githubLabel ? `<a class="gh-signal attention-pill" data-tone="${githubTone}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
+    return `<article class="repo-card" id="card-${i}" data-tone="${repoAttentionTone(r)}">
       ${organizing ? `<input class="repo-select" type="checkbox" id="select-${encodeURIComponent(r.path)}" aria-label="Select ${name}" ${selectedRepos.has(r.path) ? 'checked' : ''} onchange="selectRepo(${i}, this.checked)">` : ''}
       <button id="pin-${encodeURIComponent(r.path)}" class="pin-button" aria-label="${pinned ? 'Unpin' : 'Pin'} ${name}" aria-pressed="${pinned}" onclick="togglePin(${i})">${pinned ? '★' : '☆'}</button>
       <div class="repo-body">
@@ -1195,7 +1235,7 @@
         <div class="repo-path" title="${escapeHtml(r.path)}">${escapeHtml(shortHome(r.path))}</div>
         ${s && s.branch ? `<div class="repo-meta"><span class="branch">${escapeHtml(s.branch)}</span>${s.last_commit && s.last_commit.relative ? `<span class="rel" title="Last commit">${escapeHtml(s.last_commit.relative)}</span>` : ''}${s.is_worktree ? `<span class="rel">Worktree of ${escapeHtml(repoName(s.project_path || r.path))}</span>` : ''}</div>` : ''}
       </div>
-      <div class="repo-signals"><span class="repo-status ${dot}" aria-hidden="true"></span><span class="repo-label ${tone}">${escapeHtml(label)}</span>${syncLabel}${stale}${githubSignal}${repoCheckingLabel(r)}${info && info.checked_at ? checkedTime(info.checked_at, 'GitHub checked') : ''}</div>
+      <div class="repo-signals"><span class="repo-label attention-pill ${tone}" data-tone="${tone || 'unknown'}"><span class="repo-status ${dot}" aria-hidden="true"></span>${escapeHtml(label)}</span>${syncLabel}${stale}${githubSignal}${repoCheckingLabel(r)}${info && info.checked_at ? checkedTime(info.checked_at, 'GitHub checked') : ''}</div>
       <div class="repo-actions"><details class="repo-menu" data-path="${escapeHtml(r.path)}">
         <summary id="menu-${encodeURIComponent(r.path)}" aria-label="Actions for ${name}">•••</summary>
         <div class="menu-panel">
@@ -1254,7 +1294,7 @@
     document.getElementById('clear-filters').hidden = !q && repoFilter === 'all';
     const candidates = repos.filter(r => !q || r.path.toLowerCase().includes(q));
     document.getElementById('repo-filters').innerHTML = FILTERS.map(([key, name]) =>
-      `<button id="filter-${key}" class="btn btn-ghost filter" aria-pressed="${repoFilter === key}" onclick="setFilter('${key}')">${name}<span>${filterCount(candidates, key)}</span></button>`).join('');
+      `<button id="filter-${key}" class="btn btn-ghost filter" data-tone="${({changed:'changed',sync:'sync',attention:'blocked',unavailable:'unavailable'})[key] || 'neutral'}" aria-pressed="${repoFilter === key}" onclick="setFilter('${key}')">${name}<span>${filterCount(candidates, key)}</span></button>`).join('');
     const entries = repos.map((r, i) => ({r, i})).filter(({r}) => (!q || r.path.toLowerCase().includes(q)) && matchesFilter(r, repoFilter));
     entries.sort((a, b) => {
       if (organization.sort === 'recent') {
@@ -1475,7 +1515,9 @@
 
   function boardTreeSprite(repo, b, pose, cx, gy) {
     const p=pose.island.theme;
-    if (b.stage === 'gone') return `<g class="island-tree"><ellipse cx="${cx}" cy="${gy}" rx="17" ry="8" fill="${p.dark}" opacity=".3"/><text x="${cx}" y="${gy-4}" text-anchor="middle" fill="#dde4da">×</text></g>`;
+    const selected=boardSelectedPath===repo.path;
+    const flag=selected ? `<g class="plot-flag" transform="translate(${cx-35},${gy-42})"><line x1="0" y1="0" x2="0" y2="38" stroke="var(--text)" stroke-width="2"/><polygon points="0,0 17,5 0,11" fill="var(--accent)"/></g>` : '';
+    if (b.stage === 'gone') return `<g class="island-tree"><ellipse cx="${cx}" cy="${gy}" rx="17" ry="8" fill="${p.dark}" opacity=".3"/><text x="${cx}" y="${gy-4}" text-anchor="middle" fill="var(--muted)">×</text>${flag}</g>`;
     let canopy='';
     if (pose.island.themeIndex===1 || pose.island.themeIndex===3) {
       canopy=`<circle cx="${cx-11}" cy="${gy-43}" r="18" fill="${p.dark}"/><circle cx="${cx+11}" cy="${gy-43}" r="18" fill="${p.dark}"/><circle cx="${cx}" cy="${gy-55}" r="22" fill="${p.mid}"/><circle cx="${cx-7}" cy="${gy-63}" r="13" fill="${p.high}"/>`;
@@ -1492,12 +1534,10 @@
     canopy=`<g data-tree-variant="${seed%3}" transform="translate(${cx} ${gy}) scale(${scale}) translate(${-cx} ${-gy})">${canopy}</g>`;
     const paused=b.stage==='error'||b.stage==='loading';
     const conflicted=!!repo._status?.dirty?.kinds?.conflicted;
-    const work=b.stage==='attention-dirty' && !conflicted ? `<g data-marker="local-work"><rect x="${cx+22}" y="${gy-12}" width="19" height="5" rx="1" fill="var(--cyan)"/><path d="M${cx+25} ${gy-7}v10 M${cx+38} ${gy-7}v10" stroke="var(--cyan)" stroke-width="3"/></g>` : '';
+    const work=b.stage==='attention-dirty' && !conflicted ? `<g data-marker="local-work"><rect x="${cx+22}" y="${gy-12}" width="19" height="5" rx="1" fill="var(--yellow)"/><path d="M${cx+25} ${gy-7}v10 M${cx+38} ${gy-7}v10" stroke="var(--yellow)" stroke-width="3"/></g>` : '';
     const blocked=pose.island.key==='workspace' ? boardGithub(repo).blocked : 0;
     const badge=blocked ? `<g data-repo-gh="${escapeHtml(repo.path)}"><circle cx="${cx+25}" cy="${gy+10}" r="9" fill="var(--danger-fill)"/><text x="${cx+25}" y="${gy+14}" text-anchor="middle" font-size="11" fill="white">${blocked}</text></g>` : '';
-    const selected=boardSelectedPath===repo.path;
     const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+2}" rx="24" ry="11"/>` : '';
-    const flag=selected ? `<g class="plot-flag" transform="translate(${cx-35},${gy-42})"><line x1="0" y1="0" x2="0" y2="38" stroke="var(--text)" stroke-width="2"/><polygon points="0,0 17,5 0,11" fill="var(--accent)"/></g>` : '';
     return `<g class="island-tree"><ellipse cx="${cx+3}" cy="${gy+3}" rx="22" ry="10" fill="${p.dark}" opacity=".22"/>${outline}`+
       (conflicted?`<g data-marker="local-conflict"><circle cx="${cx-24}" cy="${gy+8}" r="9" fill="var(--danger-fill)"/><text x="${cx-24}" y="${gy+12}" text-anchor="middle" font-size="12" fill="white">!</text></g>`:'')+
       `<g ${paused?'style="filter:grayscale(1);opacity:.55"':''}><rect x="${cx-3}" y="${gy-29}" width="6" height="29" rx="1" fill="${p.trunk}"/>${canopy}</g>${work}${badge}${flag}</g>`;
@@ -1725,7 +1765,7 @@
     else if (g?.has_github) label = 'No known PR blockers';
     else if (repo._status && Object.hasOwn(repo._status, 'github_repo') && !repo._status.github_repo) label = 'No GitHub remote';
     else label = 'GitHub not checked';
-    return {blocked, label};
+    return {blocked, label, incomplete:!!incomplete};
   }
 
   function boardNeedsAttention(repo) {
@@ -1768,7 +1808,7 @@
     const repo = repos.find(r => r.path === boardSelectedPath);
     const el = document.getElementById('board-inspector');
     el.dataset.selected = String(!!repo);
-    if (!repo) { el.innerHTML = '<h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p>'; return; }
+    if (!repo) { delete el.dataset.tone; el.innerHTML = '<h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p>'; return; }
     const s = repo._status || {}, b = boardState(repo);
     const sync = s.sync?.has_upstream === true ? '↑' + s.sync.ahead + ' ahead · ↓' + s.sync.behind + ' behind cached upstream refs' : s.sync?.has_upstream === false ? 'No upstream configured' : 'Sync state unavailable';
     const href = '#/repo/' + encodeURIComponent(repo.path);
@@ -1776,12 +1816,14 @@
     const localChanges = s.dirty?.is_clean === false && !s.error && !s.gone;
     const family = boardNeighborhoods.find(g => g.paths.includes(repo.path));
     const familyGh = boardFamilyGithub(family || {paths:[repo.path]});
-    const familyInfo = `<p class="board-family-gh" data-blocked="${!!familyGh.blocked}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
+    el.dataset.tone = repoAttentionTone(repo, familyGh);
+    const familyTone = familyGh.blocked ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking ? 'unknown' : 'clean';
+    const familyInfo = `<p class="board-family-gh attention-summary" data-tone="${familyTone}" data-blocked="${!!familyGh.blocked}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
       (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '');
     el.innerHTML = `<h3 id="board-inspector-title" tabindex="-1">${escapeHtml(repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
       `<p>${escapeHtml(s.branch || 'Branch not checked')}${s.is_worktree ? ' · Linked worktree' : ''}</p>` +
-      `<p><strong>Local Git</strong><br>${escapeHtml(b.summary)}</p>` +
-      `<p>${escapeHtml(s.error || !s.dirty ? 'Sync state unavailable' : sync)}</p>` +
+      `<p class="inspector-local attention-summary" data-tone="${localAttentionTone(repo)}"><strong>Local Git</strong><br>${escapeHtml(b.summary)}</p>` +
+      `<p class="inspector-sync" data-tone="${s.sync?.has_upstream && (s.sync.ahead || s.sync.behind) && !s.error && !s.gone ? 'sync' : 'unknown'}">${escapeHtml(s.error || !s.dirty ? 'Sync state unavailable' : sync)}</p>` +
       `${familyInfo}` +
       `<p>${repoCheckingLabel(repo)}${repo._github?.checked_at ? '<br>' + checkedTime(repo._github.checked_at, 'GitHub checked') : ''}</p>` +
       `<a id="board-open-details" class="btn btn-ghost" href="${href}">Open details</a>` +
@@ -1821,12 +1863,14 @@
     const pin = pinned ? `<text class="tile-pin" x="12" y="${topY + TH / 2 + 5}">★</text>` : '';
     const badge = noUpstream ? `<g data-badge="no-upstream"><circle cx="${W - 12}" cy="14" r="7" fill="var(--surface2)" stroke="var(--board-muted)" stroke-width="1.5"/><text class="tile-badge" x="${W - 12}" y="17.5" text-anchor="middle" font-size="9" fill="var(--board-muted)">~</text></g>` : '';
     const topFill = `<polygon class="tile-top" points="${pts}" fill="transparent" stroke="transparent" stroke-width="2"/>`;
-    const number = `<circle cx="${cx}" cy="${gy+17}" r="10" fill="${pose.island.theme.dark}" opacity=".9"/><text x="${cx}" y="${gy+21}" text-anchor="middle" font-size="12" fill="#f3f4df">${pose.number}</text>`;
+    const attention = repoAttentionTone(repo);
+    const ring = !['clean','unknown'].includes(attention) ? `<ellipse class="status-ring" data-tone="${attention}" cx="${cx}" cy="${gy+2}" rx="22" ry="10" fill="none" stroke-width="2"/>` : '';
+    const number = `<g class="plot-number" data-tone="${attention}"><circle cx="${cx}" cy="${gy+17}" r="10" fill="${pose.island.theme.dark}"/><text x="${cx}" y="${gy+21}" text-anchor="middle" font-size="12" fill="white">${pose.number}</text></g>`;
     const label = escapeHtml(repo.path + (disp?.branch ? ' · ' + disp.branch : '') + ': ' + b.summary + ' · ' + boardGithub(repo).label + (pinned ? ' · pinned' : '') + (noUpstream ? ' · no upstream' : ''));
     return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" data-path="${escapeHtml(repo.path)}" data-col="${pose.col}" data-row="${pose.row}" style="left:${pose.x-cx}px;top:${pose.y-gy}px;z-index:${pose.depth};">` +
       `<button type="button" class="board-select" id="${id}" data-path="${escapeHtml(repo.path)}" aria-label="${label}" title="${label}" aria-pressed="${boardSelectedPath === repo.path}" aria-controls="board-inspector" onclick="selectBoardRepo(${escapeHtml(JSON.stringify(repo.path))}, event)">` +
       `<svg viewBox="0 0 ${W} ${H - 32}" role="presentation" aria-hidden="true">` +
-      topFill + number + pin + badge + boardTreeSprite(repo, b, pose, cx, gy) + `</svg>${boardLabel(repo, b)}</button></div>`;
+      topFill + ring + number + pin + badge + boardTreeSprite(repo, b, pose, cx, gy) + `</svg>${boardLabel(repo, b)}</button></div>`;
   }
 
   function boardTurn(d) {
