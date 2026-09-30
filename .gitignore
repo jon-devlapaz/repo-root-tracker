@@ -5,3 +5,7 @@ __pycache__/
 *.egg-info/
 dist/
 build/
+.tink/.active/
+runs/.*.lock
+runs/**/.writer-lock
+.pi/subagents/
