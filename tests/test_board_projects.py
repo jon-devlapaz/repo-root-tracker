@@ -1,7 +1,6 @@
 """P1.1/P1.2: exercise the shared production model, scheduler, and scene.
 
-Sapling SVGs and member interaction are the P1.3/P1.4 handoff. These tests
-assert the target records now, without pretending those sprites are drawn.
+The shared model and scene keep their guarantees after checkout sprites render.
 """
 from urllib.parse import quote, unquote
 
@@ -89,7 +88,9 @@ def test_untracked_main_is_an_unselectable_empty_pot(page):
     assert page.locator('.board-main-placeholder').get_attribute('aria-label') == 'Main checkout not tracked.'
     assert page.locator('.board-main-placeholder .tree-hit').count() == 0
     assert page.evaluate(f'boardScene.targets.some(t=>t.path==={MAIN!r})') is False
-    picked = page.evaluate('''() => { const p=boardScene.plots[0];return pickBoardPlot(p.x*boardCamera.zoom+boardCamera.x,p.y*boardCamera.zoom+boardCamera.y); }''')
+    # The front sapling's deliberate narrow hit can overlap the empty main pot.
+    # Use uncovered diamond ground to prove its default-checkout destination.
+    picked = page.evaluate('''() => { const p=boardScene.plots[0];return pickBoardPlot((p.x-68)*boardCamera.zoom+boardCamera.x,p.y*boardCamera.zoom+boardCamera.y); }''')
     assert picked == WORKTREES[0]
 
 
@@ -99,7 +100,8 @@ def test_worktree_only_family_never_promotes_a_full_bonsai(page):
     goto_board(page)
     assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.slot!=="main" && t.scale===.4)')
     assert page.locator('.board-main-placeholder').get_attribute('aria-label') == 'Main checkout not identified.'
-    assert page.locator('[data-tree-variant]').count() == 0
+    assert page.locator('.board-main [data-tree-variant]').count() == 0
+    assert page.locator('.board-sapling [data-tree-variant]').count() == 3
 
 
 def test_legacy_singleton_renders_centrally_without_claiming_main(page):

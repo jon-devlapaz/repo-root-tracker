@@ -476,10 +476,21 @@
   #board-sky[data-kind="dawn"], #board-sky[data-kind="dusk"], #board-sky[data-kind="day"] { width: 20px; height: 20px; margin: -10px 0 0 -10px; background: #ece6d8; opacity: .42; }
   #board-terrain { position: absolute; inset: 0; pointer-events: none; }
   #board-view #board-world .tile { position: absolute; width: 128px; height: 148px; pointer-events: none; transition: opacity .7s var(--ease), filter .7s var(--ease); }
-  #board-view #board-world .board-select { position: relative; width: 128px; height: 148px; border: 0; padding: 0; background: transparent; pointer-events: none; display: block; text-align: left; color: var(--text); }
+  #board-view #board-world .board-select { position: absolute; inset: 0; width: 128px; height: 148px; border: 0; padding: 0; background: transparent; pointer-events: none; display: block; text-align: left; color: var(--text); }
   #board-view #board-world .board-select svg { display: block; width: 128px; height: 148px; margin: 0; overflow: visible; pointer-events: none; }
   #board-view #board-world .board-select .tile-top { pointer-events: all; cursor: pointer; }
-  #board-view #board-world .island-tree * { pointer-events: visiblePainted; cursor: pointer; }
+  #board-view #board-world .member-body * { pointer-events: visiblePainted; cursor: pointer; }
+  #board-view #board-world .member-body .tree-hit { pointer-events: all; }
+  #board-view #board-world .member-body .tree-bounds { pointer-events: none; }
+  .tree-shadow, .plot-outline, .plot-flag, .plot-marks, .plot-marks *, .plot-number, .tile-pin, .plot-more { pointer-events: none !important; }
+  .board-member[data-matched="false"] .member-body,
+  .board-member[data-matched="false"] .tree-fx,
+  .board-member[data-matched="false"] .tree-shadow { opacity: .28; }
+  #board-view #board-world .board-select .board-shared-marks { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+  #board-world .board-sapling:not([aria-pressed="true"]):not(:focus):not([data-hovered="true"]) .bonsai-sway,
+  #board-world .board-sapling:not([aria-pressed="true"]):not(:focus):not([data-hovered="true"]) .tree-fx * { animation: none; }
+  #board-world .board-sapling .leaf { opacity: .9; }
+  #board-world .board-sapling .mote-up, #board-world .board-sapling .mote-down { opacity: .85; }
   #board-view #board-world .island-tree .tree-fx, #board-view #board-world .island-tree .tree-fx * { pointer-events: none; }
   #board-view #board-world .board-label { position: absolute; width: 1px; height: 1px; padding: 0; border: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   /* a pool of light under the tree on hover, focus and selection */
@@ -493,13 +504,14 @@
   #board-world .board-select[aria-pressed="true"] .plot-pool { opacity: 1; }
   #board-world .board-select:focus-visible { outline: 2px solid transparent; }
   #board-world .board-select:focus-visible .plot-pool { opacity: 1; }
-  .plot-focus { fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 2 3.5; opacity: 0; pointer-events: none; }
+  .plot-focus { fill: none; stroke: var(--accent); stroke-width: 2; vector-effect: non-scaling-stroke; stroke-dasharray: 2 3.5; opacity: 0; pointer-events: none; }
   #board-world .board-select:focus-visible .plot-focus { opacity: 1; }
   #board-view #board-world .board-select[aria-pressed="true"] .island-tree .plot-outline { stroke: var(--accent); stroke-width: 1.6; fill: none; opacity: .95; }
   .plot-ring, .plot-flag { pointer-events: none; }
   .tile-pin { fill: var(--text); }
   #board-name-overlay { position: absolute; inset: 0; pointer-events: none; z-index: 25; }
-  .plot-name { position: absolute; max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--display); font-size: 12px; font-weight: 400; letter-spacing: .03em; color: var(--text); background: none; border: 0 solid var(--border); border-bottom-width: 1px; padding: 2px 4px; white-space: nowrap; pointer-events: none; text-shadow: 0 0 6px var(--bg), 0 0 3px var(--bg), 0 0 2px var(--bg); }
+  .plot-name, .sapling-name { position: absolute; max-width: 120px; overflow: hidden; text-overflow: ellipsis; font-family: var(--display); font-size: 12px; font-weight: 400; letter-spacing: .03em; color: var(--text); background: none; border: 0 solid var(--border); border-bottom-width: 1px; padding: 2px 4px; white-space: nowrap; pointer-events: none; text-shadow: 0 0 6px var(--bg), 0 0 3px var(--bg), 0 0 2px var(--bg); }
+  .sapling-name { font-family: var(--mono); font-size: 11px; max-width: 240px; border-color: var(--accent); }
   .plot-name[data-selected="true"] { max-width: 240px; border-color: var(--accent); }
   #board-hover-tip { position: absolute; z-index: 30; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--display); font-size: 12px; letter-spacing: .03em; color: var(--text); background: var(--label-bg); border: 1px solid var(--accent-border); border-radius: 3px; padding: 3px 10px; pointer-events: none; }
   @media (min-width: 851px) { #board-caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; padding: 0; min-height: 0; } }
@@ -544,6 +556,12 @@
   #board-inspector > h3:only-child + p { color: var(--muted); }
   #board-inspector .inspector-close { position: absolute; top: 0; right: 0; width: 32px; height: 32px; padding: 0; min-height: 0; }
   #board-inspector p { margin: 12px 0; font-size: 12px; overflow-wrap: anywhere; }
+  .board-checkout-list { margin-top: 16px; }
+  .board-checkout-list button, #board-worktree-list button { display: block; width: 100%; min-height: 44px; padding: 8px 4px; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--border); color: var(--body); cursor: pointer; overflow-wrap: anywhere; }
+  .board-checkout-list button[aria-current="true"] { color: var(--accent); }
+  .checkout-path { display: block; font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  #board-worktree-dialog { width: min(560px, calc(100vw - 32px)); max-height: 80dvh; overflow: auto; }
+  #board-worktree-dialog h3 { font-family: var(--display); font-size: 22px; }
   #board-inspector .inspector-vitals { color: var(--muted); font-size: 12px; }
   #board-inspector .inspector-path { color: var(--muted); font-family: var(--mono); font-size: 11px; }
   #board-inspector a { display: inline-flex; text-decoration: none; }
@@ -701,6 +719,7 @@
     .tab.active, .view-toggle[aria-pressed="true"], .filter[aria-pressed="true"] { text-decoration: underline; text-decoration-thickness: 2px; }
     .plot-pool, .board-bloom { display: none; }
     #board-stage { forced-color-adjust: none; }
+    #board-world .board-select:focus-visible .member-focus { forced-color-adjust: none; stroke: Highlight; opacity: 1; }
   }
 </style>
 </head>
@@ -799,12 +818,18 @@
   <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
-  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
+  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
     <p>No repos tracked yet. Add a repository to grow the island.</p>
     <p><a id="board-empty-add" href="#/">Go to the list to add a repo</a></p>
   </div>
 </main>
+
+<dialog id="board-worktree-dialog" aria-labelledby="board-worktree-dialog-title">
+  <h3 id="board-worktree-dialog-title">Choose a checkout</h3>
+  <div id="board-worktree-list"></div>
+  <div class="dialog-actions"><button type="button" class="btn btn-ghost" onclick="document.getElementById('board-worktree-dialog').close()">Cancel</button></div>
+</dialog>
 
 <main id="detail-view" style="display:none">
   <div class="refresh-bar">
@@ -1638,6 +1663,7 @@
     const valid=data && typeof data==='object' && !Array.isArray(data);
     repo._status=result.error || !valid ? {error:true,detail:result.error || 'Invalid local Git response'} :
       response.ok ? data : {error:true,gone:response.status===410,detail:data.error};
+    if (repos.includes(repo) && response?.ok && valid && !data.error && !data.gone) recordBonsaiVitals(repo, data);
     repo._checkedAt=(valid && data.checked_at) || new Date().toISOString();
   }
   function finishLocalStatus(repo,result) {
@@ -1944,6 +1970,7 @@
   let boardScrollY = 0, boardPage = 1, detailOrigin = '#/', lastHash = '', routeHasRun = false;
   let refreshingBoard = false, boardSelectedPath = null, boardFocusedPath = null;
   let boardLayoutSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
+  let boardPreviousProjects = new Map();
   let boardCommittedProjects = new Map(), boardMembershipPending = false, boardPanning = false;
   const boardControllers = new Map();
   const BOARD_PAGE_SIZE = 25;
@@ -1954,8 +1981,8 @@
   const boardResizeObserver = new ResizeObserver(() => applyBoardCamera());
 
   /* ---------- bonsai: a seeded ink-brush tree, one per repository ---------- */
-  /* Geometry is a pure function of the repo path. Git state never changes the tree,
-     only the weather around it (bonsaiWeather), so a repo keeps its identity. */
+  /* Geometry follows the checkout path and bounded history inputs. Local health
+     changes the weather (bonsaiWeather), while failed checks retain the last form. */
   const BONSAI_FOLIAGE = [
     {dark:'#15291f', mid:'#3e6b58', high:'#9cc4ae', fleck:'#b9d891', gravel:'#1b2622', stone:'#3b4a43'},
     {dark:'#26171f', mid:'#6e4d60', high:'#c19bb2', fleck:'#f0c9d8', gravel:'#231e27', stone:'#473d4c'},
@@ -2079,16 +2106,28 @@
   }
 
   /* Vitals: history a tree is allowed to say. Unknown history reproduces the plain tree exactly. */
-  function bonsaiVitalsOf(path) {
-    const s = ((typeof repos !== 'undefined' && repos.find(r => r.path === path)) || {})._status || {};
+  function normalizeBonsaiVitals(s) {
     const first = Date.parse(s.first_commit_date), age = Number.isFinite(first) ? (Date.now() - first) / 864e5 : null;
     const girth = age === null ? 1 : age < 45 ? .78 : age < 200 ? .92 : age < 800 ? 1.08 : 1.22;
     const act = s.activity_30d, density = typeof act !== 'number' ? 1 : act === 0 ? .86 : act <= 6 ? 1 : 1.07;
-    const stale = (s.stale_branches || []).map(b => b.name);
+    const stale = s.staleBranchNames || (s.stale_branches || []).map(b => b.name);
     const live = (s.branches || []).filter(n => n !== s.branch && !stale.includes(n));
     const br = Math.min(4, live.length);
     return {girth, density, br, key: [girth, density, br].join(',')};
   }
+  function recordBonsaiVitals(repo, s) {
+    const raw = {first_commit_date:s.first_commit_date, activity_30d:s.activity_30d,
+      branches:[...(s.branches || [])], branch:s.branch, staleBranchNames:(s.stale_branches || []).map(b=>b.name)};
+    repo._bonsaiVitals = {raw, normalized:normalizeBonsaiVitals(raw)};
+    return repo._bonsaiVitals.normalized;
+  }
+  function bonsaiVitalsOf(path) {
+    const repo = repoByPath.get(path) || repos.find(r=>r.path===path), s=repo?._status;
+    // Direct render callers can supply successful fixtures too; errors never replace retained form.
+    if (s && !s.error && !s.gone) return recordBonsaiVitals(repo,s);
+    return repo?._bonsaiVitals?.normalized || normalizeBonsaiVitals({});
+  }
+
   const bonsaiLayouts = new Map();
   function bonsaiLayout(path) {
     const vit = bonsaiVitalsOf(path), cacheKey = path + '|' + vit.key;
@@ -2294,6 +2333,7 @@
   function commitBoardMembership() {
     if (!boardMembershipPending || localStatusBatches.size || boardPanning) return false;
     const focusedPath=document.activeElement?.closest?.('.board-select')?.dataset.path;
+    boardPreviousProjects=boardCommittedProjects;
     boardCommittedProjects=new Map(boardProjects.map(project => [project.key,project]));
     boardNeighborhoods=[{key:'workspace',name:'Workspace',projectKeys:boardProjects.map(project=>project.key)}];
     boardMembershipPending=false; boardLayoutSignature=projectModelSignature;
@@ -2322,6 +2362,41 @@
       });
     });
   }
+  function boardPresentedWorktrees(project) {
+    const paths=project.worktreePaths;
+    if (paths.length<=3) return paths.slice();
+    const filtered=document.getElementById('board-search').value.trim() || document.getElementById('board-attention').checked;
+    // The normal third member can itself be hidden by a promotion. It must also
+    // be reachable while a different overflow checkout remains selected.
+    const frontPaths=paths.slice(2);
+    const front=[boardFocusedPath,boardSelectedPath].find(path=>frontPaths.includes(path)) ||
+      (filtered && paths.slice(3).find(path=>boardMatches(repoByPath.get(path)))) || paths[2];
+    return [paths[0],paths[1],front];
+  }
+  function refreshBoardPresentation() {
+    if (!boardScene || boardPanning) return;
+    const changed=boardScene.plots.some(plot=>boardPresentedWorktrees(plot.project).join('\n')!==plot.targets.filter(target=>target.role==='worktree').map(target=>target.path).join('\n'));
+    if (changed) renderBoard(); else layoutBoardNames();
+  }
+  function presentBoardMember(path) {
+    const project=projectForPath(path);
+    if (!repoByPath.has(path) || !project) return false;
+    if (project.worktreePaths.includes(path) && !boardPresentedWorktrees(project).includes(path)) boardFocusedPath=path;
+    if (!boardPanning) renderBoard();
+    return true;
+  }
+  function ensureBoardRepoVisible(path) {
+    ensureProjectRegistry();
+    const project=projectForPath(path);
+    if (!project || !repoByPath.has(path)) return false;
+    const pages=boardIslands(boardNeighborhoods);
+    let index=pages.findIndex(page=>page.projectKeys.includes(project.key) && page.allPaths.includes(path));
+    if (index<0) index=pages.findIndex(page=>page.allPaths.includes(path));
+    if (index<0) index=pages.findIndex(page=>page.projectKeys.includes(project.key));
+    if (index>=0) { boardPage=index+1; boardActivePageKey=pages[index].pageKey; }
+    presentBoardMember(path);
+    return true;
+  }
   function makeBoardScene(neighborhoods) {
     const pages=boardIslands(neighborhoods);
     const g=pages[boardPage-1] || pages[0] || {key:'workspace',pageKey:'workspace:0',name:'Workspace',pageIndex:0,pageCount:1,projectKeys:[],allProjectKeys:[],total:0,empty:true,paths:[],allPaths:[],themeIndex:0};
@@ -2344,10 +2419,11 @@
     let drawOrder=0;
     for (const plot of plots) {
       const project=plot.project;
-      if (project.centralRepoPath) plot.targets.push({path:project.centralRepoPath,projectKey:project.key,
+      if (repoByPath.has(project.centralRepoPath)) plot.targets.push({path:project.centralRepoPath,projectKey:project.key,
         role:project.mainRoleConfirmed?'main':'standalone',slot:'main',x:plot.x,y:plot.y,scale:1,drawOrder:drawOrder++});
       const slots=[['left',-42,7],['right',42,7],['front',0,30]];
-      project.worktreePaths.slice(0,3).forEach((path,index) => {
+      boardPresentedWorktrees(project).forEach((path,index) => {
+        if (!repoByPath.has(path)) return;
         const [slot,x,y]=slots[index];
         plot.targets.push({path,projectKey:project.key,role:'worktree',slot,x:plot.x+x,y:plot.y+y,scale:.4,drawOrder:drawOrder++});
       });
@@ -2542,20 +2618,21 @@
     return {canvas: groundCache.canvas, sky};
   }
 
-  function boardTreeSprite(repo, b, pose, cx, gy) {
-    const p=pose.island.theme, selected=boardSelectedPath===repo.path, L=bonsaiLayout(repo.path);
-    const flag=selected ? `<g class="plot-flag" transform="translate(${cx+28},${gy-84})"><line x1="3.5" y1="-2" x2="3.5" y2="4" stroke="var(--accent)" stroke-width="1"/><polygon points="0,4 7,4 7,32 3.5,27 0,32" fill="var(--accent)"/></g>` : '';
-    const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+1}" rx="27" ry="12.5"/>` : '';
-    const gh=boardGithub(repo), blocked=pose.island.key==='workspace' ? gh.blocked : 0;
-    const workflowFailures=pose.island.key==='workspace' ? gh.workflowFailures : 0;
-    const badge=blocked || workflowFailures ? `<g data-workflow-ci="${!!workflowFailures}" data-repo-gh="${escapeHtml(repo.path)}" class="hanko" filter="url(#hanko-edge)" transform="rotate(-5 ${cx-37} ${gy+7})"><rect x="${cx-46}" y="${gy-2}" width="18" height="18" rx="2" fill="var(--danger-fill)"/><rect x="${cx-44}" y="${gy}" width="14" height="14" fill="none" stroke="#f6e6df" stroke-opacity=".55" stroke-width="1"/><text x="${cx-37}" y="${gy+12.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#f6e6df">${workflowFailures ? 'CI' : blocked}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
-    if (b.stage === 'gone') return `<g class="island-tree"><ellipse class="tree-hit" cx="${cx}" cy="${gy-4}" rx="22" ry="12" fill="transparent"/><g transform="translate(${cx} ${gy})">${bonsaiPot(L,p,false)}<ellipse cx="0" cy="-8.4" rx="14" ry="4.8" fill="#16211b"/><ellipse cx="4" cy="-9" rx="3.6" ry="2" fill="#56625b"/></g>${outline}${flag}</g>`;
-    const paused=b.stage==='error'||b.stage==='loading';
-    const facts=bonsaiFacts(repo,{blocked:gh.blocked,workflowFailures:gh.workflowFailures});
-    // git weather lives outside [data-tree-variant]: the tree's geometry never depends on health
-    const weather=`<g transform="translate(${cx} ${gy})">${bonsaiWeather(repo.path,{...facts,dirty:facts.dirty&&b.stage==='attention-dirty'})}</g>`;
-    return `<g class="island-tree"><ellipse cx="${cx+4}" cy="${gy+3}" rx="22" ry="8.5" fill="#000" opacity=".26"/>${outline}`+
-      `<g class="${paused?'is-faded':''} ${facts.days>=120?'age-fallow':facts.days>=45?'age-dormant':''}"><g data-tree-variant="${L.variant}" transform="translate(${cx} ${gy}) scale(${L.scale})">${bonsaiTree(repo.path,p,true)}</g></g>${weather}${badge}${flag}</g>`;
+  function boardTreeSprite(repo, b, pose, cx, gy, opts = {}) {
+    const scale=opts.scale || 1, p=opts.palette || pose.island.theme;
+    const selected=boardSelectedPath===repo.path, L=bonsaiLayout(repo.path), bodyScale=scale*L.scale;
+    const flag=selected ? `<g class="plot-flag" transform="translate(${cx+28*scale},${gy-84*scale}) scale(${scale})"><line x1="3.5" y1="-2" x2="3.5" y2="4" stroke="var(--accent)" stroke-width="1"/><polygon points="0,4 7,4 7,32 3.5,27 0,32" fill="var(--accent)"/></g>` : '';
+    const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+scale}" rx="${27*scale}" ry="${12.5*scale}"/>` : '';
+    const gone=b.stage==='gone' || !!repo._status?.gone, paused=b.stage==='error'||b.stage==='loading';
+    const gh=boardGithub(repo), facts=bonsaiFacts(repo, opts.role==='worktree' || opts.sharedGithub ? {blocked:0,workflowFailures:0} : gh);
+    const frameScale=gone&&scale===1?1:bodyScale;
+    const focus=`<rect class="plot-focus member-focus" x="${cx-40*frameScale}" y="${gy-(gone?17:85)*frameScale}" width="${80*frameScale}" height="${(gone?27:110)*frameScale}" rx="3"/>`;
+    const body=gone ? `<ellipse class="tree-hit" cx="0" cy="-4" rx="22" ry="12" fill="transparent"/>${bonsaiPot(L,p,false)}<ellipse cx="0" cy="-8.4" rx="14" ry="4.8" fill="#16211b"/><ellipse cx="4" cy="-9" rx="3.6" ry="2" fill="#56625b"/>` : bonsaiTree(repo.path,p,scale===1);
+    const weather=gone ? '' : `<g transform="translate(${cx} ${gy}) scale(${scale})">${bonsaiWeather(repo.path,{...facts,dirty:facts.dirty&&b.stage==='attention-dirty'})}</g>`;
+    const badge= !opts.sharedGithub && (gh.blocked || gh.workflowFailures) ? `<g class="plot-marks hanko" data-repo-gh="${escapeHtml(repo.path)}" data-workflow-ci="${!!gh.workflowFailures}" filter="url(#hanko-edge)" transform="rotate(-5 ${cx-37} ${gy+7})"><rect x="${cx-46}" y="${gy-2}" width="18" height="18" rx="2" fill="var(--danger-fill)"/><rect x="${cx-44}" y="${gy}" width="14" height="14" fill="none" stroke="#f6e6df" stroke-opacity=".55" stroke-width="1"/><text x="${cx-37}" y="${gy+12.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#f6e6df">${gh.workflowFailures?'CI':gh.blocked}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
+    const shadow=gone&&scale===1?'':`<ellipse class="tree-shadow" cx="${cx+4*scale}" cy="${gy+3*scale}" rx="${22*scale}" ry="${8.5*scale}" fill="#000" opacity=".26"/>`;
+    return `<g class="island-tree">${shadow}${outline}`+
+      `<g class="${paused?'is-faded':''} ${facts.days>=120?'age-fallow':facts.days>=45?'age-dormant':''}"><g class="member-body"${gone?'':` data-tree-variant="${L.variant}"`} transform="translate(${cx} ${gy}) scale(${gone&&scale===1?1:bodyScale})">${body}</g></g>${weather}${badge}${flag}${focus}</g>`;
   }
 
   function applyBoardCamera() {
@@ -2583,43 +2660,43 @@
   function layoutBoardNames() {
     const layer=document.getElementById('board-name-overlay'),stage=document.getElementById('board-stage');
     if(!layer||!stage||!boardScene)return;
-    // idempotent: a resize that changes nothing must not rebuild (and detach) the labels
     const showAll=boardNamesVisible||boardCamera.zoom>=1.6;
-    const sig=[stage.clientWidth,stage.clientHeight,boardCamera.x,boardCamera.y,boardCamera.zoom,showAll,boardSelectedPath,boardScene.plots.map(p=>p.path+p.x+p.y).join()].join('|');
+    const activePaths=[boardFocusedPath,boardSelectedPath,boardHoveredPath].filter(Boolean);
+    const sig=[stage.clientWidth,stage.clientHeight,boardCamera.x,boardCamera.y,boardCamera.zoom,showAll,...activePaths,
+      boardScene.plots.map(p=>p.projectKey+p.project.name+p.x+p.y).join(),boardScene.targets.map(t=>t.path+t.slot+t.x+t.y).join(),
+      boardScene.targets.filter(t=>activePaths.includes(t.path)).map(t=>repoByPath.get(t.path)?._status?.branch).join()].join('|');
     if(layer.dataset.sig===sig)return;
-    layer.dataset.sig=sig;
-    layer.replaceChildren();
+    layer.dataset.sig=sig;layer.replaceChildren();
     const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
     leaders.setAttribute('width',stage.clientWidth);leaders.setAttribute('height',stage.clientHeight);
     leaders.style.position='absolute';layer.append(leaders);
     const occupied=boardScene.islands.map(g=>({x:(g.x+g.width/2)*boardCamera.zoom+boardCamera.x-75,y:(g.titleY-14)*boardCamera.zoom+boardCamera.y-4,w:150,h:24}));
-    const plots=boardScene.plots.filter(p=>showAll||p.path===boardSelectedPath).sort((a,b)=>Number(b.path===boardSelectedPath)-Number(a.path===boardSelectedPath));
-    for(const plot of plots){
-      const repo=repos.find(r=>r.path===plot.path),s=repo._status||{};
-      const full=s.is_worktree?(s.branch||repoName(repo.path)):repoName(repo.path);
+    const memberLabels=[...new Set(activePaths)].map(path=>boardScene.targets.find(t=>t.path===path&&t.role==='worktree')).filter(Boolean).map(target=>{
+      const repo=repoByPath.get(target.path);
+      return {path:target.path,text:repo._status?.branch||repoName(target.path),x:target.x,y:target.y-80*target.scale,sapling:true};
+    });
+    const projectLabels=boardScene.plots.filter(p=>showAll||p.project.paths.includes(boardSelectedPath)).sort((a,b)=>Number(b.project.paths.includes(boardSelectedPath))-Number(a.project.paths.includes(boardSelectedPath))).map(plot=>
+      ({path:plot.path,text:(showAll?plot.number+' · ':'')+plot.project.name,x:plot.x,y:plot.y-80,sapling:false,selected:plot.project.paths.includes(boardSelectedPath)}));
+    for(const item of [...memberLabels,...projectLabels]){
+      const repo=repoByPath.get(item.path),s=repo?._status||{};
       const label=document.createElement('span');
-      label.className='plot-name';label.dataset.path=plot.path;label.dataset.selected=String(plot.path===boardSelectedPath);
-      label.textContent=(showAll?plot.number+' · ':'')+full;label.title=repo.path+' · '+(s.branch||'Branch not checked');
-      layer.append(label);
+      label.className=item.sapling?'sapling-name':'plot-name';label.dataset.path=item.path;label.dataset.selected=String(item.selected||item.path===boardSelectedPath);
+      label.textContent=item.text;label.title=item.path+' · '+(s.branch||'Branch not checked');layer.append(label);
       const w=label.offsetWidth,h=label.offsetHeight;
-      const anchorX=plot.x*boardCamera.zoom+boardCamera.x,anchorY=(plot.y-80)*boardCamera.zoom+boardCamera.y;
-      let x=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2)),y=Math.max(8,anchorY-h-4);
+      const anchorX=item.x*boardCamera.zoom+boardCamera.x,anchorY=item.y*boardCamera.zoom+boardCamera.y;
       const candidates=[];
       for(let row=-6;row<=6;row++)for(let col=-3;col<=3;col++){
-        const px=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2+col*(w+6)));
-        const py=Math.max(8,Math.min(stage.clientHeight-h-8,anchorY-h-4+row*(h+5)));
-        candidates.push({x:px,y:py,cost:Math.hypot(px+w/2-anchorX,py+h-anchorY)});
+        const x=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2+col*(w+6)));
+        const y=Math.max(8,Math.min(stage.clientHeight-h-8,anchorY-h-4+row*(h+5)));
+        candidates.push({x,y,cost:Math.hypot(x+w/2-anchorX,y+h-anchorY)});
       }
       candidates.sort((a,b)=>a.cost-b.cost);
       const place=candidates.find(c=>!occupied.some(r=>c.x<r.x+r.w+4&&c.x+w+4>r.x&&c.y<r.y+r.h+4&&c.y+h+4>r.y));
-      if(place){x=place.x;y=place.y;}
-      else {label.remove();continue;}
-      label.style.left=x+'px';label.style.top=y+'px';
+      if(!place){label.remove();continue;}
+      const {x,y}=place;label.style.left=x+'px';label.style.top=y+'px';
       const line=document.createElementNS('http://www.w3.org/2000/svg','line');
-      line.setAttribute('x1',x+w/2);line.setAttribute('y1',y+h);
-      line.setAttribute('x2',anchorX);line.setAttribute('y2',anchorY+12);
-      line.setAttribute('stroke',plot.path===boardSelectedPath?'var(--accent)':'var(--muted)');
-      line.setAttribute('stroke-opacity','.45');line.setAttribute('stroke-width','1');leaders.append(line);
+      line.setAttribute('x1',x+w/2);line.setAttribute('y1',y+h);line.setAttribute('x2',anchorX);line.setAttribute('y2',anchorY+12);
+      line.setAttribute('stroke',label.dataset.selected==='true'?'var(--accent)':'var(--muted)');line.setAttribute('stroke-opacity','.45');line.setAttribute('stroke-width','1');leaders.append(line);
       occupied.push({x,y,w,h});
     }
   }
@@ -2632,23 +2709,45 @@
   }
   function zoomBoardBy(factor) { const s=document.getElementById('board-stage');if(s)zoomBoardAt(factor,s.clientWidth/2,s.clientHeight/2); }
   function boardScreenToWorld(x,y) { return {x:(x-boardCamera.x)/boardCamera.zoom,y:(y-boardCamera.y)/boardCamera.zoom}; }
-  function boardSpriteContains(plot, world) {
-    const button=document.getElementById('board-tile-'+encodeURIComponent(plot.path));
-    if (!button) return false;
-    const tile=button.parentElement,svg=button.querySelector('svg');
-    const point=new DOMPoint(world.x-parseFloat(tile.style.left),world.y-parseFloat(tile.style.top));
-    const screen=point.matrixTransform(svg.getScreenCTM());
-    return [...svg.querySelectorAll('.island-tree path, .island-tree circle, .island-tree rect, .island-tree ellipse, .island-tree polygon, .island-tree line')].some(shape => {
-      const local=screen.matrixTransform(shape.getScreenCTM().inverse()),style=getComputedStyle(shape);
-      return (style.fill!=='none' && style.fillOpacity!=='0' && shape.isPointInFill(local)) ||
-        (style.stroke!=='none' && style.strokeOpacity!=='0' && shape.isPointInStroke(local));
+  const boardHitCache = new Map();
+  function cacheBoardMemberHits() {
+    const visible=new Set();
+    for (const target of boardScene.targets) {
+      const button=document.getElementById('board-tile-'+encodeURIComponent(target.path));
+      if (!button) continue;
+      visible.add(target.path);
+      const svg=button.querySelector('svg'), body=svg.querySelector('.member-body');
+      if (boardHitCache.get(target.path)?.svg===svg) continue;
+      const rootInverse=svg.getCTM().inverse(), transform=rootInverse.multiply(body.getCTM());
+      const box=body.getBBox();
+      const corners=[[box.x,box.y],[box.x+box.width,box.y],[box.x,box.y+box.height],[box.x+box.width,box.y+box.height]].map(([x,y])=>new DOMPoint(x,y).matrixTransform(transform));
+      const shapes=[...body.querySelectorAll('path,circle,rect,ellipse,polygon,line')].filter(shape=>!shape.matches('.tree-bounds')).map(shape=>{
+        const style=getComputedStyle(shape);
+        return {shape, inverse:rootInverse.multiply(shape.getCTM()).inverse(),
+          fill:shape.matches('.tree-hit') || (style.fill!=='none' && style.fillOpacity!=='0'),
+          stroke:style.stroke!=='none' && style.strokeOpacity!=='0'};
+      });
+      boardHitCache.set(target.path,{svg,shapes,anchorX:transform.e,anchorY:transform.f,minX:Math.min(...corners.map(p=>p.x))-2,maxX:Math.max(...corners.map(p=>p.x))+2,
+        minY:Math.min(...corners.map(p=>p.y))-2,maxY:Math.max(...corners.map(p=>p.y))+2});
+    }
+    for (const path of boardHitCache.keys()) if (!visible.has(path)) boardHitCache.delete(path);
+  }
+  function boardSpriteContains(target, world) {
+    const hit=boardHitCache.get(target.path);
+    if (!hit) return false;
+    const point=new DOMPoint(world.x-target.x+hit.anchorX,world.y-target.y+hit.anchorY);
+    if (point.x<hit.minX || point.x>hit.maxX || point.y<hit.minY || point.y>hit.maxY) return false;
+    return hit.shapes.some(({shape,inverse,fill,stroke})=>{
+      const local=point.matrixTransform(inverse);
+      return (fill && shape.isPointInFill(local)) || (stroke && shape.isPointInStroke(local));
     });
   }
   function pickBoardPlot(x,y) {
     if (!boardScene || boardScene.empty) return null;
     const world=boardScreenToWorld(x,y);
-    for (const plot of [...boardScene.plots].reverse()) {
-      if (boardSpriteContains(plot,world)) return plot.path;
+    for (let i=boardScene.targets.length-1;i>=0;i--) {
+      const target=boardScene.targets[i];
+      if (boardSpriteContains(target,world)) return target.path;
     }
     for (const g of boardScene.islands) {
       const local={x:world.x-g.x-g.origin.x,y:world.y-g.y-g.origin.y};
@@ -2656,13 +2755,14 @@
       if(col<0||row<0||col>=g.cols||row>=g.rows)continue;
       const center=boardGridToWorld(col,row);
       if(Math.abs(local.x-center.x)/(BOARD_TTW/2)+Math.abs(local.y-center.y)/(BOARD_TTH/2)>1.001)continue;
-      return g.paths[row*g.cols+col] || null;
+      const project=boardScene.plots.find(plot=>plot.island===g && plot.row===row && plot.col===col)?.project;
+      return project?.paths.find(path=>repoByPath.has(path)) || null;
     }
     return null;
   }
 
   function revealBoardPlot(path) {
-    const plot=boardScene?.plots.find(p => p.path===path),stage=document.getElementById('board-stage');
+    const plot=boardScene?.targets.find(p => p.path===path),stage=document.getElementById('board-stage');
     if (!plot||!stage) return;
     const x=plot.x*boardCamera.zoom+boardCamera.x,y=plot.y*boardCamera.zoom+boardCamera.y;
     if(x<30||x>stage.clientWidth-30||y<80||y>stage.clientHeight-30) {
@@ -2670,7 +2770,8 @@
     }
   }
   function locateBoardPlot(path) {
-    const plot=boardScene?.plots.find(p=>p.path===path),stage=document.getElementById('board-stage');
+    ensureBoardRepoVisible(path);
+    const plot=boardScene?.targets.find(p=>p.path===path),stage=document.getElementById('board-stage');
     if(!plot||!stage)return;
     boardCamera.x=stage.clientWidth/2-plot.x*boardCamera.zoom;
     boardCamera.y=stage.clientHeight/2-(plot.y-35)*boardCamera.zoom;
@@ -2751,7 +2852,7 @@
     const plots=boardScene.plots;
     const terrain=boardScene.empty ? '' : boardScene.islands.map(boardTerrainSvg).join('');
     const islands=boardScene.islands.map(g => `<div class="board-neighborhood ${g.key==='workspace'?'':'board-family'}" data-project="${escapeHtml(g.key)}" style="position:absolute;left:0;top:0;width:100%;height:100%;padding:0;border:0;pointer-events:none;">`+
-      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { const repo=repoByPath.get(p.path);if(!repo)return '';return boardTileSvg(repo,boardState(repo),{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
+      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { if(!p.project.paths.some(path=>repoByPath.has(path)))return '';return boardTileSvg(p.project,{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
     let stage=document.getElementById('board-stage');
     if (!stage) {
       stage=document.createElement('div');stage.id='board-stage';
@@ -2772,10 +2873,20 @@
         const current=document.getElementById(tile.id);
         if (!current) continue;
         syncBoardAttributes(current,tile);
-        const button=current.querySelector('.board-select'), nextButton=tile.querySelector('.board-select');
-        syncBoardAttributes(button,nextButton);
-        // Keep the native checkout button (and focus) alive across health patches.
-        if (button.innerHTML!==nextButton.innerHTML) button.innerHTML=nextButton.innerHTML;
+        const nextButtons=[...tile.querySelectorAll('.board-select')];
+        const nextIds=new Set(nextButtons.map(button=>button.id));
+        for (const button of current.querySelectorAll('.board-select')) if (!nextIds.has(button.id)) button.remove();
+        for (const [index,nextButton] of nextButtons.entries()) {
+          let button=document.getElementById(nextButton.id);
+          if (!button) { button=nextButton; current.append(button); }
+          else {
+            syncBoardAttributes(button,nextButton);
+            // Keep the native checkout button (and focus) alive across health patches.
+            if (button.innerHTML!==nextButton.innerHTML) button.innerHTML=nextButton.innerHTML;
+          }
+          // Maintain paint order after a front-slot promotion.
+          if (current.children[index]!==button) current.insertBefore(button,current.children[index] || null);
+        }
       }
     }
 
@@ -2805,6 +2916,7 @@
     stage.toggleAttribute('data-names',boardNamesVisible);
     applyReplay();
     applyBoardCamera();
+    cacheBoardMemberHits();
     updateBoardCaption(boardHoveredPath || boardSelectedPath);
   }
 
@@ -2829,19 +2941,24 @@
     const hoverTip=(path,anchor)=>{
       const tip=document.getElementById('board-hover-tip');
       if(!tip||!path){if(tip)tip.hidden=true;return;}
-      const repo=repos.find(r=>r.path===path),plot=boardScene?.plots.find(p=>p.path===path);
+      const repo=repoByPath.get(path),plot=boardScene?.targets.find(p=>p.path===path);
       if(!repo||!plot){tip.hidden=true;return;}
       const st=repo._status||{};
-      tip.textContent=(st.is_worktree?(st.branch||repoName(repo.path)):repoName(repo.path))+(st.branch&&!st.is_worktree?' \u00b7 '+st.branch:'');
+      tip.textContent=plot.role==='worktree'?(st.branch||'Branch not checked')+' · Linked worktree · '+repoName(repo.path):(plot.role==='main'?projectForPath(path).name:repoName(repo.path))+(st.branch?' · '+st.branch:'');
       tip.title=repo.path+(st.branch?' \u00b7 '+st.branch:'');
-      const sx=plot.x*boardCamera.zoom+boardCamera.x,sy=plot.y*boardCamera.zoom+boardCamera.y-96*boardCamera.zoom;
+      const sx=plot.x*boardCamera.zoom+boardCamera.x,sy=plot.y*boardCamera.zoom+boardCamera.y-96*plot.scale*boardCamera.zoom;
       tip.hidden=false;
       const x=Math.max(8,Math.min(stage.clientWidth-tip.offsetWidth-8,sx-tip.offsetWidth/2));
       tip.style.left=x+'px';tip.style.top=Math.max(8,sy)+'px';
       if(anchor&&anchor.getBoundingClientRect)anchor.setAttribute('aria-description',tip.textContent);
     };
-    const caption=e=>{const button=e.target.closest('.board-select');if(!button)return;const path=button.dataset.path;boardHoveredPath=path;updateBoardCaption(path);hoverTip(path,button);};
-    stage.addEventListener('focusin',event=>{ const member=event.target.closest('.board-select');if(member)boardFocusedPath=member.dataset.path;caption(event); });
+    const caption=e=>{const button=e.target.closest('.board-select');if(!button)return;const path=button.dataset.path;updateBoardCaption(path);hoverTip(path,button);};
+    stage.addEventListener('focusin',event=>{
+      const member=event.target.closest('.board-select');if(member)boardFocusedPath=member.dataset.path;
+      caption(event);layoutBoardNames();
+      queueMicrotask(refreshBoardPresentation);
+    });
+
     let hoverRaf=0;
     stage.addEventListener('mousemove',e=>{
       if(drag||hoverRaf)return;
@@ -2851,10 +2968,19 @@
         const path=pickBoardPlot(e.clientX-r.left,e.clientY-r.top);
         if(path){boardHoveredPath=path;updateBoardCaption(path);hoverTip(path,null);}
         else {boardHoveredPath=null;hoverTip(null);updateBoardCaption(boardSelectedPath);}
+        for (const member of stage.querySelectorAll('.board-member')) member.dataset.hovered=String(member.dataset.path===path);
+        layoutBoardNames();
       });
     });
-    stage.addEventListener('focusout',()=>hoverTip(null));
-    stage.addEventListener('mouseleave',()=>{boardHoveredPath=null;hoverTip(null);updateBoardCaption(boardSelectedPath);});
+    stage.addEventListener('focusout',()=>{
+      hoverTip(null);
+      queueMicrotask(()=>{
+        const member=document.activeElement?.closest?.('.board-member');
+        boardFocusedPath=member?.dataset.path || null;
+        refreshBoardPresentation();
+      });
+    });
+    stage.addEventListener('mouseleave',()=>{boardHoveredPath=null;hoverTip(null);updateBoardCaption(boardSelectedPath);for(const member of stage.querySelectorAll('.board-member'))member.dataset.hovered='false';layoutBoardNames();});
     updateBoardCaption(boardHoveredPath || boardSelectedPath);
   }
 
@@ -2868,7 +2994,7 @@
   function updateBoardCaption(path, kind) {
     const repo=repos.find(r=>r.path===path);
     const selected = kind === 'selected' || (kind === undefined && path === boardSelectedPath);
-    const label = repo ? (selected ? 'Selected' : 'Hover preview') + ' · ' + repoName(repo.path) + ' · ' + (repo._status?.branch||'Branch not checked') + ' · ' + boardState(repo).summary + ' · ' + boardGithub(repo).label : 'Hover or select a plot to identify its repository.';
+    const label = repo ? (selected ? 'Selected' : 'Hover preview') + ' · ' + repo.path + ' · ' + (repo._status?.branch||'Branch not checked') + ' · ' + boardState(repo).summary + ' · ' + boardGithub(repo).label : 'Hover or select a plot to identify its repository.';
     document.getElementById('board-caption').textContent=repo?label:(matchMedia('(hover:none)').matches?'Select a tree to identify its repository.':label);
   }
 
@@ -2915,41 +3041,72 @@
   }
 
   function boardNeedsAttention(repo) {
-    return !!(boardGithub(repo).blocked || boardGithub(repo).workflowFailures || repo._status?.error || repo._status?.gone || repo._status?.dirty?.kinds?.conflicted);
+    const project=projectForPath(repo.path), gh=boardFamilyGithub(project || {paths:[repo.path]});
+    return !!(gh.blocked || gh.workflowFailures || repo._status?.error || repo._status?.gone || repo._status?.dirty?.kinds?.conflicted);
   }
-
   function boardMatches(repo) {
     if (!repo) return false;
-    const q = document.getElementById('board-search').value.trim().toLowerCase();
-    const status = repo._status || {};
-    return (!q || (repo.path + ' ' + (status.branch || '') + ' ' + (status.project_path || '')).toLowerCase().includes(q)) &&
+    const q=document.getElementById('board-search').value.trim().toLowerCase(), s=repo._status || {};
+    const project=projectForPath(repo.path);
+    const projectMatch=project && (project.name+' '+(project.mainPath || project.centralRepoPath || '')).toLowerCase().includes(q);
+    return (!q || projectMatch || (repo.path+' '+(s.branch || '')).toLowerCase().includes(q)) &&
       (!document.getElementById('board-attention').checked || boardNeedsAttention(repo));
   }
-
+  function boardPlotMatches(project) { return project.paths.some(path=>boardMatches(repoByPath.get(path))); }
   function selectBoardRepo(path, event) {
-    if (!repos.some(r => r.path === path)) return;
-    boardSelectedPath = path;
-    boardHoveredPath = null;
-    const islandIndex = boardIslands(boardNeighborhoods).findIndex(g => g.projectKeys.includes(projectForPath(path)?.key));
-    if (islandIndex >= 0) { boardPage = islandIndex + 1; boardActivePageKey=boardIslands(boardNeighborhoods)[islandIndex].pageKey; }
-    renderBoard();
-    revealBoardPlot(path);
-    if (event?.detail === 0 || matchMedia('(max-width:850px)').matches) document.querySelector('#board-inspector h3')?.focus({preventScroll:true});
+    ensureProjectRegistry();
+    if (!repoByPath.has(path) || !projectForPath(path)) return;
+    boardFocusedPath=null;
+    if (!ensureBoardRepoVisible(path)) return;
+    boardSelectedPath=path;boardHoveredPath=null;
+    renderBoard();revealBoardPlot(path);
+    if (event?.detail===0 || matchMedia('(max-width:850px)').matches) document.getElementById('board-inspector-title')?.focus({preventScroll:true});
   }
-
   function clearBoardSelection() {
-    const path = boardSelectedPath;
-    boardSelectedPath = null;
-    renderBoard();
-    document.getElementById('board-tile-' + encodeURIComponent(path))?.focus({preventScroll:true});
+    const path=boardSelectedPath;
+    boardSelectedPath=null;
+    ensureBoardRepoVisible(path);renderBoard();
+    document.getElementById('board-tile-'+encodeURIComponent(path))?.focus({preventScroll:true});
   }
-
   function selectBoardMatch() {
-    const match = repos.find(boardMatches);
-    if (!match) return;
-    selectBoardRepo(match.path);
-    document.getElementById('board-tile-' + encodeURIComponent(match.path))?.focus();
+    const project=boardProjects.find(boardPlotMatches), path=project?.paths.find(path=>boardMatches(repoByPath.get(path)));
+    if (!path) return;
+    selectBoardRepo(path);
+    document.getElementById('board-tile-'+encodeURIComponent(path))?.focus();
   }
+  function boardCheckoutRows(project, chooser=false) {
+    return project.paths.map(path=>{
+      const repo=repoByPath.get(path);if(!repo)return '';
+      const role=project.worktreePaths.includes(path)?'Linked worktree':project.mainRepoPath===path?'Main checkout':'Checkout';
+      const branch=repo._status?.branch || 'Branch not checked';
+      return `<button type="button" data-checkout-path="${escapeHtml(path)}" aria-current="${boardSelectedPath===path}" onclick="${chooser?'chooseBoardWorktree':'selectBoardRepo'}(${escapeHtml(JSON.stringify(path))}${chooser?'':', event'})">${escapeHtml(role+' · '+branch+' · '+boardState(repo).summary)}<span class="checkout-path">${escapeHtml(path)}</span></button>`;
+    }).join('');
+  }
+  let boardWorktreeOpener=null, boardWorktreeChoice=null;
+  function openBoardWorktrees() {
+    const project=projectForPath(boardSelectedPath);if(!project)return;
+    boardWorktreeOpener=document.getElementById('board-inspector-worktrees');boardWorktreeChoice=null;
+    document.getElementById('board-worktree-dialog-title').textContent=project.name+' · Choose a checkout';
+    document.getElementById('board-worktree-list').innerHTML=boardCheckoutRows(project,true);
+    document.getElementById('board-worktree-dialog').showModal();
+  }
+  function chooseBoardWorktree(path) {
+    if (!repoByPath.has(path)) return;
+    boardWorktreeChoice=path;
+    document.getElementById('board-worktree-dialog').close();
+  }
+  document.getElementById('board-worktree-dialog').addEventListener('close',()=>{
+    const path=boardWorktreeChoice;boardWorktreeChoice=null;
+    if (path && repoByPath.has(path)) {
+      selectBoardRepo(path);
+      document.getElementById('board-inspector-title')?.focus({preventScroll:true});
+    } else {
+      const opener=boardWorktreeOpener?.isConnected?boardWorktreeOpener:document.getElementById('board-inspector-worktrees');
+      const fallback=document.getElementById('board-tile-'+encodeURIComponent(boardSelectedPath)) || document.getElementById('board-page-status');
+      (opener || fallback)?.focus({preventScroll:true});
+    }
+    boardWorktreeOpener=null;
+  });
 
   function vitalsLine(s) {
     if (!s || !(s.commit_count > 0)) return '';
@@ -2963,6 +3120,8 @@
   function renderBoardInspector() {
     const repo = repos.find(r => r.path === boardSelectedPath);
     const el = document.getElementById('board-inspector');
+    const selectionChanged=el.dataset.path!==repo?.path;
+    if (repo) el.dataset.path=repo.path; else delete el.dataset.path;
     el.dataset.selected = String(!!repo);
     if (!repo) { delete el.dataset.tone; el.innerHTML = '<h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p>'; return; }
     const s = repo._status || {}, b = boardState(repo);
@@ -2976,8 +3135,8 @@
     const familyTone = familyGh.blocked || familyGh.workflowFailures ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking || familyGh.workflowUnconfirmed ? 'unknown' : 'clean';
     const familyInfo = `<p class="board-family-gh attention-summary" data-tone="${familyTone}" data-blocked="${!!(familyGh.blocked || familyGh.workflowFailures)}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
       (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '') + familyGh.workflows.map(info => workflowLinks(info)).join('');
-    el.innerHTML = `<div class="inspector-sprite" aria-hidden="true">${bonsaiGlyph(repo, {theme: bonsaiRepoTheme(repo), large: true, still: false})}</div><h3 id="board-inspector-title" tabindex="-1">${escapeHtml(repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
-      `<p>${escapeHtml(s.branch || 'Branch not checked')}${s.is_worktree ? ' · Linked worktree' : ''}</p>` +
+    el.innerHTML = `<div class="inspector-sprite" aria-hidden="true">${bonsaiGlyph(repo, {theme: bonsaiRepoTheme(repo), large: true, still: false})}</div><h3 id="board-inspector-title" tabindex="-1">${escapeHtml(family?.mainRepoPath===repo.path?family.name:repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
+      `<p>${escapeHtml(s.branch || 'Branch not checked')}${family?.worktreePaths.includes(repo.path) ? ' · Linked worktree of '+escapeHtml(family.name) : ''}</p>` +
       vitalsLine(s) +
       `<p class="inspector-local attention-summary" data-tone="${localAttentionTone(repo)}"><strong>Local Git</strong><br>${escapeHtml(b.summary)}</p>` +
       `<p class="inspector-sync" data-tone="${s.sync?.has_upstream && (s.sync.ahead || s.sync.behind) && !s.error && !s.gone ? 'sync' : 'unknown'}">${escapeHtml(s.error || !s.dirty ? 'Sync state unavailable' : sync)}</p>` +
@@ -2989,7 +3148,9 @@
       `<button class="btn btn-ghost" onclick="locateBoardPlot(boardSelectedPath)">Locate on island</button>` +
       `<button class="btn btn-ghost" onclick="copyRepoPath(boardSelectedPath)">Copy path</button>` +
       `<a id="board-open-editor" class="btn btn-ghost" href="${editorHref(repo.path)}">Open in VS Code</a></div>` +
+      (family?.worktreePaths.length ? `<button id="board-inspector-worktrees" type="button" class="btn btn-ghost" onclick="openBoardWorktrees()">Worktrees</button><div class="board-checkout-list" role="group" aria-label="Project checkouts">${boardCheckoutRows(family)}</div>` : '') +
       '<button class="btn btn-ghost inspector-close" aria-label="Close panel" onclick="clearBoardSelection()"><svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>';
+    if (selectionChanged) el.scrollTop=0;
   }
 
   function boardBranchLine(status) {
@@ -2999,8 +3160,9 @@
 
   function boardLabel(repo, b) {
     const s = boardDisplayStatus(repo, b), gh = boardGithub(repo);
-    const name = s?.is_worktree ? s.branch || repoName(repo.path) : repoName(repo.path);
-    const branch = s?.is_worktree ? 'Linked worktree · ' + repoName(s.project_path || repo.path) : boardBranchLine(s);
+    const worktree=projectForPath(repo.path)?.worktreePaths.includes(repo.path);
+    const name = worktree ? s?.branch || repoName(repo.path) : repoName(repo.path);
+    const branch = worktree ? 'Linked worktree · ' + (projectForPath(repo.path)?.name || repoName(repo.path)) : boardBranchLine(s);
     const sync = b.stage !== 'attention-sync' && s?.sync?.has_upstream && (s.sync.ahead || s.sync.behind) ? ' · ↑' + s.sync.ahead + ' ↓' + s.sync.behind : '';
     return `<span class="board-label"><span class="tile-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>` +
       `<span class="tile-branch" title="${escapeHtml(branch)}">${escapeHtml(branch || 'Branch not checked')}</span>` +
@@ -3008,29 +3170,57 @@
       `<span class="${gh.blocked || gh.workflowFailures ? 'board-gh-badge' : 'tile-status'}">${gh.blocked || gh.workflowFailures ? '● ' : ''}${escapeHtml(gh.label)}</span></span>`;
   }
 
-  function boardTileSvg(repo, b, pose) {
-    const project=pose.project;
-    const TW = BOARD_TTW, TH = BOARD_TTH;
-    const disp = boardDisplayStatus(repo, b);
-    const pinned = (organization.pins || []).includes(repo.path);
-    const noUpstream = b.stage === 'healthy' && b.status?.sync?.has_upstream === false;
-
-    const id = 'board-tile-' + encodeURIComponent(repo.path);
-    // the sprite box is a fixed 128x148; only the hover diamond follows the grid pitch
-    const W = 128, H = 180, cx = 64, gy = 86, topY = 56;
-    const pts = `${cx},${gy - TH / 2} ${cx + TW / 2},${gy} ${cx},${gy + TH / 2} ${cx - TW / 2},${gy}`;
-    const pin = pinned ? `<path class="tile-pin" transform="translate(${cx + 30} ${gy + 14})" d="M6 0.6l1.5 3.3 3.6.4-2.7 2.4.8 3.5L6 8.4 2.8 10.2l.8-3.5L.9 4.3l3.6-.4z"/>` : '';
-    const badge = noUpstream ? `<g data-badge="no-upstream" transform="translate(${W - 20} 8)"><title>No upstream configured</title><circle cx="6" cy="6" r="7" fill="var(--surface2)" stroke="var(--board-muted)" stroke-width="1"/><path d="M2.4 6.4q1.8-3 3.6 0t3.6 0" fill="none" stroke="var(--board-muted)" stroke-width="1.2" stroke-linecap="round"/></g>` : '';
-    const topFill = `<polygon class="tile-top" points="${pts}" fill="transparent" stroke="transparent" stroke-width="2"/>`;
-    const attention = repoAttentionTone(repo);
-    const ring = !['clean','unknown'].includes(attention) ? `<ellipse class="status-ring" data-tone="${attention}" cx="${cx}" cy="${gy+1}" rx="27" ry="12.5" fill="none" stroke-width="1.6"${attention==='unavailable'?' stroke-dasharray="3 4"':''}/>` : '';
-    const pool = `<ellipse class="plot-pool" cx="${cx}" cy="${gy+1}" rx="50" ry="25"/><ellipse class="plot-focus" cx="${cx}" cy="${gy+1}" rx="32" ry="15"/>`;
-    const number = `<g class="plot-number" data-tone="${attention}"><circle cx="${cx+36}" cy="${gy+2}" r="7.5" fill="${pose.island.theme.dark}"/><text x="${cx+36}" y="${gy+5.2}" text-anchor="middle" font-size="9" fill="white" fill-opacity=".92">${pose.number}</text></g>`;
-    const label = escapeHtml(repo.path + (disp?.branch ? ' · ' + disp.branch : '') + ': ' + b.summary + ' · ' + boardGithub(repo).label + (pinned ? ' · pinned' : '') + (noUpstream ? ' · no upstream' : ''));
-    return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" id="board-plot-${encodeURIComponent(project.key)}" data-project="${escapeHtml(project.key)}" data-path="${escapeHtml(repo.path)}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${boardSelectedPath === repo.path}" style="left:${pose.x-cx}px;top:${pose.y-gy}px;z-index:${pose.depth};--i:${pose.number % 26};">` +
-      `<button type="button" class="board-select" id="${id}" data-path="${escapeHtml(repo.path)}" aria-label="${label}" title="${label}" aria-pressed="${boardSelectedPath === repo.path}" aria-controls="board-inspector" onclick="selectBoardRepo(${escapeHtml(JSON.stringify(repo.path))}, event)">` +
-      `<svg viewBox="0 0 ${W} ${H - 32}" role="presentation" aria-hidden="true">` +
-      topFill + pool + ring + number + pin + badge + (project.centralRepoPath ? boardTreeSprite(repo, b, {...pose,island:{...pose.island,theme:BONSAI_FOLIAGE[project.themeIndex]}}, cx, gy) : boardMainPlaceholder(project,cx,gy)) + `</svg>${boardLabel(repo, b)}</button></div>`;
+  function boardPlotLocalState(project) {
+    const states=project.paths.map(path=>repoByPath.get(path)).filter(Boolean).map(boardState);
+    const order=['gone','error','attention-dirty','attention-sync','attention-stale','loading','healthy'];
+    return states.sort((a,b)=>order.indexOf(a.stage)-order.indexOf(b.stage))[0] || {stage:'loading'};
+  }
+  function boardPlotDescription(project, targets) {
+    const central=repoByPath.get(project.centralRepoPath), branch=central?._status?.branch || 'branch not checked';
+    const role=central ? (project.mainRoleConfirmed?'Main checkout':'Checkout')+' on '+branch :
+      project.identityState==='worktree-unresolved'?'Project identity unavailable':project.mainPath?'Main checkout not tracked':'Main checkout not identified';
+    const n=project.worktreePaths.length, shown=targets.filter(t=>t.role==='worktree').length;
+    const tone=typeof boardPlotTone==='function'?boardPlotTone(project):
+      ({gone:'unavailable',error:'unavailable','attention-dirty':'changed','attention-sync':'sync','attention-stale':'stale',loading:'unknown',healthy:'clean'})[boardPlotLocalState(project).stage];
+    return project.name+'. '+role+'. '+n+' linked worktree'+(n===1?'':'s')+'; '+shown+' shown, '+(n-shown)+' hidden. Project state: '+tone+'.'+(n?' Use Worktrees to choose any checkout.':'');
+  }
+  function boardTileSvg(project, pose) {
+    // Registry removal can arrive while a status batch still holds the layout.
+    // Keep surviving members usable without inventing a main checkout target.
+    if (!repoByPath.has(project.defaultPath)) {
+      const paths=project.paths.filter(path=>repoByPath.has(path));
+      if (!paths.length) return '';
+      project={...project,paths,defaultPath:paths[0],centralRepoPath:null,mainRepoPath:null,
+        worktreePaths:project.worktreePaths.filter(path=>repoByPath.has(path))};
+    }
+    const repo=repoByPath.get(project.defaultPath), family=project.worktreePaths.length>0;
+    const attention=repoAttentionTone(repo), palette=BONSAI_FOLIAGE[project.themeIndex];
+    const pinned=project.paths.some(path=>(organization.pins || []).includes(path));
+    const topFill='<polygon class="tile-top" points="64,47 142,86 64,125 -14,86" fill="transparent" stroke="transparent" stroke-width="2"/>';
+    const ring=!['clean','unknown'].includes(attention) ? `<ellipse class="status-ring" data-tone="${attention}" cx="64" cy="${family?98:87}" rx="${family?56:27}" ry="${family?26:12.5}" fill="none" stroke-width="1.6"${attention==='unavailable'?' stroke-dasharray="3 4"':''}/>` : '';
+    const pool=`<ellipse class="plot-pool" cx="64" cy="${family?98:87}" rx="${family?60:50}" ry="${family?30:25}"/>`;
+    const number=`<g class="plot-number" data-tone="${attention}"><circle cx="${family?99:100}" cy="${family?104:88}" r="7.5" fill="${palette.dark}"/><text x="${family?99:100}" y="${family?107.2:91.2}" text-anchor="middle" font-size="9" fill="white" fill-opacity=".92">${pose.number}</text></g>`;
+    const pin=pinned ? `<path class="tile-pin" transform="translate(${family?23:94} ${family?99:100})" d="M6 0.6l1.5 3.3 3.6.4-2.7 2.4.8 3.5L6 8.4 2.8 10.2l.8-3.5L.9 4.3l3.6-.4z"/>` : '';
+    const gh=boardFamilyGithub(project), multi=project.paths.length>1;
+    const familyBadge=family || multi ? `<g class="plot-marks" ${multi?`data-family-gh="${escapeHtml(project.key)}"`:`data-repo-gh="${escapeHtml(repo.path)}" data-workflow-ci="${!!gh.workflowFailures}"`} data-tone="${gh.blocked||gh.workflowFailures?'blocked':gh.incomplete?'unavailable':gh.unchecked||gh.checking?'unknown':'clean'}" transform="translate(110 18)"><circle r="8" fill="var(--surface2)" stroke="var(--signal)"/><text y="3.5" text-anchor="middle" font-size="11" fill="var(--signal)">${gh.workflowFailures?'CI':gh.blocked||'·'}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
+    const hidden=project.worktreePaths.length-pose.targets.filter(t=>t.role==='worktree').length;
+    const more=hidden>0 ? `<text class="plot-more" x="110" y="41" text-anchor="middle" font-size="11" fill="var(--body)">+${hidden}</text>` : '';
+    const members=pose.targets.map(target=>{
+      const member=repoByPath.get(target.path);
+      if (!member) return '';
+      const state=boardState(member), disp=boardDisplayStatus(member,state);
+      const isDefault=target.path===project.defaultPath, noUpstream=state.stage==='healthy' && state.status?.sync?.has_upstream===false;
+      const badge=noUpstream ? `<g class="plot-marks" data-badge="no-upstream" transform="translate(${target.role==='worktree'?64+target.x-pose.x+9:108} ${target.role==='worktree'?86+target.y-pose.y-26:8}) scale(${target.scale})"><title>No upstream configured</title><circle cx="6" cy="6" r="7" fill="var(--surface2)" stroke="var(--board-muted)" stroke-width="1"/><path d="M2.4 6.4q1.8-3 3.6 0t3.6 0" fill="none" stroke="var(--board-muted)" stroke-width="1.2" stroke-linecap="round"/></g>` : '';
+      const role=target.role==='worktree'?'Linked worktree':target.role==='main'?'Main checkout':'Checkout';
+      const label=escapeHtml(member.path+' · '+(disp?.branch || 'Branch not checked')+' · '+role+': '+state.summary+' · '+boardGithub(member).label+((organization.pins || []).includes(member.path)?' · pinned':'')+(noUpstream?' · no upstream':''));
+      const centralPlaceholder=isDefault && !project.centralRepoPath ? boardMainPlaceholder(project,64,86) : '';
+      return `<button type="button" class="board-select board-member ${target.role==='worktree'?'board-sapling':'board-main'}" id="board-tile-${encodeURIComponent(member.path)}" data-path="${escapeHtml(member.path)}" data-role="${target.role}" data-slot="${target.slot}" data-stage="${state.stage}" data-matched="${boardMatches(member)}" data-hovered="${boardHoveredPath===member.path}" aria-label="${label}" title="${label}" aria-pressed="${boardSelectedPath===member.path}" aria-controls="board-inspector" onclick="selectBoardRepo(${escapeHtml(JSON.stringify(member.path))}, event)"><svg viewBox="0 0 128 148" role="presentation" aria-hidden="true">`+
+        (isDefault?topFill+pool+ring+number+centralPlaceholder:'')+
+        boardTreeSprite(member,state,pose,64+target.x-pose.x,86+target.y-pose.y,{scale:target.scale,role:target.role,palette,sharedGithub:family||multi})+
+        (isDefault&&!family?pin+familyBadge+more:'')+badge+`</svg>`+
+        (isDefault&&family?`<svg class="board-shared-marks" viewBox="0 0 128 148" role="presentation" aria-hidden="true">${pin+familyBadge+more}</svg>`:'')+`${boardLabel(member,state)}</button>`;
+    }).join('');
+    return `<div class="tile ${boardPlotMatches(project)?'':'dimmed'}" id="board-plot-${encodeURIComponent(project.key)}" data-project="${escapeHtml(project.key)}" role="group" aria-label="${escapeHtml(project.name)}" data-path="${escapeHtml(project.defaultPath)}" data-stage="${boardPlotLocalState(project).stage}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${project.paths.includes(boardSelectedPath)}" aria-description="${escapeHtml(boardPlotDescription(project,pose.targets))}" style="left:${pose.x-64}px;top:${pose.y-86}px;z-index:${pose.depth};--i:${pose.number%26};">${members}</div>`;
   }
 
   function boardMainPlaceholder(project,cx,gy) {
@@ -3104,7 +3294,7 @@
     if (!boardPanning) renderIsometricScene(boardNeighborhoods);
     renderBoardInspector();
     const matches = repos.filter(boardMatches).length;
-    const matchingProjects=boardProjects.filter(project=>project.paths.some(path=>boardMatches(repoByPath.get(path)))).length;
+    const matchingProjects=boardProjects.filter(boardPlotMatches).length;
     document.getElementById('board-match-count').textContent = matchingProjects + ' of ' + boardProjects.length + ' matching projects · ' + matches + ' matching checkouts' + (document.getElementById('board-search').value ? ' · Enter to select' : '');
     const ghButton = document.getElementById('board-github-refresh');
     ghButton.disabled = !repos.length || refreshingGithub || refreshingBoard || refreshingLocal || repos.some(r => !r._status || r._checking);
@@ -3117,8 +3307,14 @@
     document.getElementById('board-next').disabled = boardPage >= pages;
     document.getElementById('board-refresh').disabled = refreshingBoard || refreshingLocal || repos.some(r => r._checking);
     if (focusId) {
-      const el = document.getElementById(focusId);
-      if (el && document.activeElement !== el) el.focus({preventScroll: true});
+      let el=document.getElementById(focusId);
+      if (!el && focusId.startsWith('board-tile-')) {
+        const oldPath=decodeURIComponent(focusId.slice(11));
+        const previous=[...boardCommittedProjects.values(),...boardPreviousProjects.values()].find(project=>project.paths.includes(oldPath));
+        const survivor=previous?.paths.map(projectForPath).find(Boolean);
+        el=document.getElementById('board-tile-'+encodeURIComponent(survivor?.defaultPath)) || status;
+      }
+      if (el && document.activeElement!==el) el.focus({preventScroll:true});
     }
   }
 
@@ -3149,24 +3345,33 @@
 
 
   document.getElementById('board-view').addEventListener('keydown', event => {
-    const dir = {ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1]}[event.key];
-    const tile = dir && !event.metaKey && !event.ctrlKey && !event.altKey && event.target.closest && event.target.closest('.board-select');
-    if (tile && boardScene) {
-      const from = boardScene.plots.find(p => p.path === tile.dataset.path);
-      let best = null, bestScore = Infinity;
-      if (from) boardScene.plots.forEach(p => {
-        if (p === from) return;
-        const dx = p.x - from.x, dy = p.y - from.y, dist = Math.hypot(dx, dy), dot = (dx * dir[0] + dy * dir[1]) / dist;
-        if (dot > .3 && dist * (1.6 - dot) < bestScore) { bestScore = dist * (1.6 - dot); best = p; }
-      });
+    const dir={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+    const member=dir && !event.metaKey && !event.ctrlKey && event.target.closest?.('.board-select');
+    if (member && boardScene) {
       event.preventDefault();
-      if (best) { document.getElementById('board-tile-' + encodeURIComponent(best.path))?.focus(); revealBoardPlot(best.path); }
+      if (event.altKey) {
+        if (!['ArrowLeft','ArrowRight'].includes(event.key)) return;
+        const project=projectForPath(member.dataset.path), paths=project.paths;
+        const index=(paths.indexOf(member.dataset.path)+(event.key==='ArrowRight'?1:-1)+paths.length)%paths.length;
+        const path=paths[index];
+        presentBoardMember(path);
+        document.getElementById('board-tile-'+encodeURIComponent(path))?.focus({preventScroll:true});revealBoardPlot(path);
+        return;
+      }
+      const from=boardScene.targets.find(t=>t.path===member.dataset.path);
+      const candidates=[];
+      if (from) for (const target of boardScene.targets) {
+        if (target===from) continue;
+        const dx=target.x-from.x,dy=target.y-from.y,distance=Math.hypot(dx,dy),dot=(dx*dir[0]+dy*dir[1])/distance;
+        if (dot>.3) candidates.push({target,score:distance*(1.6-dot),number:boardScene.plots.find(p=>p.projectKey===target.projectKey).number});
+      }
+      candidates.sort((a,b)=>a.score-b.score || a.number-b.number || a.target.drawOrder-b.target.drawOrder);
+      const best=candidates[0]?.target;
+      if(best){document.getElementById('board-tile-'+encodeURIComponent(best.path))?.focus({preventScroll:true});revealBoardPlot(best.path);}
       return;
     }
-    if (event.key === 'Escape' && boardSelectedPath && !event.target.closest('input, select')) {
-      event.preventDefault();
-      event.stopPropagation();
-      clearBoardSelection();
+    if(event.key==='Escape' && boardSelectedPath && !event.target.closest('input, select')){
+      event.preventDefault();event.stopPropagation();clearBoardSelection();
     }
   });
 
@@ -3212,6 +3417,7 @@
       renderBoard();
       if (!firstRoute && initialLocalBatchSettled && !localStatusBatches.size) fetchBoardAll(false);
       if (prev && prev.startsWith('#/repo/')) {
+        if(lastOpenedPath)ensureBoardRepoVisible(lastOpenedPath);
         const link = lastOpenedPath && document.getElementById('board-tile-' + encodeURIComponent(lastOpenedPath));
         (link && link.getClientRects().length ? link : document.getElementById('board-refresh')).focus({preventScroll: true});
       }

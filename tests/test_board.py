@@ -145,7 +145,19 @@ def test_board_focus_visible(page):
     goto_board(page)
     selected_tile(page).evaluate('el => el.focus({focusVisible:true})')
     assert selected_tile(page).evaluate("el => el.matches(':focus-visible')")
-    assert selected_tile(page).evaluate('el => getComputedStyle(el).outlineStyle') != 'none'
+    assert selected_tile(page).evaluate('el => el === document.activeElement')
+    assert selected_tile(page).get_attribute('aria-pressed') == 'false'
+    mark = selected_tile(page).locator('.plot-focus.member-focus')
+    appearance = mark.evaluate('''el => {
+      const style=getComputedStyle(el), rect=el.getBoundingClientRect();
+      return {opacity:style.opacity,stroke:style.stroke,width:style.strokeWidth,
+        vectorEffect:style.vectorEffect,visible:rect.width>0 && rect.height>0};
+    }''')
+    assert float(appearance['opacity']) > 0 and appearance['visible']
+    assert appearance['stroke'] not in ('none', 'transparent', 'rgba(0, 0, 0, 0)')
+    assert float(appearance['width'].replace('px', '')) >= 2
+    assert appearance['vectorEffect'] == 'non-scaling-stroke'
+    assert selected_tile(page).locator('.plot-flag').count() == 0
 
 
 def test_board_pin_marker(page):
