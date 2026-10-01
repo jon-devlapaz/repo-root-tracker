@@ -58,7 +58,7 @@ def test_dirty_is_amber_conflict_is_red_and_selection_is_independent(page):
     }""")
     color = lambda i: page.locator(f'.board-select[data-path="{PATHS[i]}"] .plot-number circle').evaluate('e=>getComputedStyle(e).fill')
     assert color(0) != color(1)
-    assert color(0) == color(2)
+    assert color(0) != color(2)
     assert page.locator('.plot-flag polygon').evaluate('e=>getComputedStyle(e).fill') != color(0)
     page.locator('#board-attention').check()
     assert page.locator(f'.tile[data-path="{PATHS[0]}"]').get_attribute('class') == 'tile dimmed'

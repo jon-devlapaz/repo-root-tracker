@@ -9,3 +9,8 @@ build/
 runs/.*.lock
 runs/**/.writer-lock
 .pi/subagents/
+
+# Impeccable: generated review evidence stays local
+.impeccable/review/
+.impeccable/build/
+.impeccable/mocks/

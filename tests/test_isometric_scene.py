@@ -9,7 +9,7 @@ def test_isometric_projection_round_trip(page, col, row):
       const point=boardGridToWorld(col,row);
       return {point,grid:boardWorldToGrid(point.x,point.y),anchor:BOARD_ART_DIRECTION.anchor};
     }''',[col,row])
-    assert result['point'] == {'x':(col-row)*60,'y':(col+row)*30}
+    assert result['point'] == {'x':(col-row)*78,'y':(col+row)*39}
     assert result['grid'] == {'col':col,'row':row}
     assert result['anchor'] == 'ground-center'
 
