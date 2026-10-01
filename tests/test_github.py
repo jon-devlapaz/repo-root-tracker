@@ -226,13 +226,17 @@ def test_endpoint_untracked_404(live_server: str, tmp_path: Path) -> None:
 
 def live_profile(env: dict[str, str], gh_ok) -> tuple[str, str | None, str | None]:
     """Return (decision, slug, problem): decision is 'skip', 'run' or 'fail'."""
-    if env.get("RRT_LIVE_GITHUB") != "1":
+    flag = env.get("RRT_LIVE_GITHUB", "")
+    if flag in ("", "0"):
         return "skip", None, "live GitHub profile not requested (set RRT_LIVE_GITHUB=1)"
+    if flag != "1":
+        # "true", "yes", "1 " ...: an intended run must never look green by skipping
+        return "fail", None, "RRT_LIVE_GITHUB must be exactly 1 to request the live profile, or unset/0 to skip it"
     slug = env.get("RRT_LIVE_GITHUB_REPO", "").strip()
     if not slug:
         return "fail", None, "RRT_LIVE_GITHUB=1 but RRT_LIVE_GITHUB_REPO=<owner>/<name> is not set"
     if slug.count("/") != 1 or any(c.isspace() for c in slug) or slug.startswith("/") or slug.endswith("/"):
-        return "fail", None, f"RRT_LIVE_GITHUB_REPO must look like owner/name, got {slug!r}"
+        return "fail", None, "RRT_LIVE_GITHUB_REPO must look like owner/name (value not echoed: it may contain credentials)"
     if not gh_ok():
         return "fail", slug, "RRT_LIVE_GITHUB=1 but the gh CLI is missing or not authenticated"
     return "run", slug, None
@@ -249,6 +253,12 @@ def test_live_profile_is_opt_in_and_never_silently_green() -> None:
     ok, no = (lambda: True), (lambda: False)
     assert live_profile({}, ok)[0] == "skip"
     assert live_profile({"RRT_LIVE_GITHUB": "0", "RRT_LIVE_GITHUB_REPO": "a/b"}, ok)[0] == "skip"
+    for typo in ("true", "yes", "1 ", "on", "2"):
+        assert live_profile({"RRT_LIVE_GITHUB": typo, "RRT_LIVE_GITHUB_REPO": "a/b"}, ok)[0] == "fail", typo
+    assert live_profile({"RRT_LIVE_GITHUB": "", "RRT_LIVE_GITHUB_REPO": "a/b"}, ok)[0] == "skip"
+    secret_url = "https://x-access-token:ghp_SECRET@github.com/a/b"
+    decision, _, problem = live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": secret_url}, ok)
+    assert decision == "fail" and "ghp_SECRET" not in problem                                          # never echoed
     assert live_profile({"RRT_LIVE_GITHUB": "1"}, ok)[0] == "fail"                                   # no repo named
     assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "not-a-slug"}, ok)[0] == "fail"
     assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "a b/c"}, ok)[0] == "fail"
@@ -287,4 +297,5 @@ def test_endpoint_live_github(live_server: str, tmp_path: Path) -> None:
     assert not data.get("gh_unavailable") and not data.get("errors"), data.get("errors")
     assert data["checked_at"]
     for secret in (os.environ.get("GH_TOKEN"), os.environ.get("GITHUB_TOKEN")):
-        assert not secret or secret not in body                                  # secret-safe output
+        if secret and secret in body:                                            # secret-safe: fixed message, no values
+            pytest.fail("a credential appeared in the /api/github response", pytrace=False)
