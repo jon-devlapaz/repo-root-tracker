@@ -13,7 +13,7 @@ A single developer on macOS who keeps many git repositories under local folders 
 repo-root-tracker finds git repository roots and serves a local dashboard (Python server, single `dashboard.html`) that tracks many repos at once. It has three views: a searchable, groupable list, an isometric island board where each repo is a plot, and a per-repo detail view (commits, changes, branches, GitHub). Success is seeing the state of every repo at a glance and opening the right one without friction.
 
 ## Positioning
-Local-first and read-only. Pins and collections live in the browser, and removing a repo from the dashboard never deletes its files. It shows local git state and optional GitHub signals in one spatial overview, which a terminal `git status` loop cannot do.
+Local-first and read-only. Pins and collections are saved on the localhost dashboard server with a browser copy for offline use, and removing a repo from the dashboard never deletes its files. It shows local git state and optional GitHub signals in one spatial overview, which a terminal `git status` loop cannot do.
 
 ## Operating Context
 Localhost server on port 7842 via `serve.sh`. Data comes from `/api/repos` and related endpoints. GitHub status is fetched on demand ("Check GitHub"), and local git is refreshed on demand.

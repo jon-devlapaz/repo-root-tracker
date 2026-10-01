@@ -13,6 +13,7 @@ from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from . import NotARepositoryError, find_root
+from . import organization
 from .detail import get_commit_diff, get_repo_detail, get_working_diff
 from .github import get_github_info
 from .history import MAX_DAYS, get_activity
@@ -95,6 +96,11 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
             self.wfile.write(body)
+        elif path == "/api/organization":
+            try:
+                self._json(200, organization.read(CONFIG_DIR))
+            except organization.StorageError as e:
+                self._json(500, {"error": str(e)})
         elif path == "/api/repos":
             self._json(200, load_repos())
         elif path == "/api/repos/status":
@@ -174,6 +180,29 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(500, {"error": str(e)})
         else:
             self.send_error(404)
+
+    def do_PUT(self):
+        host = self.headers.get("Host", "").split(":")[0]
+        if host not in ("127.0.0.1", "localhost"):
+            self.send_error(403)
+            return
+        if urlsplit(self.path).path != "/api/organization":
+            self.send_error(404)
+            return
+        try:
+            if self.headers.get("Transfer-Encoding"):
+                raise ValueError("Transfer-Encoding is not supported")
+            length = int(self.headers.get("Content-Length", "0"))
+            if not 0 < length <= organization.MAX_BYTES:
+                raise ValueError("Organization request must be between 1 byte and 1 MiB")
+            payload = json.loads(self.rfile.read(length))
+            code, state = organization.update(CONFIG_DIR, payload)
+        except (ValueError, UnicodeError, RecursionError) as e:
+            self._json(400, {"error": str(e)})
+        except organization.StorageError as e:
+            self._json(500, {"error": str(e)})
+        else:
+            self._json(code, state)
 
     def do_POST(self):
         host = self.headers.get("Host", "").split(":")[0]

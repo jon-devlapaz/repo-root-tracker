@@ -754,7 +754,17 @@
     <button class="btn btn-ghost" onclick="toggleOrganizing()">Done</button>
   </div>
   <div class="repo-list" id="repo-list"></div>
-  <p class="local-note" id="local-note">Pins and collections are saved only in this browser. Removing a repo here never deletes its files.</p>
+  <p class="local-note" id="local-note">Loading organization from this dashboard server. Removing a repo here never deletes its files.</p>
+  <div class="organization-actions">
+    <button class="btn btn-ghost" onclick="exportOrganization()">Export organization</button>
+    <button class="btn btn-ghost" onclick="document.getElementById('organization-file').click()">Import organization</button>
+    <span id="organization-recovery" hidden>
+      <label>Unsaved copy <select id="organization-recovery-copy" aria-label="Unsaved organization copy"></select></label>
+      <button class="btn btn-ghost" onclick="exportUnsavedOrganization()">Export unsaved organization</button>
+      <button class="btn btn-ghost" onclick="restoreUnsavedOrganization()">Restore unsaved organization</button>
+    </span>
+    <input id="organization-file" type="file" accept=".json,application/json" aria-label="Import organization file" hidden onchange="importOrganization(this)">
+  </div>
   <div class="add-form">
     <input id="path-input" aria-label="Repository path to track" type="text" placeholder="Path, e.g. ~/dev/myproject" autocomplete="off" spellcheck="false">
     <button class="btn" id="add-btn" onclick="addRepo()">Add repo</button>
@@ -862,8 +872,89 @@
   }
 
   const ORGANIZATION_KEY = 'repo-root-tracker.organization.v1';
+  const PENDING_ORGANIZATION_KEY = ORGANIZATION_KEY + '.pending';
+  const ORGANIZATION_RECOVERY_TOAST = 'Updated elsewhere, reloaded. Unsaved changes kept; use Restore unsaved organization.';
   let organization = {pins: [], collections: [], assignments: {}, collapsed: [], grouping: 'collection', sort: 'name', githubEnabled: false};
-  let storageWarning = '';
+  let storageWarning = '', organizationWarning = '';
+  let validLocalOrganization = false, organizationRevision = null, organizationEpoch = 0;
+  let organizationQueue = Promise.resolve();
+  let pendingOrganization = null, organizationBackups = [], pendingStorageWarning = '';
+  let organizationLoaded = false, organizationAcknowledged = false;
+
+  function organizationCopyId() {
+    return Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function validateOrganizationCopy(copy) {
+    if (!copy || typeof copy.id !== 'string' || !copy.id ||
+        !(copy.base_revision === null || Number.isSafeInteger(copy.base_revision) && copy.base_revision >= 0))
+      throw new Error('Invalid unsaved organization copy.');
+    validateOrganization(copy.organization);
+    return copy;
+  }
+
+  function storeOrganizationCopies() {
+    try {
+      if (pendingOrganization || organizationBackups.length) localStorage.setItem(PENDING_ORGANIZATION_KEY,
+        JSON.stringify({version: 1, pending: pendingOrganization, backups: organizationBackups}));
+      else localStorage.removeItem(PENDING_ORGANIZATION_KEY);
+      pendingStorageWarning = '';
+    } catch {
+      pendingStorageWarning = 'Unsaved changes could not be kept in browser storage. Export organization before closing this tab.';
+    }
+  }
+
+  function rememberOrganization(snapshot, base = organizationRevision, id = organizationCopyId()) {
+    pendingOrganization = {id, base_revision: base, organization: JSON.parse(JSON.stringify(snapshot))};
+    organizationAcknowledged = false;
+    storeOrganizationCopies();
+    return pendingOrganization;
+  }
+
+  function keepUnsavedOrganization() {
+    if (pendingOrganization) {
+      if (!organizationBackups.some(copy => copy.id === pendingOrganization.id)) organizationBackups.push(pendingOrganization);
+      pendingOrganization = null;
+      storeOrganizationCopies();
+    }
+  }
+
+  function serverOrganizationIsEmpty(state) {
+    return state.revision === 0 && state.exists === false && !state.pins.length && !state.collections.length &&
+      !Object.keys(state.assignments).length && state.grouping === 'collection' && state.sort === 'name';
+  }
+
+  function sharedOrganization(source = organization) {
+    return {version: 1, pins: source.pins, collections: source.collections,
+      assignments: source.assignments, grouping: source.grouping, sort: source.sort};
+  }
+
+  function validateOrganization(data) {
+    const fields = ['version', 'pins', 'collections', 'assignments', 'grouping', 'sort'];
+    if (!data || typeof data !== 'object' || Array.isArray(data) ||
+        Object.keys(data).length !== fields.length || !fields.every(k => Object.hasOwn(data, k)))
+      throw new Error('Expected version, pins, collections, assignments, grouping, and sort.');
+    if (data.version !== 1) throw new Error('Organization version must be 1.');
+    if (!Array.isArray(data.pins) || !data.pins.every(p => typeof p === 'string'))
+      throw new Error('Pins must be an array of strings.');
+    if (!Array.isArray(data.collections)) throw new Error('Collections must be an array.');
+    const ids = new Set(), names = new Set();
+    for (const c of data.collections) {
+      if (!c || typeof c !== 'object' || Object.keys(c).length !== 2 ||
+          typeof c.id !== 'string' || !c.id.trim() || typeof c.name !== 'string' || !c.name.trim())
+        throw new Error('Each collection needs a nonempty string id and name.');
+      if (ids.has(c.id) || names.has(c.name.trim().toLowerCase()))
+        throw new Error('Collection ids and names must be unique.');
+      ids.add(c.id); names.add(c.name.trim().toLowerCase());
+    }
+    if (!data.assignments || typeof data.assignments !== 'object' || Array.isArray(data.assignments) ||
+        !Object.values(data.assignments).every(id => typeof id === 'string'))
+      throw new Error('Assignments must be an object of string collection ids.');
+    if (!['collection', 'folder', 'project', 'none'].includes(data.grouping)) throw new Error('Invalid grouping.');
+    if (!['name', 'recent'].includes(data.sort)) throw new Error('Invalid sort.');
+    return data;
+  }
+
   try {
     const saved = JSON.parse(localStorage.getItem(ORGANIZATION_KEY));
     if (saved !== null) {
@@ -875,10 +966,26 @@
       organization = {...organization, ...saved};
       if (!['collection', 'folder', 'project', 'none'].includes(organization.grouping)) organization.grouping = 'collection';
       if (!['name', 'recent'].includes(organization.sort)) organization.sort = 'name';
+      validateOrganization(sharedOrganization());
+      validLocalOrganization = true;
     }
-  } catch { storageWarning = 'Saved organization could not be loaded. Changes will be kept for this session until they can be saved.'; }
+  } catch { organization = {pins: [], collections: [], assignments: {}, collapsed: [], grouping: 'collection', sort: 'name', githubEnabled: false}; storageWarning = 'Saved organization could not be loaded. Changes will be kept for this session until they can be saved.'; }
+  try {
+    const saved = JSON.parse(localStorage.getItem(PENDING_ORGANIZATION_KEY));
+    if (saved !== null) {
+      if (!saved || saved.version !== 1 || !Array.isArray(saved.backups) || !Object.hasOwn(saved, 'pending'))
+        throw new Error('Invalid pending organization storage.');
+      const pending = saved.pending === null ? null : validateOrganizationCopy(saved.pending);
+      const backups = saved.backups.map(validateOrganizationCopy);
+      pendingOrganization = pending;
+      organizationBackups = backups;
+      if (pendingOrganization) organization = {...organization, ...pendingOrganization.organization};
+    }
+  } catch {
+    pendingStorageWarning = 'Unsaved organization copies could not be loaded. The stored copies have been left intact; check browser storage before making changes.';
+  }
   let repoFilter = 'all';
-  let editingCollection = null;
+  let editingCollectionId = null;
   let organizing = false, refreshingLocal = false, refreshingGithub = false;
   let viewSignature = '', attentionAutoOpened = false;
   const RESUME_COOLDOWN_MS = 60000;
@@ -971,7 +1078,7 @@
 
   async function refreshGithubAll(force = false) {
     if (refreshingGithub) return;
-    if (force) { organization.githubEnabled = true; persistOrganization(); }
+    if (force) { organization.githubEnabled = true; persistOrganization(true); }
     refreshingGithub = true;
     render();
     const unique = new Map();
@@ -1053,12 +1160,181 @@
     document.getElementById('bulk-move').disabled = !selectedRepos.size;
   }
 
-  function persistOrganization() {
+  function storeLocalOrganization() {
     try {
       localStorage.setItem(ORGANIZATION_KEY, JSON.stringify(organization));
       storageWarning = '';
-    } catch { storageWarning = 'Browser storage is unavailable. Organization changes last only for this session.'; }
+    } catch { storageWarning = 'Browser storage is unavailable. The browser copy will last only for this session; export organization to keep a backup.'; }
+  }
+
+  async function organizationRequest(method = 'GET', data) {
+    const response = await fetch('/api/organization', {method,
+      signal: AbortSignal.timeout(5000),
+      ...(data ? {headers: {'Content-Type': 'application/json'}, body: JSON.stringify(data)} : {})});
+    const state = await response.json();
+    if (!response.ok && response.status !== 409) throw new Error(state.error || 'Server returned ' + response.status);
+    if (method === 'GET' && response.status === 409) throw new Error('Unexpected server conflict.');
+    if (!Number.isSafeInteger(state.revision) || state.revision < 0 || typeof state.exists !== 'boolean')
+      throw new Error('Invalid organization response.');
+    validateOrganization({version: state.version, pins: state.pins, collections: state.collections,
+      assignments: state.assignments, grouping: state.grouping, sort: state.sort});
+    return {status: response.status, state};
+  }
+
+  function updateOrganizationNote() {
+    const messages = [storageWarning, pendingStorageWarning, organizationWarning];
+    if (pendingOrganization) messages.push('Organization has unsaved changes in this browser. Reload to retry or export organization for a backup.');
+    if (organizationBackups.length) messages.push('Unsaved organization copies were kept. Use Restore unsaved organization or Export unsaved organization.');
+    const status = organizationAcknowledged ? 'Organization is saved on this dashboard server.' :
+      organizationLoaded ? 'Organization loaded from this dashboard server.' : 'Loading organization from this dashboard server.';
+    document.getElementById('local-note').textContent = messages.filter(Boolean).join(' ') ||
+      status + ' Removing a repo here never deletes its files.';
+    document.getElementById('organization-recovery').hidden = !organizationBackups.length;
+    const select = document.getElementById('organization-recovery-copy');
+    const selected = select.value;
+    select.innerHTML = organizationBackups.map((copy, i) => `<option value="${escapeHtml(copy.id)}">Copy ${i + 1}</option>`).join('');
+    if (organizationBackups.some(copy => copy.id === selected)) select.value = selected;
+    else if (organizationBackups.length) select.value = organizationBackups[organizationBackups.length - 1].id;
+  }
+
+  function adoptOrganization(state) {
+    organization = {...organization, ...sharedOrganization(state)};
+    organizationRevision = state.revision;
+    organizationLoaded = true;
+    organizationAcknowledged = false;
+    organizationWarning = '';
+    storeLocalOrganization();
+    if (repos.length) render();
+    else updateOrganizationNote();
+  }
+
+  function organizationFailed(error) {
+    organizationWarning = 'Organization could not be saved or loaded on the dashboard server: ' + error.message +
+      '. Using the browser copy. Check the server and config directory, then reload to retry; export organization for a backup.';
+    updateOrganizationNote();
+  }
+
+  function recoverOrganization(state) {
+    organizationEpoch++;
+    keepUnsavedOrganization();
+    adoptOrganization(state);
+    toast(ORGANIZATION_RECOVERY_TOAST);
+  }
+
+  async function saveServerOrganization(copy) {
+    const result = await organizationRequest('PUT', {...copy.organization, base_revision: copy.base_revision});
+    if (result.status === 409) {
+      // Invalidate queued stale edits, then retain the latest draft before adopting the server.
+      organizationEpoch++;
+      const {state} = await organizationRequest();
+      recoverOrganization(state);
+      return false;
+    }
+    organizationRevision = result.state.revision;
+    organizationAcknowledged = true;
+    organizationWarning = '';
+    organizationBackups = organizationBackups.filter(backup => backup.id !== copy.id);
+    if (pendingOrganization === copy) pendingOrganization = null;
+    else if (pendingOrganization) pendingOrganization.base_revision = organizationRevision;
+    storeOrganizationCopies();
+    storeLocalOrganization();
+    updateOrganizationNote();
+    return true;
+  }
+
+  async function loadOrganization() {
+    try {
+      const {state} = await organizationRequest();
+      organizationRevision = state.revision;
+      organizationLoaded = true;
+      if (pendingOrganization) {
+        // Unknown bases are safe only when no server organization exists.
+        if (pendingOrganization.base_revision === null && serverOrganizationIsEmpty(state)) {
+          pendingOrganization.base_revision = 0;
+          storeOrganizationCopies();
+        }
+        if (pendingOrganization.base_revision === state.revision &&
+            (state.revision !== 0 || serverOrganizationIsEmpty(state))) {
+          if (await saveServerOrganization(pendingOrganization)) toast('Unsaved organization saved', 'success');
+        } else recoverOrganization(state);
+      } else if (!serverOrganizationIsEmpty(state)) {
+        organizationEpoch++;
+        adoptOrganization(state);
+      } else if (validLocalOrganization) {
+        await saveServerOrganization(rememberOrganization(sharedOrganization(), 0));
+      }
+      updateOrganizationNote();
+    } catch (error) { organizationFailed(error); }
+  }
+
+  function persistOrganization(localOnly = false, restoredId) {
+    const copy = localOnly ? null : rememberOrganization(sharedOrganization(), organizationRevision, restoredId);
+    storeLocalOrganization();
     render();
+    if (localOnly) return Promise.resolve(true);
+    const epoch = organizationEpoch;
+    organizationQueue = organizationQueue.then(async () => {
+      if (epoch !== organizationEpoch) return false;
+      try {
+        if (organizationRevision === null) {
+          const {state} = await organizationRequest();
+          organizationRevision = state.revision;
+          organizationLoaded = true;
+          if (!serverOrganizationIsEmpty(state)) {
+            recoverOrganization(state);
+            return false;
+          }
+        }
+        copy.base_revision = organizationRevision;
+        storeOrganizationCopies();
+        return await saveServerOrganization(copy);
+      } catch (error) { organizationFailed(error); return false; }
+    });
+    return organizationQueue;
+  }
+
+  function exportOrganization(data = sharedOrganization(), filename = 'organization.json') {
+    try {
+      validateOrganization(data);
+      const url = URL.createObjectURL(new Blob([JSON.stringify(data)], {type: 'application/json'}));
+      const link = document.createElement('a');
+      link.href = url; link.download = filename; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (error) { toast('Could not export organization: ' + error.message, 'error'); }
+  }
+
+  function selectedUnsavedOrganization() {
+    const id = document.getElementById('organization-recovery-copy').value;
+    return organizationBackups.find(copy => copy.id === id);
+  }
+
+  function exportUnsavedOrganization() {
+    const copy = selectedUnsavedOrganization();
+    if (copy) exportOrganization(copy.organization, 'organization-unsaved.json');
+  }
+
+  async function restoreUnsavedOrganization() {
+    const copy = selectedUnsavedOrganization();
+    if (!copy) return;
+    if (pendingOrganization) keepUnsavedOrganization();
+    organization = {...organization, ...copy.organization};
+    if (await persistOrganization(false, copy.id)) toast('Unsaved organization restored and saved', 'success');
+  }
+
+  async function importOrganization(input) {
+    const file = input.files[0];
+    input.value = '';
+    if (!file) return;
+    let data;
+    try {
+      if (file.size > 1024 * 1024) throw new Error('File exceeds 1 MiB.');
+      data = validateOrganization(JSON.parse(await file.text()));
+    } catch (error) { toast('Could not import organization: ' + error.message, 'error'); return; }
+    if (pendingOrganization) keepUnsavedOrganization();
+    organization = {...organization, ...data};
+    const saved = await persistOrganization();
+    if (saved) toast('Organization imported', 'success');
+    else if (organizationWarning) toast('Imported in this browser. Reload to retry saving.');
   }
 
   function setGrouping(value) { organization.grouping = value; persistOrganization(); }
@@ -1086,40 +1362,50 @@
     }
     organization.collapsed = organization.collapsed.includes(key)
       ? organization.collapsed.filter(k => k !== key) : [...organization.collapsed, key];
-    persistOrganization();
+    persistOrganization(true);
   }
 
-  function openCollectionDialog(index = null) {
-    editingCollection = index;
-    document.getElementById('collection-dialog-title').textContent = index === null ? 'New collection' : 'Rename collection';
-    document.getElementById('collection-name').value = index === null ? '' : organization.collections[index].name;
+  function openCollectionDialog(id = null) {
+    const collection = id === null ? null : organization.collections.find(c => c.id === id);
+    if (id !== null && !collection) { toast('This collection was removed elsewhere. Nothing was changed.', 'error'); return; }
+    editingCollectionId = id;
+    document.getElementById('collection-dialog-title').textContent = id === null ? 'New collection' : 'Rename collection';
+    document.getElementById('collection-name').value = collection ? collection.name : '';
     document.getElementById('collection-error').textContent = '';
     document.getElementById('collection-dialog').showModal();
     document.getElementById('collection-name').focus();
   }
 
-  function saveCollection(event) {
+  async function saveCollection(event) {
     event.preventDefault();
     const name = document.getElementById('collection-name').value.trim();
-    if (!name || organization.collections.some((c, i) => i !== editingCollection && c.name.toLowerCase() === name.toLowerCase())) {
+    const collection = organization.collections.find(c => c.id === editingCollectionId);
+    if (editingCollectionId !== null && !collection) {
+      document.getElementById('collection-error').textContent = 'This collection was removed elsewhere. Your entered name has been kept; cancel or create a new collection.';
+      return;
+    }
+    if (!name || organization.collections.some(c => c.id !== editingCollectionId && c.name.toLowerCase() === name.toLowerCase())) {
       document.getElementById('collection-error').textContent = 'Choose a nonempty, unique collection name.';
       return;
     }
-    if (editingCollection === null) organization.collections.push({id: Array.from(crypto.getRandomValues(new Uint8Array(16)), b => b.toString(16).padStart(2, '0')).join(''), name});
-    else organization.collections[editingCollection].name = name;
+    if (editingCollectionId === null) organization.collections.push({id: organizationCopyId(), name});
+    else collection.name = name;
     document.getElementById('collection-dialog').close();
-    persistOrganization();
-    toast('Collection saved. Use Organize repos to move several repos at once.', 'success');
+    if (await persistOrganization()) toast('Collection saved. Use Organize repos to move several repos at once.', 'success');
+    else if (organizationWarning) toast('Collection updated in this browser. Reload to retry saving.');
   }
 
-  function deleteCollection(index) {
-    const collection = organization.collections[index];
+  function deleteCollection(id) {
+    const collection = organization.collections.find(c => c.id === id);
+    if (!collection) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
     if (!confirm('Delete collection “' + collection.name + '”? Its repos will move to Unsorted; no files will be deleted.')) return;
+    const index = organization.collections.findIndex(c => c.id === id);
+    if (index < 0) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
     organization.collections.splice(index, 1);
-    for (const [path, id] of Object.entries(organization.assignments)) {
-      if (id === collection.id) delete organization.assignments[path];
+    for (const [path, assignedId] of Object.entries(organization.assignments)) {
+      if (assignedId === id) delete organization.assignments[path];
     }
-    organization.collapsed = organization.collapsed.filter(k => k !== 'collection:' + collection.id);
+    organization.collapsed = organization.collapsed.filter(k => k !== 'collection:' + id);
     persistOrganization();
   }
 
@@ -1344,7 +1630,7 @@
     badge.textContent = repos.length + ' repo' + (repos.length !== 1 ? 's' : '');
     document.getElementById('repo-grouping').value = organization.grouping;
     document.getElementById('repo-sort').value = organization.sort;
-    document.getElementById('local-note').textContent = storageWarning || 'Pins and collections are saved only in this browser. Removing a repo here never deletes its files.';
+    updateOrganizationNote();
     const openMenus = [...list.querySelectorAll('details[open]')].map(el => el.dataset.path);
     const focused = document.activeElement;
     const focusId = (list.contains(focused) || document.getElementById('repo-filters').contains(focused)) ? focused.id : '';
@@ -1387,7 +1673,7 @@
       return `<section class="collection">
         <div class="collection-heading">
           <button id="toggle-${encodeURIComponent(g.key)}" class="collection-toggle" aria-expanded="${!collapsed}" aria-controls="group-${n}" onclick="toggleCollection(${key})"><span class="chev" aria-hidden="true"></span>${escapeHtml(g.name)}<span class="group-count">${countLabel}</span></button>
-          ${g.index !== null ? `<button class="btn btn-ghost" aria-label="Rename ${escapeHtml(g.name)}" onclick="openCollectionDialog(${g.index})">Rename</button><button class="btn btn-ghost btn-danger" aria-label="Delete collection ${escapeHtml(g.name)}" onclick="deleteCollection(${g.index})">Delete</button>` : ''}
+          ${g.index !== null ? `<button class="btn btn-ghost" aria-label="Rename ${escapeHtml(g.name)}" onclick="openCollectionDialog(${escapeHtml(JSON.stringify(organization.collections[g.index].id))})">Rename</button><button class="btn btn-ghost btn-danger" aria-label="Delete collection ${escapeHtml(g.name)}" onclick="deleteCollection(${escapeHtml(JSON.stringify(organization.collections[g.index].id))})">Delete</button>` : ''}
         </div>
         <div id="group-${n}" class="repo-list" ${collapsed ? 'hidden' : ''}>${g.entries.length ? renderFamilyEntries(g) : pinnedAbove ? '<p class="local-note">This collection’s repos are shown in Pinned above.</p>' : '<p class="local-note">Use Organize repos or a repo’s ••• menu to move repos into this collection.</p>'}</div>
       </section>`;
@@ -3327,7 +3613,9 @@
   window.addEventListener('focus', refreshOnReturn);
   document.addEventListener('visibilitychange', refreshOnReturn);
   window.addEventListener('hashchange', route);
-  load().then(route).catch(() => {
+  updateOrganizationNote();
+  organizationQueue = loadOrganization();
+  organizationQueue.then(load).then(route).catch(() => {
     document.getElementById('local-freshness').textContent = 'Tracked repositories could not be loaded. Reload to retry.';
     document.getElementById('repo-list').innerHTML = '<div class="empty"><p>Dashboard server unavailable. Your tracked repos have not been changed.</p></div>';
   });
