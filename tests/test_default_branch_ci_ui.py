@@ -37,6 +37,7 @@ def check_github(page, payload, *, family=False, remote=True):
           r._status.project_id = 'shared'; r._status.project_path = repos[0].path;
           r._status.is_worktree = i === 1;
         }
+        rememberRepoMetadata(r.path,r._status);
         return r._status;
       });
     }''', {'family': family, 'remote': remote})
@@ -114,8 +115,8 @@ def test_shared_worktree_ci_is_checked_and_counted_once_without_pr_blockers(page
     page.evaluate('selectBoardRepo(repos[1].path)')
     assert page.locator('[data-family-gh]').count() == 1
     assert page.locator('[data-family-gh] text').text_content() == 'CI'
-    assert page.locator('.board-family [data-repo-gh]').count() == 0
-    family = page.evaluate("boardFamilyGithub(boardNeighborhoods.find(g => g.key === 'shared'))")
+    assert page.locator('.tile[data-project="git:shared"] [data-repo-gh]').count() == 0
+    family = page.evaluate("boardFamilyGithub(boardProjects.find(g => g.key === 'git:shared'))")
     assert family['blocked'] == 0
     assert family['workflowFailures'] == 1
     assert len(family['workflows']) == 1

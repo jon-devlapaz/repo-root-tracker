@@ -256,6 +256,7 @@ def test_git_metadata_nests_worktrees_and_project_grouping(page):
       repos[0]._status.project_id = repos[1]._status.project_id = '/actual/git/common';
       repos[0]._status.project_path = repos[1]._status.project_path = paths[0];
       repos[1]._status.is_worktree = true;
+      repos.forEach(r=>rememberRepoMetadata(r.path,r._status)); rebuildProjectModel();
       render();
     }""", PATHS)
     assert page.locator('.project-family .repo-card').count() == 2

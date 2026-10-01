@@ -13,7 +13,7 @@ def test_island_is_described_to_screen_readers(page):
     goto_board(page)
     label = page.locator('#board-stage').get_attribute('aria-label')
     assert page.locator('#board-stage').get_attribute('role') == 'group'
-    assert 'Workspace: 5 repos.' in label and '1 with uncommitted changes' in label
+    assert 'Workspace: 5 projects, 5 checkouts.' in label and '1 with uncommitted changes' in label
 
 
 def test_more_contrast_lifts_muted_text_and_borders(page):

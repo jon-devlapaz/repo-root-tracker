@@ -6,23 +6,22 @@ from test_board import PATHS, click_plot, goto_board, page, selected_tile
 def family_fixture(page):
     goto_board(page)
     page.evaluate('''() => {
-      boardLayoutReady=false;
       for(const r of repos.slice(0,2)) {
         r._status.project_id='shared';r._status.project_path=repos[0].path;
         r._status.github_repo='demo/shared';
         r._github={has_github:true,repo:'demo/shared',prs:[{number:10,title:'Fix checks',url:'https://github.com/demo/shared/pull/10',ci:{state:'fail',failing:3},mergeable:'CONFLICTING'}],issues:[]};
       }
       repos[1]._status.is_worktree=true;
+      repos.forEach(r=>rememberRepoMetadata(r.path,r._status)); rebuildProjectModel();
       renderBoard();
     }''')
 
 
 def test_shared_pr_badge_is_once_per_family_and_inspector_has_actions(page):
     family_fixture(page)
-    page.get_by_role('button', name='Next island', exact=True).click()
     assert page.locator('[data-family-gh]').count() == 1
-    assert page.locator('.board-family [data-repo-gh]').count() == 0
-    assert page.evaluate('boardFamilyGithub(boardNeighborhoods[0]).blocked') == 1
+    assert page.locator('.tile[data-project="git:shared"] [data-repo-gh]').count() == 0
+    assert page.evaluate('boardFamilyGithub(boardProjects[0]).blocked') == 1
     page.evaluate('selectBoardRepo(repos[1].path)')
     panel = page.locator('#board-inspector')
     assert 'Project-wide GitHub' in panel.inner_text()
@@ -64,7 +63,7 @@ def test_names_dense_scene_remain_readable_and_separate(page):
     for width in [1400, 390]:
         page.set_viewport_size({'width':width,'height':900})
         page.get_by_role('button',name='Fit island',exact=True).click()
-        assert page.locator('.plot-name').count() == 3
+        assert page.locator('.plot-name').count() == 4
         assert page.locator('.plot-name').evaluate_all('''els => {
           const r=els.map(el=>el.getBoundingClientRect());
           return !r.some((a,i)=>r.slice(i+1).some(b=>a.left<b.right&&a.right>b.left&&a.top<b.bottom&&a.bottom>b.top));

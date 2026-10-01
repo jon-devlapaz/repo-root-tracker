@@ -28,7 +28,7 @@ def many(page):
     return page
 
 
-def test_ninety_repos_become_four_islands_with_a_map_of_all_of_them(many):
+def test_ninety_projects_become_four_workspace_pages_with_a_map_of_all_of_them(many):
     goto_board(many)
     assert many.locator('#board-archipelago .isle').count() == math.ceil(90 / 25)
     assert many.locator('.board-select').count() == 25
@@ -42,7 +42,7 @@ def test_choosing_an_island_from_the_map_goes_there_and_keeps_focus(many):
     many.locator('#board-isle-3').click()
     assert many.locator('#board-isle-3').get_attribute('aria-current') == 'true'
     assert many.locator('.board-select').count() == 15
-    assert 'Island 4 of 4' in many.locator('#board-page-status').inner_text()
+    assert 'Page 4 of 4' in many.locator('#board-page-status').inner_text()
     assert many.evaluate('boardPage') == 4
     assert many.evaluate('document.activeElement.id') == 'board-page-status'
 

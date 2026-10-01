@@ -798,7 +798,7 @@
   <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
-  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous island" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><span id="board-page-status" role="status" tabindex="-1">Island 1 of 1</span><button id="board-next" class="btn btn-ghost" aria-label="Next island" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
+  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
     <p>No repos tracked yet. Add a repository to grow the island.</p>
     <p><a id="board-empty-add" href="#/">Go to the list to add a repo</a></p>
@@ -1441,8 +1441,8 @@
       const {r} = entry;
       if (organization.pins.includes(r.path)) { add('pinned', 'Pinned').entries.push(entry); continue; }
       if (organization.grouping === 'project') {
-        const status = r._status || {};
-        add('project:' + (status.project_id || r.path), repoName(status.project_path || r.path)).entries.push(entry);
+        const project = projectForPath(r.path);
+        add('project:' + (project?.key || 'path:' + r.path), project?.name || repoName(r.path)).entries.push(entry);
       } else if (organization.grouping === 'folder') {
         const folder = r.path.slice(0, r.path.lastIndexOf('/')) || '/';
         add('folder:' + folder, shortHome(folder)).entries.push(entry);
@@ -1457,12 +1457,215 @@
     return [...groups.values()];
   }
 
+  /* Project identity is independent of local health and of the active view. */
+  const PROJECT_IDENTITIES_KEY = 'repo-root-tracker.project-identities.v1';
+  const repoIdentities = new Map(), githubIdentityByPath = new Map(), metadataObservedPaths = new Set();
+  let repoByPath = new Map(), boardProjects = [], boardProjectByKey = new Map(), boardProjectByPath = new Map();
+  let projectModelRevision = 0, projectModelSignature = '', projectRegistry = null;
+  const exactPathOrder = (a, b) => a < b ? -1 : a > b ? 1 : 0;
+  const usableIdentityString = value => typeof value === 'string' && value.trim().length > 0 && !value.includes('\0');
+  function validatedRepoIdentity(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+    const result = {};
+    for (const field of ['project_id', 'project_path']) {
+      if (Object.hasOwn(value, field)) {
+        if (!usableIdentityString(value[field])) return null;
+        result[field] = value[field];
+      }
+    }
+    if (Object.hasOwn(value, 'is_worktree')) {
+      if (typeof value.is_worktree !== 'boolean') return null;
+      result.is_worktree = value.is_worktree;
+    }
+    return Object.keys(result).length ? result : null;
+  }
+  try {
+    const cached = JSON.parse(localStorage.getItem(PROJECT_IDENTITIES_KEY));
+    if (cached?.version === 1 && cached.entries && typeof cached.entries === 'object' && !Array.isArray(cached.entries)) {
+      for (const [path, value] of Object.entries(cached.entries)) {
+        const identity = validatedRepoIdentity(value);
+        if (usableIdentityString(path) && identity) repoIdentities.set(path, identity);
+      }
+    }
+  } catch { /* Identity storage is optional; memory remains authoritative this session. */ }
+
+  function rememberRepoMetadata(path, status) {
+    if (!status || typeof status !== 'object' || Array.isArray(status) || status.error || status.gone) return;
+    const observed=metadataObservedPaths.has(path);
+    metadataObservedPaths.add(path);
+    const previous = repoIdentities.get(path) || {}, next = {...previous};
+    for (const field of ['project_id', 'project_path']) {
+      if (usableIdentityString(status[field])) next[field] = status[field];
+    }
+    if (typeof status.is_worktree === 'boolean') next.is_worktree = status.is_worktree;
+    // A replacement ID cannot inherit the previous family's main evidence.
+    if (next.project_id && previous.project_id && next.project_id !== previous.project_id) {
+      if (!usableIdentityString(status.project_path)) delete next.project_path;
+      if (typeof status.is_worktree !== 'boolean') delete next.is_worktree;
+    }
+    if (Object.keys(next).length) repoIdentities.set(path, next);
+    const identityChanged=JSON.stringify(previous)!==JSON.stringify(next);
+    if (identityChanged) {
+      try { localStorage.setItem(PROJECT_IDENTITIES_KEY, JSON.stringify({version:1, entries:Object.fromEntries(repoIdentities)})); } catch { }
+    }
+    if (Object.hasOwn(status, 'github_repo') && (status.github_repo === null || usableIdentityString(status.github_repo))) {
+      const slug = status.github_repo;
+      githubIdentityByPath.set(path, slug);
+      const repo = repoByPath.get(path);
+      if (repo?._github && repo._github.repo !== slug) { delete repo._github; delete repo._githubCheckedAt; }
+    }
+    if (identityChanged || !observed) rebuildProjectModel();
+  }
+
+  function deriveBoardProjects(registry, identities = repoIdentities) {
+    const identityFor = path => (identities instanceof Map ? identities.get(path) : identities?.[path]) || {};
+    const entries = registry.map((repo, index) => ({path:repo.path, index, identity:identityFor(repo.path),observed:metadataObservedPaths.has(repo.path) || !!(repo._status && !repo._status.error && !repo._status.gone)}));
+    const byPath = new Map(entries.map(entry => [entry.path, entry]));
+    const owner = new Map(entries.filter(e => usableIdentityString(e.identity.project_id)).map(e => [e.path, e.identity.project_id]));
+    // Exact sibling evidence may attach an unchecked tracked main, never a different established ID.
+    for (const entry of entries) {
+      const identity = entry.identity, main = byPath.get(identity.project_path);
+      if (usableIdentityString(identity.project_id) && main && !owner.has(main.path)) owner.set(main.path, identity.project_id);
+    }
+    const groups = new Map();
+    for (const entry of entries) {
+      const projectId = owner.get(entry.path) || null, key = projectId ? 'git:' + projectId : 'path:' + entry.path;
+      if (!groups.has(key)) groups.set(key, {key, projectId, members:[]});
+      groups.get(key).members.push(entry);
+    }
+    const projects = [...groups.values()].map(({key, projectId, members}) => {
+      members.sort((a,b) => a.index-b.index || exactPathOrder(a.path,b.path));
+      const claims = members.filter(e => usableIdentityString(e.identity.project_path));
+      const memberPaths=new Set(members.map(member=>member.path));
+      const mainClaims = claims.filter(e => memberPaths.has(e.identity.project_path));
+      const explicitMains = members.filter(e => e.identity.is_worktree === false);
+      const mainPath = (mainClaims[0] || claims[0])?.identity.project_path || explicitMains[0]?.path || null;
+      const mainRepoPath = projectId ? (mainClaims[0]?.identity.project_path || explicitMains[0]?.path || null) : null;
+      const unresolved = !projectId && members[0].identity.is_worktree === true;
+      const centralRepoPath = mainRepoPath || (!projectId && !unresolved ? members[0].path : null);
+      const paths = members.map(e => e.path).sort((a,b) => Number(b===mainRepoPath)-Number(a===mainRepoPath) || exactPathOrder(a,b));
+      const worktreePaths = members.filter(e => e.path !== mainRepoPath && (e.identity.is_worktree === true || (projectId && mainPath && e.path !== mainPath))).map(e => e.path).sort(exactPathOrder);
+      const conflict = new Set(claims.map(e => e.identity.project_path)).size > 1 || explicitMains.some(e => mainRepoPath && e.path !== mainRepoPath) || claims.some(e => mainRepoPath && e.identity.project_path!==mainRepoPath) || members.some(e => e.path === mainRepoPath && e.identity.is_worktree === true) || claims.some(e => byPath.has(e.identity.project_path) && owner.get(e.identity.project_path) !== projectId);
+      return {key, projectId, mainPath, mainRepoPath, centralRepoPath, defaultPath:centralRepoPath || paths[0],
+        name:repoName(mainPath || centralRepoPath || paths[0]), paths, worktreePaths, order:members[0].index,
+        identityState:projectId ? 'git' : unresolved ? 'worktree-unresolved' : members[0].observed || Object.keys(members[0].identity).length ? 'standalone' : 'provisional',
+        identityWarning:conflict ? 'Conflicting project identity. Refresh local Git.' : unresolved ? 'Project identity unavailable' : '',
+        mainRoleConfirmed:!!mainRepoPath, themeIndex:projectId && paths.length>1 ? bonsaiFamilyTheme(projectId) : 0};
+    });
+    projects.sort((a,b) => a.order-b.order || exactPathOrder(a.key,b.key));
+    projects.forEach((project,index) => { project.number=index+1; });
+    return projects;
+  }
+
+  function rebuildProjectModel() {
+    projectRegistry = repos;
+    repoByPath = new Map(repos.map(repo => [repo.path,repo]));
+    // Removed objects cannot retain ownership of a request, including same-path replacements.
+    for (const job of [...localStatusJobs.values()]) if (repoByPath.get(job.repo.path) !== job.repo) job.cancel('removed');
+    const projects = deriveBoardProjects(repos), signature = JSON.stringify(projects);
+    boardProjects = projects;
+    boardProjectByKey = new Map(projects.map(project => [project.key,project]));
+    boardProjectByPath = new Map(projects.flatMap(project => project.paths.map(path => [path,project])));
+    if (signature !== projectModelSignature) {
+      projectModelSignature=signature; projectModelRevision++;
+      boardMembershipPending=true;
+      commitBoardMembership();
+    }
+  }
+  function projectForPath(path) { return boardProjectByPath.get(path) || null; }
+  function ensureProjectRegistry() {
+    if (projectRegistry !== repos || repoByPath.size !== repos.length || repos.some(repo => repoByPath.get(repo.path)!==repo)) rebuildProjectModel();
+  }
+
+  /* One queue and deadline for List and Board; the deadline includes body decoding. */
+  const localStatusQueue = [], localStatusJobs = new Map(), localStatusBatches = new Set();
+  let localStatusInFlight = 0, localBatchSequence = 0, initialLocalBatch = null, initialLocalBatchSettled = false;
+  function requestLocalStatus(repo, {source, batchId} = {}) {
+    const request = (repo._statusRequest || 0) + 1;
+    repo._statusRequest=request; repo._checking=true; repo._boardQueued=source==='board';
+    const old = localStatusJobs.get(repo);
+    // Supersession settles the old caller even if its fetch ignores abort.
+    if (old) old.cancel('superseded');
+    let resolve;
+    const promise = new Promise(done => { resolve=done; });
+    const job = {repo,request,source,batchId,closed:false,dispatched:false,controller:null,timer:null,
+      finish(result) {
+        if (job.closed) return;
+        job.closed=true; clearTimeout(job.timer);
+        if (repo._statusRequest===request) {
+          if (result.error && repos.includes(repo)) {
+            repo._status={error:true,detail:result.error}; repo._checkedAt=new Date().toISOString();
+          }
+          repo._checking=false; repo._boardQueued=false;
+        }
+        if (job.controller && boardControllers.get(repo.path)===job.controller) boardControllers.delete(repo.path);
+        if (job.dispatched) localStatusInFlight--;
+        if (localStatusJobs.get(repo)===job) localStatusJobs.delete(repo);
+        resolve({...result,request,controller:job.controller});
+        // Dispatch synchronously: existing direct callers observe the first fetch immediately.
+        drainLocalStatusQueue();
+      },
+      cancel(reason) { job.controller?.abort(); job.finish({cancelled:reason}); }
+    };
+    localStatusJobs.set(repo,job); localStatusQueue.push(job); drainLocalStatusQueue();
+    return promise;
+  }
+  function drainLocalStatusQueue() {
+    while (localStatusInFlight < 3 && localStatusQueue.length) {
+      const job=localStatusQueue.shift(), repo=job.repo;
+      if (job.closed) continue;
+      if (!repos.includes(repo) || repo._statusRequest!==job.request) { job.cancel('removed'); continue; }
+      job.dispatched=true; localStatusInFlight++;
+      const controller=new AbortController(); job.controller=controller;
+      boardControllers.set(repo.path,controller);
+      job.timer=setTimeout(() => { controller.abort(); job.finish({error:'Local Git check timed out'}); },10000);
+      // No promise rejection or late body completion can mutate application state here.
+      try {
+        Promise.resolve(fetch('/api/repos/status?path='+encodeURIComponent(repo.path),{signal:controller.signal}))
+          .then(async response => ({response,data:await response.json()}))
+          .then(result => job.finish(result), () => job.finish({error:'Could not check local Git'}));
+      } catch { job.finish({error:'Could not check local Git'}); }
+    }
+  }
+  function acceptsLocalStatus(repo, result) {
+    return !result.cancelled && repos.includes(repo) && repo._statusRequest===result.request;
+  }
+  function applyLocalStatus(repo, result) {
+    const {response,data}=result;
+    const valid=data && typeof data==='object' && !Array.isArray(data);
+    repo._status=result.error || !valid ? {error:true,detail:result.error || 'Invalid local Git response'} :
+      response.ok ? data : {error:true,gone:response.status===410,detail:data.error};
+    repo._checkedAt=(valid && data.checked_at) || new Date().toISOString();
+  }
+  function finishLocalStatus(repo,result) {
+    if (repo._statusRequest===result.request) { repo._checking=false; repo._boardQueued=false; }
+    if (result.controller && boardControllers.get(repo.path)===result.controller) boardControllers.delete(repo.path);
+  }
+  async function runLocalStatusBatch(snapshot, source, initial=false) {
+    const batch={id:++localBatchSequence,paths:snapshot.map(repo=>repo.path)};
+    batch.completion=new Promise(resolve=>{ batch.complete=resolve; });
+    localStatusBatches.add(batch.id);
+    if (initial) { initialLocalBatch=batch; initialLocalBatchSettled=false; }
+    try { await Promise.all(snapshot.map(repo => source==='board' ? fetchBoardStatus(repos.indexOf(repo),batch.id) : fetchStatus(repos.indexOf(repo),batch.id))); }
+    finally {
+      localStatusBatches.delete(batch.id);
+      if (initial) { initialLocalBatchSettled=true; boardMembershipPending=true; }
+      commitBoardMembership();
+      render();
+      batch.complete();
+    }
+  }
+
   /* ---------- list view ---------- */
   async function load() {
     const res = await fetch('/api/repos');
+    if (!res.ok) throw new Error('Could not load tracked repositories');
     repos = (await res.json()).map(r => ({...r, _status: null}));
+    rebuildProjectModel();
+    // Cached/provisional plots paint before any status request settles.
+    const initial = runLocalStatusBatch([...repos], 'list', true);
     render();
-    checkLocalRepos().then(() => {
+    initial.then(() => {
       if (organization.githubEnabled) refreshGithubAll();
     });
   }
@@ -1474,12 +1677,7 @@
     }));
   }
 
-  async function checkLocalRepos() {
-    await runLimited(repos, async repo => {
-      const i = repos.indexOf(repo);
-      if (i !== -1) await fetchStatus(i);
-    });
-  }
+  async function checkLocalRepos() { await runLocalStatusBatch([...repos], 'list'); }
 
   async function refreshOnReturn() {
     if (document.visibilityState !== 'visible' || detailPath || organizing || document.querySelector('dialog[open]') || resumeRefreshing || refreshingLocal || refreshingBoard || refreshingGithub || githubTasks.size || !repos.length || repos.some(r => !r._status || r._checking)) return;
@@ -1497,26 +1695,23 @@
     } finally { resumeRefreshing = false; }
   }
 
-  async function fetchStatus(i) {
+  async function fetchStatus(i, batchId) {
     const repo = repos[i];
     if (!repo) return;
-    const request = (repo._statusRequest || 0) + 1;
-    repo._statusRequest = request;
-    repo._checking = true;
-    render();
-    try {
-      const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repo.path));
-      const data = await res.json();
-      if (repo._statusRequest !== request) return;
-      repo._status = res.ok ? data : {error: true, gone: res.status === 410, detail: data.error};
-      if (res.ok && Object.hasOwn(data, 'github_repo') && repo._github && repo._github.repo !== data.github_repo) delete repo._github;
-      repo._checkedAt = data.checked_at || new Date().toISOString();
-    } catch {
-      if (repo._statusRequest === request) { repo._status = {error: true, detail: 'Could not check local Git'}; repo._checkedAt = new Date().toISOString(); }
-    } finally {
-      if (repo._statusRequest === request) repo._checking = false;
-      render();
+    if (batchId === undefined) return runLocalStatusBatch([repo], 'list');
+    const pending = requestLocalStatus(repo, {source:'list',batchId});
+    scheduleLocalRender();
+    const result = await pending;
+    if (acceptsLocalStatus(repo,result)) {
+      applyLocalStatus(repo,result);
+      if (!repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
     }
+    finishLocalStatus(repo,result);
+    scheduleLocalRender();
+  }
+  let localRenderFrame=0;
+  function scheduleLocalRender() {
+    if (!localRenderFrame) localRenderFrame=requestAnimationFrame(() => { localRenderFrame=0; render(); });
   }
 
   function dirtyLabel(d) {
@@ -1606,22 +1801,24 @@
     if (organization.grouping === 'project') return group.entries.map(({r, i}) => renderRepo(r, i)).join('');
     const families = new Map();
     group.entries.forEach(entry => {
-      const key = (entry.r._status && entry.r._status.project_id) || entry.r.path;
+      const key = projectForPath(entry.r.path)?.key || 'path:' + entry.r.path;
       if (!families.has(key)) families.set(key, []);
       families.get(key).push(entry);
     });
     return [...families.entries()].map(([id, entries]) => {
       if (entries.length === 1) return renderRepo(entries[0].r, entries[0].i);
-      entries.sort((a, b) => Number(!!a.r._status.is_worktree) - Number(!!b.r._status.is_worktree));
+      const project = projectForPath(entries[0].r.path);
+      entries.sort((a, b) => project.paths.indexOf(a.r.path) - project.paths.indexOf(b.r.path));
       const key = 'family:' + group.key + ':' + id;
       const collapsed = groupCollapsed(key);
       const control = 'family-' + encodeURIComponent(key);
-      const path = entries[0].r._status.project_path || entries[0].r.path;
+      const path = project.mainPath || project.defaultPath;
       return `<div class="project-family"><button id="toggle-${encodeURIComponent(key)}" class="collection-toggle" aria-expanded="${!collapsed}" aria-controls="${control}" onclick="toggleCollection(${escapeHtml(JSON.stringify(key))})"><span class="chev" aria-hidden="true"></span>${escapeHtml(repoName(path))} · ${entries.length} tracked checkouts</button><div id="${control}" class="repo-list" ${collapsed ? 'hidden' : ''}>${entries.map(({r, i}) => renderRepo(r, i)).join('')}</div></div>`;
     }).join('');
   }
 
   function render() {
+    ensureProjectRegistry();
     syncAmbient();
     if (detailPath) return;
     if (location.hash === '#/board' || location.hash.startsWith('#/board?')) { renderBoard(); return; }
@@ -1705,6 +1902,7 @@
     if (res.status === 201) {
       input.value = '';
       repos.push({path: data.path, _status: null});
+      rebuildProjectModel();
       render();
       fetchStatus(repos.length - 1);
       toast('Added ' + shortHome(data.path), 'success');
@@ -1734,14 +1932,16 @@
       method: 'DELETE', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({path})
     });
-    if (res.ok) { repos = repos.filter(r => r.path !== path); render(); toast('Removed', 'success'); }
+    if (res.ok) { repos = repos.filter(r => r.path !== path); rebuildProjectModel(); render(); toast('Removed', 'success'); }
     else toast('Could not remove repo', 'error');
   }
 
   /* ---------- board view ---------- */
-  let boardScrollY = 0, boardPage = 1, detailOrigin = '#/', lastHash = '';
-  let refreshingBoard = false, boardSelectedPath = null;
+  let boardActivePageKey = 'workspace:0';
+  let boardScrollY = 0, boardPage = 1, detailOrigin = '#/', lastHash = '', routeHasRun = false;
+  let refreshingBoard = false, boardSelectedPath = null, boardFocusedPath = null;
   let boardLayoutSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
+  let boardCommittedProjects = new Map(), boardMembershipPending = false, boardPanning = false;
   const boardControllers = new Map();
   const BOARD_PAGE_SIZE = 25;
   const BOARD_ART_DIRECTION = Object.freeze({projection:'2:1', anchor:'ground-center', light:'top-left', shading:'sumi ink on raked gravel', tile:[156,78], depth:36});
@@ -2083,41 +2283,73 @@
   const editorHref = path => 'vscode://file' + encodeURI(path);
   function bonsaiFamilyTheme(key) { return !key || key==='workspace' ? 0 : bonsaiSeed(key) % BONSAI_FOLIAGE.length; }
   function bonsaiRepoTheme(repo) {
-    const s=repo._status||{}; return s.project_id && repos.filter(r=>r._status&&r._status.project_id===s.project_id).length>1 ? bonsaiFamilyTheme(s.project_id) : 0;
+    return projectForPath(repo.path)?.themeIndex || 0;
   }
   function boardGridToWorld(col, row) { return {x:(col-row)*BOARD_TTW/2, y:(col+row)*BOARD_TTH/2}; }
   function boardWorldToGrid(x, y) { return {col:(x/(BOARD_TTW/2)+y/(BOARD_TTH/2))/2, row:(y/(BOARD_TTH/2)-x/(BOARD_TTW/2))/2}; }
 
-  function boardIslands(groups) {
-    const singles = groups.filter(g => g.paths.length === 1).flatMap(g => g.paths);
-    const families = (singles.length ? [{key:'workspace',name:'Workspace',paths:singles}] : []).concat(groups.filter(g => g.paths.length > 1));
-    return families.flatMap(g => {
-      const themeIndex = bonsaiFamilyTheme(g.key);
-      const chunks = [];
-      for (let i=0;i<g.paths.length;i+=BOARD_PAGE_SIZE) chunks.push({...g,familyPaths:g.paths,total:g.paths.length,paths:g.paths.slice(i,i+BOARD_PAGE_SIZE),themeIndex});
-      return chunks;
+  function commitBoardMembership() {
+    if (!boardMembershipPending || localStatusBatches.size || boardPanning) return false;
+    const focusedPath=document.activeElement?.closest?.('.board-select')?.dataset.path;
+    boardCommittedProjects=new Map(boardProjects.map(project => [project.key,project]));
+    boardNeighborhoods=[{key:'workspace',name:'Workspace',projectKeys:boardProjects.map(project=>project.key)}];
+    boardMembershipPending=false; boardLayoutSignature=projectModelSignature;
+    boardLayoutReady=initialLocalBatchSettled;
+    // Selection is a checkout path; consolidation may move it onto another page.
+    if (focusedPath) boardFocusedPath=focusedPath;
+    const path=boardSelectedPath || focusedPath;
+    const project=projectForPath(path);
+    const pages=boardIslands(boardNeighborhoods);
+    let index=project ? pages.findIndex(page=>page.projectKeys.includes(project.key)) : -1;
+    if (index<0) index=pages.findIndex(page=>page.pageKey===boardActivePageKey);
+    if (index<0) index=Math.min(boardPage-1,pages.length-1);
+    boardPage=Math.max(1,index+1); boardActivePageKey=pages[boardPage-1]?.pageKey || 'workspace:0';
+    return true;
+  }
+  function boardIslands(neighborhoods) {
+    return neighborhoods.flatMap(neighborhood => {
+      const allProjectKeys=neighborhood.projectKeys, pageCount=Math.max(1,Math.ceil(allProjectKeys.length/BOARD_PAGE_SIZE));
+      return Array.from({length:pageCount},(_,pageIndex) => {
+        const projectKeys=allProjectKeys.slice(pageIndex*BOARD_PAGE_SIZE,(pageIndex+1)*BOARD_PAGE_SIZE);
+        const projects=projectKeys.map(key=>boardCommittedProjects.get(key) || boardProjectByKey.get(key)).filter(Boolean);
+        return {...neighborhood,pageKey:neighborhood.key+':'+pageIndex,pageIndex,pageCount,projectKeys,allProjectKeys,
+          total:allProjectKeys.length,empty:projectKeys.length===0,themeIndex:bonsaiFamilyTheme(neighborhood.key),
+          // Geometry compatibility: one default path per plot, never family membership.
+          paths:projects.map(project=>project.defaultPath),allPaths:projects.flatMap(project=>project.paths)};
+      });
     });
   }
-
-  function makeBoardScene(groups) {
-    const g = boardIslands(groups)[boardPage-1];
-    if (!g) return {width:360,height:20,islands:[],plots:[]};
-    g.themeIndex %= BONSAI_FOLIAGE.length;
-    g.theme = BONSAI_FOLIAGE[g.themeIndex];
-    g.cols = Math.ceil(Math.sqrt(g.paths.length)); g.rows = Math.ceil(g.paths.length/g.cols);
-    g.width = (g.cols+g.rows)*BOARD_TTW/2+40;
-    g.height = (g.cols+g.rows)*BOARD_TTH/2+162;
-    const width = Math.max(320,g.width)+110;
-    g.x = (width-g.width)/2; g.y = 20;
-    g.origin = {x:g.rows*BOARD_TTW/2+20,y:100};
-    g.titleY = g.y+g.origin.y+boardGridToWorld(g.cols-.5,g.rows-.5).y+40;
-    const order = boardNeighborhoods.flatMap(group=>group.paths);
-    const plots = g.paths.map((path,i) => {
+  function makeBoardScene(neighborhoods) {
+    const pages=boardIslands(neighborhoods);
+    const g=pages[boardPage-1] || pages[0] || {key:'workspace',pageKey:'workspace:0',name:'Workspace',pageIndex:0,pageCount:1,projectKeys:[],allProjectKeys:[],total:0,empty:true,paths:[],allPaths:[],themeIndex:0};
+    g.themeIndex %= BONSAI_FOLIAGE.length; g.theme=BONSAI_FOLIAGE[g.themeIndex];
+    if (g.empty) {
+      Object.assign(g,{cols:0,rows:0,width:320,height:202,x:55,y:20,origin:{x:160,y:100},titleY:200});
+      return {empty:true,width:430,height:240,islands:[g],plots:[],targets:[]};
+    }
+    g.cols=Math.ceil(Math.sqrt(g.projectKeys.length)); g.rows=Math.ceil(g.projectKeys.length/g.cols);
+    g.width=(g.cols+g.rows)*BOARD_TTW/2+40; g.height=(g.cols+g.rows)*BOARD_TTH/2+162;
+    const width=Math.max(320,g.width)+110;
+    g.x=(width-g.width)/2; g.y=20; g.origin={x:g.rows*BOARD_TTW/2+20,y:100};
+    g.titleY=g.y+g.origin.y+boardGridToWorld(g.cols-.5,g.rows-.5).y+40;
+    const plots=g.projectKeys.map((key,i) => {
+      const project=boardCommittedProjects.get(key) || boardProjectByKey.get(key);
       const col=i%g.cols,row=Math.floor(i/g.cols),point=boardGridToWorld(col,row);
-      return {path,col,row,island:g,x:g.x+g.origin.x+point.x,y:g.y+g.origin.y+point.y,number:order.indexOf(path)+1};
+      return {projectKey:key,project,path:project.defaultPath,col,row,island:g,x:g.x+g.origin.x+point.x,y:g.y+g.origin.y+point.y,number:project.number,targets:[]};
     });
-    plots.sort((a,b) => (a.row+a.col)-(b.row+b.col) || a.number-b.number);
-    return {width,height:g.y+g.height+18,islands:[g],plots};
+    plots.sort((a,b)=>(a.row+a.col)-(b.row+b.col)||a.number-b.number);
+    let drawOrder=0;
+    for (const plot of plots) {
+      const project=plot.project;
+      if (project.centralRepoPath) plot.targets.push({path:project.centralRepoPath,projectKey:project.key,
+        role:project.mainRoleConfirmed?'main':'standalone',slot:'main',x:plot.x,y:plot.y,scale:1,drawOrder:drawOrder++});
+      const slots=[['left',-42,7],['right',42,7],['front',0,30]];
+      project.worktreePaths.slice(0,3).forEach((path,index) => {
+        const [slot,x,y]=slots[index];
+        plot.targets.push({path,projectKey:project.key,role:'worktree',slot,x:plot.x+x,y:plot.y+y,scale:.4,drawOrder:drawOrder++});
+      });
+    }
+    return {empty:false,width,height:g.y+g.height+18,islands:[g],plots,targets:plots.flatMap(plot=>plot.targets)};
   }
 
   function boardFamilyGithub(g) {
@@ -2190,7 +2422,7 @@
   /* ---------- ground: raked gravel, moonlight and cast shadows, drawn once on a canvas ---------- */
   let boardHourOverride = null, groundDraws = 0;
   const groundCache = {sig: '', structure: '', canvas: null, shadows: 0};
-  let groundTimer = null;
+  let groundTimer = null, groundRequest = 0;
   // disturbed means the repo's own status says so; a tile that is merely re-checking must not redraw the bed
   const groundDisturbed = repo => { const s = repo && repo._status; return !!s && !!(s.gone || s.error || (s.dirty && s.dirty.is_clean === false)); };
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -2295,13 +2527,15 @@
     // the same bed with only its details changed keeps its bitmap and repaints once things settle
     if (!sameBed) Object.assign(groundCache, {canvas: quickGround(g, scale, sky), structure, sig: '', shadows: 0});
     clearTimeout(groundTimer);
+    const generation=++groundRequest;
     const run = () => {
+      if (generation!==groundRequest || boardScene.empty || boardScene.islands[0].pageKey!==g.pageKey) return;
       paint();
       const live = document.getElementById('board-ground');
       if (live && live.width === groundCache.canvas.width) { const ctx = live.getContext('2d'); ctx.clearRect(0, 0, live.width, live.height); ctx.drawImage(groundCache.canvas, 0, 0); }
     };
     // never on the first-paint path: wait for the next frame, then a beat more
-    groundTimer = setTimeout(() => requestAnimationFrame(() => { groundTimer = setTimeout(run, 60); }), sameBed ? 100 : 0);
+    groundTimer = setTimeout(() => requestAnimationFrame(() => { if (generation===groundRequest && !boardScene.empty && boardScene.islands[0].pageKey===g.pageKey) groundTimer = setTimeout(run, 60); }), sameBed ? 100 : 0);
     return {canvas: groundCache.canvas, sky};
   }
 
@@ -2408,7 +2642,7 @@
     });
   }
   function pickBoardPlot(x,y) {
-    if (!boardScene) return null;
+    if (!boardScene || boardScene.empty) return null;
     const world=boardScreenToWorld(x,y);
     for (const plot of [...boardScene.plots].reverse()) {
       if (boardSpriteContains(plot,world)) return plot.path;
@@ -2507,14 +2741,14 @@
   }
 
   function renderIsometricScene(groups) {
-    const signature=JSON.stringify([boardPage,groups.map(g => [g.key,g.paths])]);
+    const signature=JSON.stringify([boardActivePageKey,groups.map(g => [g.key,g.projectKeys.map(key => {const p=boardCommittedProjects.get(key);return [key,p.paths,p.centralRepoPath,p.worktreePaths];})])]);
     const entering=signature!==boardSceneSignature;
     if(entering){boardFitPending=true;boardSceneSignature=signature;}
     boardScene=makeBoardScene(groups);
     const plots=boardScene.plots;
-    const terrain=boardScene.islands.map(boardTerrainSvg).join('');
+    const terrain=boardScene.empty ? '' : boardScene.islands.map(boardTerrainSvg).join('');
     const islands=boardScene.islands.map(g => `<div class="board-neighborhood ${g.key==='workspace'?'':'board-family'}" data-project="${escapeHtml(g.key)}" style="position:absolute;left:0;top:0;width:100%;height:100%;padding:0;border:0;pointer-events:none;">`+
-      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { const repo=repos.find(r=>r.path===p.path);return boardTileSvg(repo,boardState(repo),{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
+      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { const repo=repoByPath.get(p.path);if(!repo)return '';return boardTileSvg(repo,boardState(repo),{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
     let stage=document.getElementById('board-stage');
     if (!stage) {
       stage=document.createElement('div');stage.id='board-stage';
@@ -2522,8 +2756,26 @@
       bindBoardInteractions(stage);
       boardResizeObserver.disconnect();boardResizeObserver.observe(stage);
     }
-    const ground=boardGroundFor(boardScene.islands[0]);
-    stage.innerHTML=`<div id="board-sky" aria-hidden="true"></div><div id="board-world" style="width:${boardScene.width}px;height:${boardScene.height}px;"><svg id="board-terrain" width="${boardScene.width}" height="${boardScene.height}" role="presentation" aria-hidden="true">${terrain}</svg>${islands}</div><div id="board-name-overlay"></div><div id="board-hover-tip" hidden></div>`;
+    if (boardScene.empty) { groundRequest++; clearTimeout(groundTimer); Object.assign(groundCache,{sig:'',structure:'',canvas:null,shadows:0}); }
+    const ground=boardScene.empty ? null : boardGroundFor(boardScene.islands[0]);
+    const markup=`<div id="board-sky" aria-hidden="true"></div><div id="board-world" style="width:${boardScene.width}px;height:${boardScene.height}px;">${boardScene.empty ? '' : `<svg id="board-terrain" width="${boardScene.width}" height="${boardScene.height}" role="presentation" aria-hidden="true">${terrain}</svg>`}${islands}</div><div id="board-name-overlay"></div><div id="board-hover-tip" hidden></div>`;
+    if (entering || !document.getElementById('board-world')) stage.innerHTML=markup;
+    else {
+      const template=document.createElement('template'); template.innerHTML=markup;
+      const next=template.content;
+      const terrainNode=document.getElementById('board-terrain'), nextTerrain=next.querySelector('#board-terrain');
+      if (terrainNode && nextTerrain && terrainNode.innerHTML!==nextTerrain.innerHTML) terrainNode.innerHTML=nextTerrain.innerHTML;
+      for (const tile of next.querySelectorAll('.tile')) {
+        const current=document.getElementById(tile.id);
+        if (!current) continue;
+        syncBoardAttributes(current,tile);
+        const button=current.querySelector('.board-select'), nextButton=tile.querySelector('.board-select');
+        syncBoardAttributes(button,nextButton);
+        // Keep the native checkout button (and focus) alive across health patches.
+        if (button.innerHTML!==nextButton.innerHTML) button.innerHTML=nextButton.innerHTML;
+      }
+    }
+
     boardScene.islands.forEach(g => {
       const calm = boardIslandCalm(g), was = boardCalmState.get(g.key);
       boardCalmState.set(g.key, calm);
@@ -2533,8 +2785,8 @@
         toast(g.name + ' is all calm', 'success');
       }
     });
-    {
-      const c = document.createElement('canvas'); c.id = 'board-ground'; c.width = ground.canvas.width; c.height = ground.canvas.height;
+    if (ground) {
+      const c = document.getElementById('board-ground') || document.createElement('canvas'); c.id = 'board-ground'; c.width = ground.canvas.width; c.height = ground.canvas.height;
       c.style.cssText = 'position:absolute;left:0;top:0;width:' + boardScene.width + 'px;height:' + boardScene.height + 'px;pointer-events:none';
       c.getContext('2d').drawImage(ground.canvas, 0, 0);
       c.setAttribute('aria-hidden', 'true');
@@ -2553,11 +2805,16 @@
     updateBoardCaption(boardHoveredPath || boardSelectedPath);
   }
 
+  function syncBoardAttributes(current,next) {
+    for (const attribute of [...current.attributes]) if (!next.hasAttribute(attribute.name)) current.removeAttribute(attribute.name);
+    for (const attribute of next.attributes) if (current.getAttribute(attribute.name)!==attribute.value) current.setAttribute(attribute.name,attribute.value);
+  }
+
   function bindBoardInteractions(stage) {
     let drag=null,moved=false;
-    stage.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,cx:boardCamera.x,cy:boardCamera.y};moved=false;});
+    stage.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,cx:boardCamera.x,cy:boardCamera.y};moved=false;boardPanning=true;});
     stage.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>4){moved=true;stage.setPointerCapture(e.pointerId);}if(!moved)return;boardCamera.x=drag.cx+dx;boardCamera.y=drag.cy+dy;boardFitPending=false;applyBoardCamera();});
-    const end=()=>{drag=null;};stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
+    const end=()=>{drag=null;boardPanning=false;commitBoardMembership();renderBoard();};stage.addEventListener('pointerup',end);stage.addEventListener('pointercancel',end);
     stage.addEventListener('click',e=>{
       if (moved) {moved=false;e.preventDefault();e.stopImmediatePropagation();return;}
       if (e.detail===0) return;
@@ -2581,7 +2838,7 @@
       if(anchor&&anchor.getBoundingClientRect)anchor.setAttribute('aria-description',tip.textContent);
     };
     const caption=e=>{const button=e.target.closest('.board-select');if(!button)return;const path=button.dataset.path;boardHoveredPath=path;updateBoardCaption(path);hoverTip(path,button);};
-    stage.addEventListener('focusin',caption);
+    stage.addEventListener('focusin',event=>{ const member=event.target.closest('.board-select');if(member)boardFocusedPath=member.dataset.path;caption(event); });
     let hoverRaf=0;
     stage.addEventListener('mousemove',e=>{
       if(drag||hoverRaf)return;
@@ -2659,6 +2916,7 @@
   }
 
   function boardMatches(repo) {
+    if (!repo) return false;
     const q = document.getElementById('board-search').value.trim().toLowerCase();
     const status = repo._status || {};
     return (!q || (repo.path + ' ' + (status.branch || '') + ' ' + (status.project_path || '')).toLowerCase().includes(q)) &&
@@ -2669,8 +2927,8 @@
     if (!repos.some(r => r.path === path)) return;
     boardSelectedPath = path;
     boardHoveredPath = null;
-    const islandIndex = boardIslands(boardNeighborhoods).findIndex(g => g.paths.includes(path));
-    if (islandIndex >= 0) boardPage = islandIndex + 1;
+    const islandIndex = boardIslands(boardNeighborhoods).findIndex(g => g.projectKeys.includes(projectForPath(path)?.key));
+    if (islandIndex >= 0) { boardPage = islandIndex + 1; boardActivePageKey=boardIslands(boardNeighborhoods)[islandIndex].pageKey; }
     renderBoard();
     revealBoardPlot(path);
     if (event?.detail === 0 || matchMedia('(max-width:850px)').matches) document.querySelector('#board-inspector h3')?.focus({preventScroll:true});
@@ -2709,7 +2967,7 @@
     const href = '#/repo/' + encodeURIComponent(repo.path);
     const short = shortHome(repo.path);
     const localChanges = s.dirty?.is_clean === false && !s.error && !s.gone;
-    const family = boardNeighborhoods.find(g => g.paths.includes(repo.path));
+    const family = projectForPath(repo.path);
     const familyGh = boardFamilyGithub(family || {paths:[repo.path]});
     el.dataset.tone = repoAttentionTone(repo, familyGh);
     const familyTone = familyGh.blocked || familyGh.workflowFailures ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking || familyGh.workflowUnconfirmed ? 'unknown' : 'clean';
@@ -2748,6 +3006,7 @@
   }
 
   function boardTileSvg(repo, b, pose) {
+    const project=pose.project;
     const TW = BOARD_TTW, TH = BOARD_TTH;
     const disp = boardDisplayStatus(repo, b);
     const pinned = (organization.pins || []).includes(repo.path);
@@ -2765,15 +3024,22 @@
     const pool = `<ellipse class="plot-pool" cx="${cx}" cy="${gy+1}" rx="50" ry="25"/><ellipse class="plot-focus" cx="${cx}" cy="${gy+1}" rx="32" ry="15"/>`;
     const number = `<g class="plot-number" data-tone="${attention}"><circle cx="${cx+36}" cy="${gy+2}" r="7.5" fill="${pose.island.theme.dark}"/><text x="${cx+36}" y="${gy+5.2}" text-anchor="middle" font-size="9" fill="white" fill-opacity=".92">${pose.number}</text></g>`;
     const label = escapeHtml(repo.path + (disp?.branch ? ' · ' + disp.branch : '') + ': ' + b.summary + ' · ' + boardGithub(repo).label + (pinned ? ' · pinned' : '') + (noUpstream ? ' · no upstream' : ''));
-    return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" data-path="${escapeHtml(repo.path)}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${boardSelectedPath === repo.path}" style="left:${pose.x-cx}px;top:${pose.y-gy}px;z-index:${pose.depth};--i:${pose.number % 26};">` +
+    return `<div class="tile ${boardMatches(repo) ? '' : 'dimmed'}" data-stage="${b.stage}" id="board-plot-${encodeURIComponent(project.key)}" data-project="${escapeHtml(project.key)}" data-path="${escapeHtml(repo.path)}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${boardSelectedPath === repo.path}" style="left:${pose.x-cx}px;top:${pose.y-gy}px;z-index:${pose.depth};--i:${pose.number % 26};">` +
       `<button type="button" class="board-select" id="${id}" data-path="${escapeHtml(repo.path)}" aria-label="${label}" title="${label}" aria-pressed="${boardSelectedPath === repo.path}" aria-controls="board-inspector" onclick="selectBoardRepo(${escapeHtml(JSON.stringify(repo.path))}, event)">` +
       `<svg viewBox="0 0 ${W} ${H - 32}" role="presentation" aria-hidden="true">` +
-      topFill + pool + ring + number + pin + badge + boardTreeSprite(repo, b, pose, cx, gy) + `</svg>${boardLabel(repo, b)}</button></div>`;
+      topFill + pool + ring + number + pin + badge + (project.centralRepoPath ? boardTreeSprite(repo, b, {...pose,island:{...pose.island,theme:BONSAI_FOLIAGE[project.themeIndex]}}, cx, gy) : boardMainPlaceholder(project,cx,gy)) + `</svg>${boardLabel(repo, b)}</button></div>`;
   }
 
+  function boardMainPlaceholder(project,cx,gy) {
+    const label=project.identityState==='worktree-unresolved' ? 'Project identity unavailable' : project.mainPath && !repoByPath.has(project.mainPath) ? 'Main checkout not tracked.' : 'Main checkout not identified.';
+    const L=bonsaiLayout(project.defaultPath);
+    return `<g class="board-main-placeholder" pointer-events="none" aria-label="${label}"><title>${label}</title><g transform="translate(${cx} ${gy})">${bonsaiPot(L,BONSAI_FOLIAGE[project.themeIndex],false)}</g></g>`;
+  }
   function boardGo(n) {
     boardPage = n;
+    boardActivePageKey=boardIslands(boardNeighborhoods)[n-1]?.pageKey || 'workspace:0';
     boardHoveredPath = null;
+    boardFocusedPath = null;
     boardSelectedPath = null;
     renderBoard();
     document.getElementById('board-page-status').focus({preventScroll: true});
@@ -2783,7 +3049,7 @@
     const counts = {};
     g.paths.forEach(path => { const r = repos.find(x => x.path === path); const tone = r ? repoAttentionTone(r) : 'unknown'; counts[tone] = (counts[tone] || 0) + 1; });
     const label = {blocked: 'blocked', unavailable: 'unreadable', changed: 'with uncommitted changes', sync: 'ahead or behind', stale: 'with stale branches', clean: 'calm', unknown: 'not yet checked'};
-    return g.name + ': ' + g.paths.length + (g.paths.length === 1 ? ' repo. ' : ' repos. ') + [...TONE_ORDER, 'unknown'].filter(k => counts[k]).map(k => counts[k] + ' ' + label[k]).join(', ') + '.';
+    return g.name + ': ' + g.projectKeys.length + (g.projectKeys.length === 1 ? ' project, ' : ' projects, ') + g.allPaths.length + (g.allPaths.length===1 ? ' checkout. ' : ' checkouts. ') + [...TONE_ORDER, 'unknown'].filter(k => counts[k]).map(k => counts[k] + ' ' + label[k]).join(', ') + '.';
   }
 
   function renderArchipelago(islands) {
@@ -2795,13 +3061,15 @@
       g.paths.forEach(path => { const r = repos.find(x => x.path === path); const tone = r ? repoAttentionTone(r) : 'unknown'; counts[tone] = (counts[tone] || 0) + 1; });
       const dots = TONE_ORDER.slice(0, 5).filter(k => counts[k]).map(k => `<span class="isle-dot" data-tone="${k}" title="${counts[k]} ${k}">${counts[k]}</span>`).join('') ||
         (g.paths.every(path => { const r = repos.find(x => x.path === path); return r && repoAttentionTone(r) === 'clean'; }) ? '<span class="isle-dot" data-tone="clean" title="all calm">calm</span>' : '');
-      return `<button type="button" id="board-isle-${i}" class="isle" aria-current="${i + 1 === boardPage}" aria-label="${escapeHtml(g.name)}, ${g.paths.length} repos" onclick="boardGo(${i + 1})"><span class="isle-name">${escapeHtml(g.name)}</span><span class="isle-count">${g.paths.length}</span>${dots}</button>`;
+      return `<button type="button" id="board-isle-${i}" class="isle" aria-current="${i + 1 === boardPage}" aria-label="${escapeHtml(g.name)}, page ${g.pageIndex+1} of ${g.pageCount}, ${g.projectKeys.length} projects of ${g.total}" onclick="boardGo(${i + 1})"><span class="isle-name">${escapeHtml(g.name)}${g.pageCount>1 ? ` ${g.pageIndex+1}/${g.pageCount}` : ''}</span><span class="isle-count">${g.paths.length}</span>${dots}</button>`;
     }).join('');
   }
 
   function boardTurn(d) {
     boardPage += d;
+    boardActivePageKey=boardIslands(boardNeighborhoods)[boardPage-1]?.pageKey || 'workspace:0';
     boardHoveredPath = null;
+    boardFocusedPath = null;
     boardSelectedPath = null;
     renderBoard();
     document.getElementById('board-page-status').focus({preventScroll: true});
@@ -2809,61 +3077,38 @@
 
   function renderBoard() {
     syncAmbient();
-    const wrap = document.getElementById('board-island-wrap');
     const boardView = document.getElementById('board-view');
     document.getElementById('count-badge').textContent = repos.length + ' repo' + (repos.length === 1 ? '' : 's');
     const focusId = (boardView.contains(document.activeElement) && document.activeElement.id)
       ? document.activeElement.id : null;
     const empty = document.getElementById('board-empty');
     const pager = document.getElementById('board-pager');
-    if (!repos.length) {
-      boardSelectedPath = null;
-      boardLayoutSignature = '';
-      boardLayoutReady = false;
-      boardNeighborhoods = [];
-      boardScene=null;boardSceneSignature='';boardFitPending=true;boardHoveredPath=null;
-      boardResizeObserver.disconnect();
-      updateBoardCaption(null);
-      wrap.innerHTML = '';
-      empty.hidden = false;
-      pager.hidden = true;
-      document.getElementById('board-refresh').disabled = refreshingBoard;
-      document.getElementById('board-match-count').textContent = '0 matching';
-      document.getElementById('board-github-refresh').disabled = true;
-      renderBoardInspector();
-      return;
+    empty.hidden=!!repos.length;
+    ensureProjectRegistry();
+    // The shared model is current while this snapshot waits for its batch or pan to end.
+    if (!boardNeighborhoods.length) {
+      boardCommittedProjects=new Map(boardProjects.map(project=>[project.key,project]));
+      boardNeighborhoods=[{key:'workspace',name:'Workspace',projectKeys:boardProjects.map(project=>project.key)}];
     }
-    empty.hidden = true;
-    const signature = JSON.stringify(repos.map(r => r.path));
-    const ready = repos.every(r => r._status && !r._boardQueued && !r._checking);
-    if (signature !== boardLayoutSignature || (!boardLayoutReady && ready)) {
-      const groups = new Map();
-      repos.forEach(repo => {
-        const s = repo._status || {}, key = s.project_id || repo.path;
-        if (!groups.has(key)) groups.set(key, {key, name:repoName(s.project_path || repo.path), paths:[]});
-        groups.get(key).paths.push(repo.path);
-      });
-      boardNeighborhoods = [...groups.values()];
-      boardNeighborhoods.forEach(group => group.paths.sort((a,b) => Number(!!repos.find(r => r.path === a)._status?.is_worktree) - Number(!!repos.find(r => r.path === b)._status?.is_worktree)));
-      boardLayoutSignature = signature;
-      boardLayoutReady = ready;
-    }
+    commitBoardMembership();
     const islands = boardIslands(boardNeighborhoods);
     const pages = Math.max(1,islands.length);
     boardPage = Math.min(Math.max(1,boardPage),pages);
     const activeIsland = islands[boardPage-1];
-    if (!activeIsland.paths.includes(boardSelectedPath)) boardSelectedPath = null;
-    if (!activeIsland.paths.includes(boardHoveredPath)) boardHoveredPath = null;
-    renderIsometricScene(boardNeighborhoods);
+    boardActivePageKey=activeIsland.pageKey;
+    if (!activeIsland.allPaths.includes(boardSelectedPath) && !boardMembershipPending) boardSelectedPath = null;
+    if (!activeIsland.allPaths.includes(boardHoveredPath)) boardHoveredPath = null;
+    if (!boardPanning) renderIsometricScene(boardNeighborhoods);
     renderBoardInspector();
     const matches = repos.filter(boardMatches).length;
-    document.getElementById('board-match-count').textContent = matches + ' of ' + repos.length + ' matching' + (document.getElementById('board-search').value ? ' · Enter to select' : '');
+    const matchingProjects=boardProjects.filter(project=>project.paths.some(path=>boardMatches(repoByPath.get(path)))).length;
+    document.getElementById('board-match-count').textContent = matchingProjects + ' of ' + boardProjects.length + ' matching projects · ' + matches + ' matching checkouts' + (document.getElementById('board-search').value ? ' · Enter to select' : '');
     const ghButton = document.getElementById('board-github-refresh');
-    ghButton.disabled = refreshingGithub || refreshingBoard || refreshingLocal || repos.some(r => !r._status || r._checking);
+    ghButton.disabled = !repos.length || refreshingGithub || refreshingBoard || refreshingLocal || repos.some(r => !r._status || r._checking);
     ghButton.textContent = refreshingGithub ? 'Checking GitHub…' : organization.githubEnabled ? 'Refresh GitHub' : 'Check GitHub';
     renderArchipelago(islands);
     const status = document.getElementById('board-page-status');
-    status.textContent = `${activeIsland.name} · Island ${boardPage} of ${pages}`;
+    status.textContent = `${activeIsland.name} · Page ${activeIsland.pageIndex+1} of ${activeIsland.pageCount}`;
     pager.hidden = pages < 2;
     document.getElementById('board-prev').disabled = boardPage <= 1;
     document.getElementById('board-next').disabled = boardPage >= pages;
@@ -2874,56 +3119,29 @@
     }
   }
 
-  async function fetchBoardStatus(i) {
-    const repo = repos[i];
+  async function fetchBoardStatus(i, batchId) {
+    const repo=repos[i];
     if (!repo) return;
-    const prev = boardControllers.get(repo.path);
-    if (prev) prev.abort();
-    const ctrl = new AbortController();
-    const request = (repo._statusRequest || 0) + 1;
-    repo._statusRequest = request;
-    repo._checking = true;
-    boardControllers.set(repo.path, ctrl);
-    const t = setTimeout(() => ctrl.abort(), 10000);
-    try {
-      const res = await fetch('/api/repos/status?path=' + encodeURIComponent(repo.path), {signal: ctrl.signal});
-      const data = await res.json();
-      if (repo._statusRequest !== request) return;
-      if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error('Invalid local Git response');
-      repo._status = res.ok ? data : {error:true, gone:res.status === 410, detail:data.error};
-      if (res.ok && Object.hasOwn(data, 'github_repo') && repo._github && repo._github.repo !== data.github_repo) {
-        delete repo._github;
-        delete repo._githubCheckedAt;
-      }
-      repo._checkedAt = data.checked_at || new Date().toISOString();
-    } catch {
-      if (repo._statusRequest === request) {
-        repo._status = {error:true, detail:'Could not check local Git'};
-        repo._checkedAt = new Date().toISOString();
-      }
-    } finally {
-      clearTimeout(t);
-      if (boardControllers.get(repo.path) === ctrl) {
-        boardControllers.delete(repo.path);
-        repo._boardQueued = false;
-        if (repo._statusRequest === request) repo._checking = false;
-      }
-      renderBoard();
+    if (batchId===undefined) return runLocalStatusBatch([repo], 'board');
+    const pending=requestLocalStatus(repo,{source:'board',batchId});
+    scheduleLocalRender();
+    const result=await pending;
+    if (acceptsLocalStatus(repo,result)) {
+      applyLocalStatus(repo,result);
+      if (!repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
     }
+    finishLocalStatus(repo,result);
+    scheduleLocalRender();
   }
-
   async function fetchBoardAll(resetPage) {
     if (refreshingBoard) return;
-    if (resetPage) boardPage = 1;
-    refreshingBoard = true;
-    repos.forEach(r => { r._boardQueued = true; });
+    if (initialLocalBatch && !initialLocalBatchSettled) return initialLocalBatch.completion;
+    if (resetPage) { boardPage=1; boardActivePageKey='workspace:0'; }
+    refreshingBoard=true;
+    const work=runLocalStatusBatch([...repos], 'board');
     renderBoard();
-    try {
-      await runLimited(repos, async repo => {
-        const i = repos.indexOf(repo);
-        if (i !== -1) await fetchBoardStatus(i);
-      });
-    } finally { refreshingBoard = false; renderBoard(); }
+    try { await work; }
+    finally { refreshingBoard=false; renderBoard(); }
   }
 
 
@@ -2968,6 +3186,7 @@
   function closeDetail() { location.hash = detailOrigin || '#/'; }
 
   async function route() {
+    const firstRoute=!routeHasRun; routeHasRun=true;
     const h = location.hash;
     const prev = lastHash;
     lastHash = h;
@@ -2988,7 +3207,7 @@
       document.getElementById('board-view').style.display = '';
       syncViewToggle();
       renderBoard();
-      if (!repos.some(r => r._checking)) fetchBoardAll(false);
+      if (!firstRoute && initialLocalBatchSettled && !localStatusBatches.size) fetchBoardAll(false);
       if (prev && prev.startsWith('#/repo/')) {
         const link = lastOpenedPath && document.getElementById('board-tile-' + encodeURIComponent(lastOpenedPath));
         (link && link.getClientRects().length ? link : document.getElementById('board-refresh')).focus({preventScroll: true});
@@ -3081,6 +3300,7 @@
     });
     if (res.ok) {
       repos = repos.filter(r => r.path !== path);
+      rebuildProjectModel();
       toast('Removed gone repo', 'success');
       closeDetail();
     }
