@@ -196,7 +196,7 @@ def test_direct_cold_board_load_times_out_held_initial_request_and_consolidates_
     page.wait_for_function('repos.slice(1).every(r=>r._status && !r._checking)')
     assert len(project_state(page)) == 1  # Model changes immediately, scene waits.
     assert not page.evaluate('boardLayoutReady')
-    page.evaluate('window.coldJoinSettled=false;fetchBoardAll(false).then(()=>{coldJoinSettled=true});')
+    page.evaluate('() => { window.coldJoinSettled = false; fetchBoardAll(false).then(() => { coldJoinSettled = true; }); }')  # return nothing: evaluate awaits promises
     assert page.evaluate('coldJoinSettled') is False
     assert len(calls) == 4 and len(held) == 1
     assert max(concurrency) == 3

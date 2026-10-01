@@ -3137,8 +3137,8 @@
     scheduleLocalRender();
   }
   async function fetchBoardAll(resetPage) {
-    if (refreshingBoard) return;
     if (initialLocalBatch && !initialLocalBatchSettled) return initialLocalBatch.completion;
+    if (refreshingBoard) return;
     if (resetPage) { boardPage=1; boardActivePageKey='workspace:0'; }
     refreshingBoard=true;
     const work=runLocalStatusBatch([...repos], 'board');
