@@ -50,7 +50,7 @@ def page():
 
 def goto_board(page):
     page.evaluate("location.hash = '#/board'")
-    page.wait_for_selector('#board-view .tile[data-stage]', timeout=1000)
+    page.wait_for_selector('#board-view .tile[data-stage]', timeout=5000)  # CI runners are slow; the real ground paints after first paint
     page.wait_for_function('!refreshingBoard')
 
 
