@@ -261,3 +261,36 @@ def test_deeply_nested_json_returns_explicit_error(api, config):
     (config / "organization.json").write_bytes(raw)
     code, state = request(api)
     assert code == 500 and "Invalid organization.json" in state["error"]
+
+
+@pytest.mark.parametrize("content", [
+    {"pins": ["/server"]}, {"collections": [{"id": "server", "name": "Server"}]},
+    {"assignments": {"/server": "removed-collection"}}, {"grouping": "folder"}, {"sort": "recent"},
+])
+def test_populated_revision_zero_file_rejects_first_put_without_changing_bytes(api, config, content):
+    config.mkdir()
+    state = {k: v for k, v in org.empty().items() if k != "exists"}
+    state.update(content)
+    path = config / "organization.json"
+    path.write_text(json.dumps(state))
+    before = path.read_bytes()
+    assert request(api) == (200, {**state, "exists": True})
+    assert request(api, payload(0)) == (409, {**state, "exists": True})
+    assert path.read_bytes() == before
+
+
+def test_revision_zero_file_created_after_get_is_not_overwritten(api, config):
+    assert request(api) == (200, org.empty())
+    config.mkdir()
+    state = {k: v for k, v in org.empty().items() if k != "exists"}
+    state["pins"] = ["/another-writer"]
+    (config / "organization.json").write_text(json.dumps(state))
+    assert request(api, payload(0)) == (409, {**state, "exists": True})
+
+
+def test_existing_empty_revision_zero_file_can_be_saved(api, config):
+    config.mkdir()
+    state = {k: v for k, v in org.empty().items() if k != "exists"}
+    (config / "organization.json").write_text(json.dumps(state))
+    code, result = request(api, payload(0))
+    assert code == 200 and result["revision"] == 1

@@ -24,7 +24,10 @@ class OrganizationFake:
             route.fulfill(status=500, json={"error": self.failure})
         elif method == "GET":
             route.fulfill(json=self.state)
-        elif payload["base_revision"] != self.state["revision"]:
+        elif (payload["base_revision"] != self.state["revision"] or
+              payload["base_revision"] == 0 and self.state["exists"] and
+              (self.state["pins"] or self.state["collections"] or self.state["assignments"] or
+               self.state["grouping"] != "collection" or self.state["sort"] != "name")):
             route.fulfill(status=409, json=self.state)
         else:
             self.state = {k: v for k, v in payload.items() if k != "base_revision"}

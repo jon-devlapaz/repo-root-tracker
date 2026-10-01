@@ -83,7 +83,10 @@ def update(config_dir: Path, payload: dict) -> tuple[int, dict]:
     validate(payload, "base_revision")
     with _LOCK:
         current = _read(config_dir)
-        if payload["base_revision"] != current["revision"]:
+        populated = bool(current["pins"] or current["collections"] or current["assignments"]
+                         or current["grouping"] != "collection" or current["sort"] != "name")
+        if (payload["base_revision"] != current["revision"]
+                or payload["base_revision"] == 0 and current["exists"] and populated):
             return 409, current
         data = {k: payload[k] for k in FIELDS}
         data["revision"] = current["revision"] + 1
