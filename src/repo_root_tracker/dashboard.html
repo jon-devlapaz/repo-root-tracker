@@ -652,6 +652,7 @@
   .status-ring[data-tone="sync"] { stroke-width: 1.2px; }
   .status-ring[data-tone="stale"] { stroke-width: 1.4px; stroke-dasharray: 1 5; stroke-linecap: round; }
   .plot-number text { opacity: 0; transition: opacity .3s; }
+  #board-stage[data-names] .plot-number text { transition: none; }
   .board-select:hover .plot-number text, .board-select:focus-visible .plot-number text, #board-stage[data-names] .plot-number text, #board-world[data-lod="near"] .plot-number text, .board-select[aria-pressed="true"] .plot-number text { opacity: 1; }
   .plot-number:not([data-tone="unknown"]) circle { fill: var(--signal-fill); }
   .plot-number[data-tone="unknown"] circle { fill: transparent; stroke: #5d6863; stroke-width: 1; }
@@ -1628,7 +1629,9 @@
     }
   }
   function acceptsLocalStatus(repo, result) {
-    return !result.cancelled && repos.includes(repo) && repo._statusRequest===result.request;
+    // Bind the response to its captured object, never to the caller's old index.
+    // A detached object may finish its own check; shared metadata remains tracked-only.
+    return !result.cancelled && repo._statusRequest===result.request;
   }
   function applyLocalStatus(repo, result) {
     const {response,data}=result;
@@ -1704,7 +1707,7 @@
     const result = await pending;
     if (acceptsLocalStatus(repo,result)) {
       applyLocalStatus(repo,result);
-      if (!repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
+      if (repos.includes(repo) && !repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
     }
     finishLocalStatus(repo,result);
     scheduleLocalRender();
@@ -3128,7 +3131,7 @@
     const result=await pending;
     if (acceptsLocalStatus(repo,result)) {
       applyLocalStatus(repo,result);
-      if (!repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
+      if (repos.includes(repo) && !repo._status.error && !repo._status.gone) rememberRepoMetadata(repo.path,repo._status);
     }
     finishLocalStatus(repo,result);
     scheduleLocalRender();

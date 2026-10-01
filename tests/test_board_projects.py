@@ -112,7 +112,7 @@ def test_legacy_singleton_renders_centrally_without_claiming_main(page):
     assert page.locator('.board-main-placeholder').count() == 0
     assert page.locator('[data-tree-variant]').count() == 1
     assert page.evaluate('boardScene.targets[0].role') == 'standalone'
-    assert page.locator('#board-tile-' + quote(MAIN, safe='')).count() == 1
+    assert page.locator('[id="board-tile-' + quote(MAIN, safe='') + '"]').count() == 1
 
 
 def test_known_worktree_without_family_id_stays_a_separate_sapling_project(page):
@@ -165,7 +165,7 @@ def test_list_first_shared_model_survives_errors_in_every_grouping_mode(page, gr
     assert page.evaluate('boardProjectByPath.size') == 4
     assert len(project_state(page)) == 1
     assert page.locator('.repo-card').count() == 4
-    assert page.locator('#pin-' + quote(WORKTREES[0], safe='')).get_attribute('aria-pressed') == 'true'
+    assert page.locator('[id="pin-' + quote(WORKTREES[0], safe='') + '"]').get_attribute('aria-pressed') == 'true'
     if grouping != 'project':
         assert page.locator('.project-family .repo-card').count() == 3
     else:
@@ -187,6 +187,8 @@ def test_direct_cold_board_load_times_out_held_initial_request_and_consolidates_
             route.fulfill(json={**status_for(path), 'project_id': MAIN + '/.git', 'project_path': MAIN, 'is_worktree': True})
 
     page.route('**/api/repos/status?*', status)
+    # A hash-only goto reuses the fixture's List document and its old registry.
+    page.goto('about:blank')
     page.clock.install()
     page.goto('http://dashboard.test/#/board')
     page.wait_for_function('repos.length===4 && boardScene?.plots.length===4')
@@ -382,3 +384,21 @@ def test_remote_identity_survives_local_error_and_omission_until_explicit_clear(
     page.route('**/api/repos/status?*', lambda route: route.fulfill(json={'dirty': {'is_clean': True}, 'github_repo': None}))
     page.evaluate('fetchStatus(0)')
     assert page.evaluate('githubIdentityByPath.get(repos[0].path)') is None
+
+
+def test_detached_status_response_cannot_record_shared_identity_or_remote_metadata(page):
+    result = page.evaluate('''async () => {
+      const original=fetch;let finish;
+      window.fetch=()=>new Promise(resolve=>finish=resolve);
+      const detached=repos[0], shifted=repos[1], status=shifted._status;
+      const identities=JSON.stringify([...repoIdentities]), remotes=JSON.stringify([...githubIdentityByPath]);
+      const request=fetchStatus(0);
+      repos.splice(0,1);
+      finish({ok:true,status:200,json:async()=>({branch:'detached',project_id:'/git/detached',github_repo:'detached/remote'})});
+      await request;window.fetch=original;
+      return {capturedBranch:detached._status.branch,shiftedUnchanged:shifted._status===status,
+        identitiesUnchanged:JSON.stringify([...repoIdentities])===identities,
+        remotesUnchanged:JSON.stringify([...githubIdentityByPath])===remotes};
+    }''')
+    assert result == {'capturedBranch': 'detached', 'shiftedUnchanged': True,
+                      'identitiesUnchanged': True, 'remotesUnchanged': True}

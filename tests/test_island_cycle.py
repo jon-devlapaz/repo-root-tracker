@@ -10,7 +10,7 @@ def grouped_board(page):
       for(const repo of repos)rememberRepoMetadata(repo.path,repo._status);
       rememberRepoMetadata(paths[0],{project_id:'/git/family',project_path:paths[0],is_worktree:false});
       rememberRepoMetadata(paths[1],{project_id:'/git/family',project_path:paths[0],is_worktree:true});
-      rebuildProjectModel();
+      rebuildProjectModel(); renderBoard();
     }''', paths)
     goto_board(page)
     return paths

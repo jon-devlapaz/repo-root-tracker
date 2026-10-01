@@ -224,7 +224,7 @@ def test_search_expands_matches_without_overwriting_collapsed_groups(page):
 def test_collection_feedback_and_pinned_membership(page):
     page.get_by_role('searchbox').fill('/tools/')
     create_collection(page, 'Tools')
-    assert 'Collection saved' in page.locator('#toast').inner_text()
+    playwright.expect(page.locator('#toast')).to_contain_text('Collection saved')
     page.locator('#card-1 summary').click()
     page.locator('#collection-1').select_option(label='Tools')
     page.locator('#card-1 .pin-button').click()

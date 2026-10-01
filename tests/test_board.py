@@ -288,8 +288,8 @@ def test_board_worktree_labels(page):
     assert page.locator('#board-pager').is_hidden()
     project = page.locator('.tile[data-project="git:/actual/git/common"]')
     assert project.locator('.board-select').count() == 2
-    assert project.locator('#board-tile-' + quote(PATHS[0], safe='')).count() == 1
-    assert project.locator('#board-tile-' + quote(PATHS[1], safe='')).count() == 1
+    assert project.locator('[id="board-tile-' + quote(PATHS[0], safe='') + '"]').count() == 1
+    assert project.locator('[id="board-tile-' + quote(PATHS[1], safe='') + '"]').count() == 1
     names = project.locator('.tile-name').all_text_contents()
     assert names == ['dirty', 'feature']
     assert 'Linked worktree' in project.locator('.board-label').nth(1).inner_text()
