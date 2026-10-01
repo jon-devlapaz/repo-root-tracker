@@ -277,3 +277,43 @@ def test_malformed_workflow_inventory_cannot_claim_all_passing(tmp_path):
     info = info_for(tmp_path, gh)
     assert info.workflows.state == 'unknown'
     assert any('invalid' in error for error in info.workflows.errors)
+
+
+def test_actions_api_host_is_pinned_even_with_a_different_gh_host(tmp_path, monkeypatch):
+    monkeypatch.setenv('GH_HOST', 'github.enterprise.test')
+    # A missing current run also exercises the history request through the same helper.
+    gh = Gh(current=[], older=[run(conclusion='success', sha=OLD)])
+    info = info_for(tmp_path, gh)
+    assert info.workflows.state == 'stale'
+    api_calls = [args for args in gh.calls if args[0] == 'api']
+    assert len(api_calls) == 5
+    for args in api_calls:
+        assert '--hostname' in args
+        assert args[args.index('--hostname') + 1] == 'github.com'
+        assert args[args.index('--method') + 1] == 'GET'
+
+
+@pytest.mark.parametrize('origin', [None, 'https://gitlab.com/owner/repo.git'])
+def test_no_github_remote_has_no_workflow_health(tmp_path, origin):
+    import subprocess
+
+    subprocess.run(['git', 'init', str(tmp_path)], check=True, capture_output=True)
+    if origin:
+        subprocess.run(['git', '-C', str(tmp_path), 'remote', 'add', 'origin', origin], check=True)
+    with patch('repo_root_tracker.github._gh') as gh:
+        info = get_github_info(tmp_path)
+    data = info.to_dict()
+    assert data['workflows'] is None
+    assert not data['has_github'] and not data['gh_unavailable']
+    assert data['repo'] == '' and data['default_branch'] == '' and data['errors'] == []
+    gh.assert_not_called()
+
+
+def test_github_remote_access_failure_preserves_unknown_workflow_health(tmp_path):
+    gh = Gh()
+    gh.fail.update({'pr', 'issue', 'repo'})
+    data = info_for(tmp_path, gh).to_dict()
+    assert data['repo'] == 'owner/repo'
+    assert not data['has_github'] and data['gh_unavailable']
+    assert data['workflows']['state'] == 'unknown'
+    assert data['workflows']['errors']

@@ -26,20 +26,20 @@ def github_payload(state='failing', conclusion='failure', *, current_head=True, 
     }
 
 
-def check_github(page, payload, *, family=False):
-    statuses = page.evaluate('''family => {
+def check_github(page, payload, *, family=False, remote=True):
+    statuses = page.evaluate('''({family, remote}) => {
       return repos.map((r, i) => {
         r._status.dirty = {is_clean:true};
         r._status.sync = {has_upstream:true,ahead:0,behind:0};
         r._status.stale_branches = [];
-        r._status.github_repo = i === 0 || (family && i === 1) ? 'demo/shared' : null;
+        r._status.github_repo = remote && (i === 0 || (family && i === 1)) ? 'demo/shared' : null;
         if (family && i < 2) {
           r._status.project_id = 'shared'; r._status.project_path = repos[0].path;
           r._status.is_worktree = i === 1;
         }
         return r._status;
       });
-    }''', family)
+    }''', {'family': family, 'remote': remote})
 
     def status(route):
         path = unquote(route.request.url.split('path=', 1)[1].split('&', 1)[0])
@@ -55,7 +55,10 @@ def check_github(page, payload, *, family=False):
     page.route('**/api/github?*', github)
     page.route('**/api/repo?*', lambda route: route.fulfill(status=410, json={'error': 'Detail fixture unavailable'}))
     page.evaluate('render()')
-    page.get_by_role('button', name='Check GitHub', exact=True).click()
+    if remote:
+        page.get_by_role('button', name='Check GitHub', exact=True).click()
+    else:
+        page.evaluate('fetchGithub(repos[0])')
     page.wait_for_function('!refreshingGithub && githubTasks.size === 0')
     return requests
 
@@ -216,3 +219,72 @@ def test_long_branch_and_workflow_names_fit_mobile(page):
     page.locator('#card-0 .gh-signal').click()
     page.wait_for_selector('#tab-github .workflow-health')
     assert page.evaluate('document.documentElement.scrollWidth <= innerWidth')
+
+
+def test_shared_ci_title_counts_once_and_local_problems_count_per_checkout(page):
+    check_github(page, github_payload(), family=True)
+    assert page.title() == '(1) repo-root-tracker'
+    assert page.evaluate('gardenSummary().attention') == 1
+    goto_board(page)
+    assert page.title() == '(1) repo-root-tracker'
+    page.evaluate('''() => {
+      repos[0]._status.dirty = {is_clean:false,modified:1,kinds:{conflicted:1}};
+      render();
+    }''')
+    assert page.title() == '(2) repo-root-tracker'  # one shared CI failure, one local conflict
+    page.evaluate('''() => {
+      repos[1]._status.dirty = {is_clean:false,modified:1,kinds:{conflicted:1}};
+      render();
+    }''')
+    assert page.title() == '(3) repo-root-tracker'
+    page.evaluate('''() => { repos[0]._status.error = true; render(); }''')
+    assert page.title() == '(3) repo-root-tracker'  # CI, one unreadable checkout, one conflict
+
+
+def test_different_github_repositories_in_one_family_count_separately(page):
+    check_github(page, github_payload(), family=True)
+    page.evaluate('''() => {
+      repos[1]._status.github_repo = 'demo/another';
+      repos[1]._github = {...repos[1]._github, repo:'demo/another'};
+      render();
+    }''')
+    assert page.title() == '(2) repo-root-tracker'
+    assert page.evaluate('gardenSummary().attention') == 2
+
+
+@pytest.mark.parametrize('health', [None, {'state': 'unknown', 'head_sha': '', 'runs': [], 'errors': []}])
+def test_no_github_remote_never_shows_or_counts_unknown_ci(page, health):
+    # Also tolerate the previous server payload with an empty workflow object.
+    payload = {'has_github': False, 'repo': '', 'repo_url': '', 'default_branch': '',
+               'gh_unavailable': False, 'prs': [], 'issues': [], 'errors': [], 'workflows': health}
+    requests = check_github(page, payload, remote=False)
+    assert len(requests) == 1
+    assert page.locator('#card-0 .gh-signal').count() == 0
+    assert page.locator('#list-brief').inner_text() == 'All 5 repos are calm.'
+    assert page.title() == 'repo-root-tracker'
+    assert page.evaluate('workflowSignal(repos[0]._github).label') == ''
+    page.evaluate("location.hash = '#/repo/' + encodeURIComponent(repos[0].path) + '?tab=github'")
+    page.wait_for_function('githubLoadedForPath === repos[0].path')
+    assert 'No GitHub remote' in page.locator('#tab-github').inner_text()
+    assert page.locator('#tab-github .workflow-health').count() == 0
+    page.locator('#back-btn').click()
+    goto_board(page)
+    page.evaluate('selectBoardRepo(repos[0].path)')
+    assert 'Default-branch CI' not in page.locator('#board-inspector').inner_text()
+    assert page.locator('#board-brief').inner_text() == 'All 5 repos are calm.'
+
+
+def test_github_access_failure_keeps_unknown_ci_when_remote_is_identified(page):
+    payload = github_payload('unknown', '', current_head=False, errors=['Default branch could not be checked.'])
+    payload.update(has_github=False, gh_unavailable=True, default_branch='')
+    payload['workflows']['runs'] = []
+    check_github(page, payload)
+    assert 'Default-branch CI: unconfirmed' in page.locator('#card-0 .gh-signal').inner_text()
+    assert '1 default-branch CI unconfirmed' in page.locator('#list-brief').inner_text()
+    page.locator('#card-0 .gh-signal').click()
+    page.wait_for_function('githubLoadedForPath === repos[0].path')
+    assert 'Default-branch CI: unconfirmed' in page.locator('#tab-github .workflow-health').inner_text()
+    page.locator('#back-btn').click()
+    goto_board(page)
+    page.evaluate('selectBoardRepo(repos[0].path)')
+    assert 'Default-branch CI: unconfirmed' in page.locator('.board-family-gh').inner_text()

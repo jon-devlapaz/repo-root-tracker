@@ -912,7 +912,7 @@
   const WORKFLOW_FAILURES = ['failure', 'timed_out', 'action_required', 'startup_failure', 'error'];
   function workflowSignal(info) {
     const health = info?.workflows;
-    if (!health) return {failures: 0, label: '', state: '', runs: []};
+    if (!health || (!info.has_github && !info.repo)) return {failures: 0, label: '', state: '', runs: []};
     const runs = health.runs || [];
     const failures = runs.filter(run => run.current_head && run.status === 'completed' && WORKFLOW_FAILURES.includes(run.conclusion)).length;
     const branch = info.default_branch ? ' on ' + info.default_branch : '';
@@ -1750,7 +1750,8 @@
     known.forEach(r => { const tone = repoAttentionTone(r); if (by[tone]) by[tone].push(r); });
     const names = list => list.length === 1 ? repoName(list[0].path) : list.length === 2 ? repoName(list[0].path) + ' and ' + repoName(list[1].path) : repoName(list[0].path) + ' and ' + (list.length - 1) + ' others';
     const parts = [];
-    const ciRepos = [...new Map(known.filter(r => boardGithub(r).workflowFailures).map(r => [r._github?.repo || r._status.github_repo || r.path, r])).values()];
+    const githubKey = r => r._github?.repo || r._status.github_repo || r._status.project_id || r.path;
+    const ciRepos = [...new Map(known.filter(r => boardGithub(r).workflowFailures).map(r => [githubKey(r), r])).values()];
     const otherBlocked = by.blocked.filter(r => !boardGithub(r).workflowFailures);
     if (otherBlocked.length) parts.push(names(otherBlocked) + (otherBlocked.length === 1 ? ' is blocked' : ' are blocked'));
     if (ciRepos.length) parts.push(names(ciRepos) + (ciRepos.length === 1 ? ' has failing default-branch CI' : ' have failing default-branch CI'));
@@ -1758,12 +1759,20 @@
     if (by.sync.length) parts.push(by.sync.length + ' ahead or behind');
     if (by.unavailable.length) parts.push(by.unavailable.length + ' unreadable');
     if (by.stale.length) parts.push(by.stale.length + ' stale');
-    const unconfirmedCi = new Set(known.filter(r => r._github?.workflows && !['passing', 'failing'].includes(workflowSignal(r._github).state)).map(r => r._github.repo || r._status.github_repo || r.path));
+    const unconfirmedCi = new Set(known.filter(r => {
+      const w = workflowSignal(r._github);
+      return w.label && !['passing', 'failing'].includes(w.state);
+    }).map(githubKey));
     if (unconfirmedCi.size) parts.push(unconfirmedCi.size + ' default-branch CI unconfirmed');
     let text = parts.length ? parts.join(' \u00b7 ') : (known.length === 1 ? 'The only repo is calm.' : 'All ' + known.length + ' repos are calm.');
     if (known.length < repos.length) text += ' \u00b7 ' + (repos.length - known.length) + ' still checking';
     const worst = TONE_ORDER.find(k => by[k].length) || 'unknown';
-    return {text, attention: by.blocked.length + by.unavailable.length, worst};
+    const localAttention = known.filter(r => ['blocked', 'unavailable'].includes(localAttentionTone(r))).length;
+    const githubAttention = new Set(known.filter(r => {
+      const gh = boardGithub(r);
+      return gh.blocked || gh.workflowFailures || gh.incomplete;
+    }).map(githubKey));
+    return {text, attention: localAttention + githubAttention.size, worst};
   }
   let lastFavicon = '';
   function faviconFor(tone) {
@@ -1830,9 +1839,9 @@
     const members = (g.familyPaths || g.paths).map(path => repos.find(r => r.path === path)).filter(Boolean);
     members.forEach(repo => {
       const info = repo._github;
-      if (!info || !info.has_github) return;
+      if (!info || (!info.has_github && !info.repo)) return;
       const slug = info.repo || repo._status?.github_repo || repo.path;
-      if (!seenWorkflows.has(slug) && info.workflows) { seenWorkflows.add(slug); workflows.push(info); }
+      if (!seenWorkflows.has(slug) && workflowSignal(info).label) { seenWorkflows.add(slug); workflows.push(info); }
       (info.prs || []).forEach(pr => {
         const key = pr.number + '|' + (info.repo || repo._status?.github_repo || repo.path);
         if (seen.has(key) || !prReasons(pr).length) return;
@@ -2863,7 +2872,7 @@
     const controls = `<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button>${checkedTime(g.checked_at, g.errors && g.errors.length ? 'GitHub check attempted' : 'GitHub checked')}</div>`;
     const warnings = (g.errors || []).map(error => `<p class="warning-note">${escapeHtml(error)}</p>`).join('');
     if (!g.has_github) {
-      el.innerHTML = controls + warnings + (g.gh_unavailable
+      el.innerHTML = controls + warnings + renderWorkflows(g) + (g.gh_unavailable
         ? '<div class="empty"><p>GitHub data is unavailable. Check gh authentication, connectivity, and repository access, then refresh.</p></div>'
         : '<div class="empty"><p>No GitHub remote for this repo.</p></div>');
       return;

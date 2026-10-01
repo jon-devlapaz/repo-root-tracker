@@ -89,7 +89,7 @@ class GithubInfo:
     pr_limit: int = PR_LIMIT
     issue_limit_reached: bool = False
     default_branch: str = ""
-    workflows: WorkflowHealth = field(default_factory=WorkflowHealth)
+    workflows: WorkflowHealth | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -148,7 +148,8 @@ def _rollup(checks: list) -> CheckSummary:
 
 def _api_record(endpoint: str, fields: str, path: Path) -> dict | None:
     # Wrap the selected API object in a list to use the same gh timeout/error path.
-    data = _gh("api", endpoint, "--method", "GET", "--jq", f"[. | {{{fields}}}]", cwd=path)
+    data = _gh("api", endpoint, "--hostname", "github.com", "--method", "GET",
+               "--jq", f"[. | {{{fields}}}]", cwd=path)
     return data[0] if data and isinstance(data[0], dict) else None
 
 
