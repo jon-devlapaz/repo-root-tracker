@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import threading
+import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -14,6 +15,7 @@ from urllib.parse import unquote, urlsplit
 from . import NotARepositoryError, find_root
 from .detail import get_commit_diff, get_repo_detail, get_working_diff
 from .github import get_github_info
+from .history import MAX_DAYS, get_activity
 from .status import GitNotAvailableError, get_repo_status
 
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
@@ -22,6 +24,25 @@ ASSET = Path(__file__).resolve().parent / "dashboard.html"
 # Serializes read-modify-write cycles on repos.json (concurrent add/remove
 # would otherwise interleave and silently drop entries).
 _REPOS_LOCK = threading.Lock()
+# Activity reads one git log per tracked repo; a short cache keeps the replay scrubber cheap.
+_ACTIVITY_CACHE: dict[int, tuple[float, dict]] = {}
+_ACTIVITY_TTL = 30.0
+
+
+def activity_for_all(days: int) -> dict:
+    now = time.monotonic()
+    hit = _ACTIVITY_CACHE.get(days)
+    if hit and now - hit[0] < _ACTIVITY_TTL:
+        return hit[1]
+    repos: dict[str, dict[str, int]] = {}
+    for r in load_repos():
+        try:
+            repos[r["path"]] = get_activity(r["path"], days)
+        except (NotARepositoryError, GitNotAvailableError, subprocess.TimeoutExpired):
+            continue
+    result = {"days": days, "repos": repos}
+    _ACTIVITY_CACHE[days] = (now, result)
+    return result
 
 
 def load_repos() -> list[dict]:
@@ -91,6 +112,13 @@ class Handler(BaseHTTPRequestHandler):
                 self._json(410, {"error": str(e), "gone": True})
             except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
                 self._json(503, {"error": str(e)})
+        elif path == "/api/activity":
+            try:
+                days = max(1, min(int(params.get("days", "30")), MAX_DAYS))
+            except ValueError:
+                self._json(400, {"error": "days must be an integer"})
+                return
+            self._json(200, activity_for_all(days))
         elif path == "/api/repo":
             repo_path = unquote(params.get("path", ""))
             if not repo_path:

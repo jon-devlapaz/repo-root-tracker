@@ -205,3 +205,35 @@ def test_status_missing_dir_raises(tmp_path: Path) -> None:
     from repo_root_tracker import NotARepositoryError
     with pytest.raises(NotARepositoryError):
         get_repo_status(tmp_path / "does-not-exist")
+
+
+# ---------------------------------------------------------------------------
+# Vitals: age, commit count, recent activity, branches
+# ---------------------------------------------------------------------------
+
+def test_vitals_on_a_fresh_repo(repo: Path) -> None:
+    s = get_repo_status(repo)
+    assert s.commit_count == 1
+    assert s.activity_30d == 1
+    assert s.first_commit_date.startswith("20")
+    assert s.branches == [s.branch]
+
+
+def test_vitals_count_commits_and_branches(repo: Path) -> None:
+    (repo / "b.txt").write_text("more")
+    git(repo, "add", "-A")
+    git(repo, "commit", "-m", "second")
+    git(repo, "branch", "feature/x")
+    s = get_repo_status(repo)
+    assert s.commit_count == 2
+    assert s.activity_30d == 2
+    assert sorted(s.branches) == sorted([s.branch, "feature/x"])
+
+
+def test_vitals_survive_a_repo_with_no_commits(tmp_path: Path) -> None:
+    r = tmp_path / "empty"
+    r.mkdir()
+    subprocess.run(["git", "init", str(r)], check=True, capture_output=True)
+    s = get_repo_status(r)
+    assert (s.commit_count, s.activity_30d, s.first_commit_date, s.branches) == (0, 0, "", [])
+    assert "commit_count" in s.to_dict()

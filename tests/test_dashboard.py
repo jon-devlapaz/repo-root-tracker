@@ -76,12 +76,12 @@ def test_pins_collections_collapse_and_reload(page):
     assert not group.locator(".repo-name").is_visible()
     assert group.locator(".collection-toggle").get_attribute("aria-expanded") == "false"
     page.locator("#card-0 .pin-button").click()
-    assert collection(page, "★ Pinned").locator(".repo-name").all_text_contents() == ["alpha"]
+    assert collection(page, "Pinned").locator(".repo-name").all_text_contents() == ["alpha"]
     assert page.locator(".repo-name").count() == 4
     page.reload()
     page.wait_for_function("repos.every(r => r._status)")
     assert not collection(page, 'Tools <&> "work"').locator(".repo-name").is_visible()
-    assert collection(page, "★ Pinned").locator(".repo-name").all_text_contents() == ["alpha"]
+    assert collection(page, "Pinned").locator(".repo-name").all_text_contents() == ["alpha"]
     page.locator("#repo-grouping").select_option("folder")
     assert collection(page, "/workspace/tools").locator(".repo-name").all_text_contents() == ["alpha"]
     assert page.locator(".repo-name").count() == 4
@@ -117,7 +117,7 @@ def test_storage_failure_and_corrupt_preferences_are_visible(page):
     page.evaluate("() => { Storage.prototype.setItem = () => { throw new Error('blocked'); }; }")
     page.locator("#card-0 .pin-button").click()
     assert "last only for this session" in page.locator("#local-note").inner_text()
-    assert collection(page, "★ Pinned").locator(".repo-name").count() == 1
+    assert collection(page, "Pinned").locator(".repo-name").count() == 1
 
 
 def test_keyboard_focus_and_mobile_layout(page):

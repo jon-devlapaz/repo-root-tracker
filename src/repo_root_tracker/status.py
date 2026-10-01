@@ -58,6 +58,11 @@ class RepoStatus:
     project_path: str = ""
     is_worktree: bool = False
     github_repo: str = ""
+    # vitals: what a repo's form is allowed to say about its history
+    commit_count: int = 0
+    first_commit_date: str = ""
+    activity_30d: int = 0
+    branches: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -151,6 +156,15 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     except (RuntimeError, ValueError):
         pass
 
+    # Vitals — three cheap local reads; any failure leaves the defaults
+    try:
+        status.commit_count = int(_run(repo, "rev-list", "--count", "HEAD"))
+        roots = _run(repo, "log", "--max-parents=0", "--format=%cI").split()
+        status.first_commit_date = min(roots) if roots else ""
+        status.activity_30d = int(_run(repo, "rev-list", "--count", "--since=30.days.ago", "HEAD"))
+    except (RuntimeError, ValueError):
+        pass
+
     # Dirty state — porcelain v1, XY status codes
     changes = parse_changes(_run(repo, "status", "--porcelain=v1", "-z"))
     for change in changes:
@@ -181,6 +195,7 @@ def get_repo_status(path: str | Path) -> RepoStatus:
             if "|" not in line:
                 continue
             name, date_str = line.split("|", 1)
+            status.branches.append(name)
             try:
                 dt = datetime.fromisoformat(date_str)
                 if dt.tzinfo is None:

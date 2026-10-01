@@ -1,0 +1,542 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-01T03:06:56.706608+00:00",
+  "title": "Design System: repo-root-tracker",
+  "extensions": {
+    "colorMeta": {
+      "matcha": {
+        "role": "primary",
+        "displayName": "Matcha",
+        "canonical": "#b9d891",
+        "tonalRamp": [
+          "#293814",
+          "#476423",
+          "#668f33",
+          "#85ba42",
+          "#a1cb6b",
+          "#bcda96",
+          "#d8e9c1",
+          "#f3f8ec"
+        ]
+      },
+      "matcha-deep": {
+        "role": "primary",
+        "displayName": "Deep Matcha",
+        "canonical": "#2d4a37",
+        "tonalRamp": [
+          "#1d3023",
+          "#33543e",
+          "#497859",
+          "#5f9c74",
+          "#82b393",
+          "#a7c9b3",
+          "#cbdfd2",
+          "#eff5f1"
+        ]
+      },
+      "vermilion-seal": {
+        "role": "secondary",
+        "displayName": "Vermilion Seal",
+        "canonical": "#b23a2a",
+        "tonalRamp": [
+          "#3e140f",
+          "#6d241a",
+          "#9c3325",
+          "#cb4230",
+          "#d96b5d",
+          "#e4968c",
+          "#efc1bb",
+          "#faecea"
+        ]
+      },
+      "amber-leaf": {
+        "role": "secondary",
+        "displayName": "Amber Leaf (pending CI and warning fill only)",
+        "canonical": "#e6b85c",
+        "tonalRamp": [
+          "#42300a",
+          "#755412",
+          "#a7781a",
+          "#da9c21",
+          "#e4b351",
+          "#ecc984",
+          "#f4dfb6",
+          "#fcf5e9"
+        ]
+      },
+      "sync-blue": {
+        "role": "secondary",
+        "displayName": "Sync Blue",
+        "canonical": "#8fbfe0",
+        "tonalRamp": [
+          "#112a3c",
+          "#1d4a6a",
+          "#2a6b97",
+          "#368bc5",
+          "#62a5d4",
+          "#90bfe0",
+          "#bddaed",
+          "#ebf4f9"
+        ]
+      },
+      "sumi-ground": {
+        "role": "neutral",
+        "displayName": "Sumi Ground",
+        "canonical": "#0a0f0e",
+        "tonalRamp": [
+          "#1f2e2b",
+          "#36514b",
+          "#4d746c",
+          "#65978d",
+          "#87afa7",
+          "#aac6c0",
+          "#cdddda",
+          "#f0f5f4"
+        ]
+      },
+      "surface-raised": {
+        "role": "neutral",
+        "displayName": "Raised Surface",
+        "canonical": "#182220",
+        "tonalRamp": [
+          "#202d2a",
+          "#384f4a",
+          "#50716b",
+          "#68938b",
+          "#8aaca5",
+          "#acc4bf",
+          "#cedcd9",
+          "#f0f4f4"
+        ]
+      },
+      "paper-text": {
+        "role": "neutral",
+        "displayName": "Paper Text",
+        "canonical": "#edf1e7",
+        "tonalRamp": [
+          "#28301c",
+          "#475532",
+          "#667a47",
+          "#849f5d",
+          "#a0b580",
+          "#bccba5",
+          "#d7e0ca",
+          "#f3f6ef"
+        ]
+      },
+      "muted-moss": {
+        "role": "neutral",
+        "displayName": "Muted Moss",
+        "canonical": "#8fa298",
+        "tonalRamp": [
+          "#232a26",
+          "#3d4a43",
+          "#586960",
+          "#72897d",
+          "#92a49a",
+          "#b1bfb8",
+          "#d1d9d5",
+          "#f1f3f2"
+        ]
+      },
+      "gold-clean": {
+        "role": "secondary",
+        "displayName": "Gold (clean)",
+        "canonical": "#f2dc7a",
+        "tonalRamp": [
+          "#463a07",
+          "#7b660c",
+          "#b09311",
+          "#e5bf16",
+          "#edcf48",
+          "#f2dd7e",
+          "#f8ebb3",
+          "#fdf9e8"
+        ]
+      },
+      "orange-changes": {
+        "role": "secondary",
+        "displayName": "Orange (local changes)",
+        "canonical": "#f29a4e",
+        "tonalRamp": [
+          "#472405",
+          "#7e3f09",
+          "#b45a0d",
+          "#ea7611",
+          "#f19444",
+          "#f5b37b",
+          "#f9d2b1",
+          "#fdf1e7"
+        ]
+      },
+      "lilac-stale": {
+        "role": "secondary",
+        "displayName": "Lilac (stale)",
+        "canonical": "#b9a2e6",
+        "tonalRamp": [
+          "#1f103c",
+          "#371d6a",
+          "#4f2998",
+          "#6635c6",
+          "#8861d5",
+          "#ab8fe1",
+          "#cdbded",
+          "#f0ebfa"
+        ]
+      },
+      "slate-unavailable": {
+        "role": "secondary",
+        "displayName": "Slate (unavailable)",
+        "canonical": "#8d9a94",
+        "tonalRamp": [
+          "#242926",
+          "#3f4744",
+          "#5b6661",
+          "#76857e",
+          "#95a19b",
+          "#b4bcb8",
+          "#d3d8d5",
+          "#f1f3f2"
+        ]
+      },
+      "dormant-moss": {
+        "role": "neutral",
+        "displayName": "Dormant Moss",
+        "canonical": "#71876a",
+        "tonalRamp": [
+          "#202a1e",
+          "#3a4a36",
+          "#546a4f",
+          "#71876a",
+          "#8e9f88",
+          "#acb9a7",
+          "#cad3c6",
+          "#eaeee8"
+        ]
+      },
+      "sky-moon": {
+        "role": "neutral",
+        "displayName": "Sky Moon",
+        "canonical": "#dfe9d2",
+        "tonalRamp": [
+          "#2a3024",
+          "#444d3a",
+          "#5f6b51",
+          "#7b8a69",
+          "#9aa889",
+          "#b9c5ab",
+          "#d5dec9",
+          "#eef2e8"
+        ]
+      },
+      "sky-dawn-dusk": {
+        "role": "secondary",
+        "displayName": "Sky Dawn/Dusk",
+        "canonical": "#f4b080",
+        "tonalRamp": [
+          "#4a2410",
+          "#7a3d1a",
+          "#a85a2c",
+          "#d27a40",
+          "#f4b080",
+          "#f7c6a2",
+          "#fbdcc7",
+          "#fef2ea"
+        ]
+      },
+      "muted-contrast": {
+        "role": "neutral",
+        "displayName": "Muted (high contrast)",
+        "canonical": "#c4d2ca",
+        "tonalRamp": [
+          "#2a3430",
+          "#46564f",
+          "#62786e",
+          "#809a8e",
+          "#9db3a9",
+          "#c4d2ca",
+          "#dde6e1",
+          "#f2f5f3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display-xl": {
+        "displayName": "Display",
+        "purpose": "View titles: list overview and board island name. Falls back through the embedded Shippori Mincho (OFL 1.1, Latin subset)."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Repo name in detail header and inspector."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Collection headings, dialog titles, palette input."
+      },
+      "subtitle": {
+        "displayName": "Subtitle",
+        "purpose": "Repo names in rows, section titles, search."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Controls, tabs, commit subjects."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Metadata, notes, counts, hints."
+      },
+      "caption": {
+        "displayName": "Caption",
+        "purpose": "Hashes, relative times, file badges."
+      },
+      "mono": {
+        "displayName": "Mono",
+        "purpose": "Paths, branches, hashes, diffs."
+      }
+    },
+    "shadows": [
+      {
+        "name": "lifted-slip",
+        "value": "0 6px 12px -4px #000",
+        "purpose": "Menu, dialog, command palette."
+      },
+      {
+        "name": "sheet-rising",
+        "value": "0 -4px 12px #0008",
+        "purpose": "Narrow-screen board inspector sheet."
+      },
+      {
+        "name": "tree-ground-shadow",
+        "value": "ellipse #000 at 26-35% opacity",
+        "purpose": "Shadow under pots and stones on the board."
+      },
+      {
+        "name": "ground-cast-shadow",
+        "value": "canvas blur(2.4px), rgba(0,0,0,.36)",
+        "purpose": "Cast shadow under each tree, pointing away from the light; length follows the light height."
+      },
+      {
+        "name": "glow-pool",
+        "value": "radial #b9d891 .7 / .22 / 0",
+        "purpose": "Replay: matcha pool under tiles touched that day."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16, 1, .3, 1)",
+        "purpose": "State transitions (.25s controls, .4s rows, .7s tile opacity)."
+      },
+      {
+        "name": "bonsai-sway",
+        "value": "8s ease-in-out infinite alternate, +/-1.4deg",
+        "purpose": "Board trees at rest."
+      },
+      {
+        "name": "leaf-fall",
+        "value": "6s infinite",
+        "purpose": "Local-change leaves."
+      },
+      {
+        "name": "bloom",
+        "value": "2.6s var(--ease) forwards, echo .25s delayed",
+        "purpose": "Gold ring on dirty-to-clean transition; the only gold motion; hidden under reduced motion."
+      },
+      {
+        "name": "mote-drift",
+        "value": "7s ease-in-out infinite",
+        "purpose": "Ahead/behind motes."
+      },
+      {
+        "name": "reduced-motion",
+        "value": "all animation and transitions off",
+        "purpose": "prefers-reduced-motion: reduce."
+      },
+      {
+        "name": "replay-step",
+        "value": "420ms per day",
+        "purpose": "Replay play advances one day per step over 30 days."
+      },
+      {
+        "name": "ground-repaint",
+        "value": "160ms debounce",
+        "purpose": "Canvas ground repaints once details settle; cached by signature."
+      },
+      {
+        "name": "pool-fade",
+        "value": ".5s var(--ease)",
+        "purpose": "Hover/focus pool under a pot."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "board-inspector-hidden",
+        "value": "850px"
+      },
+      {
+        "name": "mobile",
+        "value": "650px"
+      },
+      {
+        "name": "lod-far",
+        "value": "zoom < 0.5"
+      },
+      {
+        "name": "lod-near",
+        "value": "zoom >= 1.6"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The only filled control; matcha-deep with a matcha hairline.",
+      "html": "<button class=\"ds-btn\">Check GitHub</button>",
+      "css": ".ds-btn{font-family:'Avenir Next',Avenir,system-ui,sans-serif;background:#2d4a37;border:1px solid color-mix(in srgb,#b9d891 42%,transparent);border-radius:3px;padding:8px 20px;min-height:40px;color:#f5f8ef;font-size:14px;font-weight:500;letter-spacing:.04em;cursor:pointer;transition:background-color .25s cubic-bezier(.16,1,.3,1)}.ds-btn:hover{background:#3a5d46}.ds-btn:focus-visible{outline:1.5px solid #b9d891;outline-offset:4px}.ds-btn:disabled{opacity:.45}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Quiet text action; hover draws the brush underline.",
+      "html": "<button class=\"ds-ghost\">Refresh</button>",
+      "css": ".ds-ghost{font-family:'Avenir Next',Avenir,system-ui,sans-serif;position:relative;background:none;border:none;color:#c3cdc2;padding:6px 12px;font-size:12px;min-height:38px;cursor:pointer}.ds-ghost:hover{color:#edf1e7}.ds-ghost:hover::after{content:'';position:absolute;left:6px;right:6px;bottom:3px;height:2.5px;background:currentColor;opacity:.85;border-radius:50%;transform:rotate(-.7deg);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 78%,transparent)}.ds-ghost:focus-visible{outline:1.5px solid #b9d891;outline-offset:4px}"
+    },
+    {
+      "name": "Underline Search",
+      "kind": "input",
+      "refersTo": "input-underline",
+      "description": "Transparent field with a control-line underline; display face for search.",
+      "html": "<input class=\"ds-input\" placeholder=\"Search repos\">",
+      "css": ".ds-input{background:transparent;color:#edf1e7;border:none;border-bottom:1px solid #6d8479;border-radius:0;padding:8px 2px;min-height:40px;min-width:200px;font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',Georgia,serif;font-size:18px}.ds-input::placeholder{color:#8fa298}.ds-input:focus{outline:none;border-bottom-color:#b9d891;box-shadow:0 1px 0 #b9d891}"
+    },
+    {
+      "name": "Filter",
+      "kind": "chip",
+      "refersTo": "button-ghost",
+      "description": "Text filter; pressed state is matcha with a brush underline.",
+      "html": "<button class=\"ds-filter\" aria-pressed=\"true\">changed <span>3</span></button>",
+      "css": ".ds-filter{font-family:'Avenir Next',Avenir,system-ui,sans-serif;position:relative;background:none;border:none;color:#8fa298;font-size:12px;letter-spacing:.04em;padding:6px 12px;min-height:38px;cursor:pointer}.ds-filter:hover{color:#edf1e7}.ds-filter[aria-pressed=true]{color:#b9d891}.ds-filter span{margin-left:6px;opacity:.8}.ds-filter[aria-pressed=true]::after{content:'';position:absolute;left:6px;right:6px;bottom:3px;height:2.5px;background:currentColor;opacity:.85;border-radius:50%;transform:rotate(-.7deg);-webkit-mask-image:linear-gradient(90deg,transparent,#000 14%,#000 78%,transparent);mask-image:linear-gradient(90deg,transparent,#000 14%,#000 78%,transparent)}"
+    },
+    {
+      "name": "Repo Row",
+      "kind": "card",
+      "refersTo": "repo-row",
+      "description": "Unboxed row: glyph slot, mincho name, mono path, quiet meta.",
+      "html": "<div class=\"ds-row\"><div class=\"ds-glyph\"></div><div><div class=\"ds-name\">repo-root-tracker</div><div class=\"ds-path\">~/dev/active/repo-root-tracker</div><div class=\"ds-meta\"><span class=\"ds-branch\">main</span> 2 days ago</div></div></div>",
+      "css": ".ds-row{display:flex;align-items:center;gap:14px;padding:8px 10px 8px 6px;border-radius:6px;color:#c3cdc2;transition:background-color .4s cubic-bezier(.16,1,.3,1)}.ds-row:hover{background:linear-gradient(90deg,color-mix(in srgb,#b9d891 6%,transparent),transparent 75%)}.ds-glyph{width:58px;height:69px;flex:0 0 58px;border-bottom:1px solid #27332f}.ds-name{font-family:'Hiragino Mincho ProN','Yu Mincho','Noto Serif JP',Georgia,serif;font-size:18px;color:#edf1e7;letter-spacing:.015em}.ds-path{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:#8fa298}.ds-meta{margin-top:4px;font-size:12px;color:#8fa298}.ds-branch{font-family:ui-monospace,Menlo,monospace;font-size:11px;color:#b9d891}"
+    },
+    {
+      "name": "Raised Panel",
+      "kind": "custom",
+      "refersTo": "panel-raised",
+      "description": "Menu, dialog and palette surface: the only place a shadow appears.",
+      "html": "<div class=\"ds-panel\"><label>Collection</label><p>Move to collection</p></div>",
+      "css": ".ds-panel{background:#182220;border:1px solid #27332f;border-radius:4px;padding:14px;color:#edf1e7;box-shadow:0 6px 12px -4px #000;width:230px;font-family:'Avenir Next',system-ui,sans-serif}.ds-panel label{display:block;color:#8fa298;font-size:12px;margin-bottom:4px}"
+    },
+    {
+      "name": "Hanko Seal",
+      "kind": "custom",
+      "refersTo": "vermilion-seal",
+      "description": "Carved blocker/conflict marker: vermilion square (rx 2), rotated -5deg, pitted #hanko-edge filter, pale inner border and glyph, blocker count. Left of the pot. Vermilion is for this meaning only.",
+      "html": "<svg class=\"ds-seal\" viewBox=\"0 0 20 20\" width=\"40\" height=\"40\"><g transform=\"rotate(-5 10 10)\"><rect width=\"18\" height=\"18\" x=\"1\" y=\"1\" rx=\"2\" fill=\"#b23a2a\"/><rect x=\"3\" y=\"3\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"#f6e6df\" stroke-opacity=\".55\" stroke-width=\"1\"/><text x=\"10\" y=\"14\" text-anchor=\"middle\" font-size=\"12\" font-weight=\"700\" fill=\"#f6e6df\">1</text></g></svg>",
+      "css": ".ds-seal{display:block}"
+    },
+    {
+      "name": "Status Disc",
+      "kind": "custom",
+      "refersTo": "gold-clean",
+      "description": "Numbered board disc beside each pot (right side): tone fill per git state; unchecked is hollow.",
+      "html": "<span class=\"ds-disc\" style=\"--f:#6b5a1e\">1</span> <span class=\"ds-disc\" style=\"--f:#8a4a1a\">2</span> <span class=\"ds-disc\" style=\"--f:#4d3f78\">3</span> <span class=\"ds-disc\" style=\"--f:#3b4642\">4</span> <span class=\"ds-disc\" style=\"--f:#b23a2a\">5</span> <span class=\"ds-disc ds-hollow\">6</span>",
+      "css": ".ds-disc{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--f);color:#fff;font-size:11px;font-family:system-ui,sans-serif}.ds-hollow{background:transparent;border:1px solid #5d6863;color:#c3cdc2}"
+    },
+    {
+      "name": "Garden Brief",
+      "kind": "custom",
+      "refersTo": "body",
+      "description": "One reserved line of state summary under list and board titles; ellipsis, two lines on phones.",
+      "html": "<p class=\"ds-brief\">2 uncommitted · 1 stale</p>",
+      "css": ".ds-brief{font-family:'Avenir Next',Avenir,system-ui,sans-serif;color:#c3cdc2;font-size:14px;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(100%,92ch);min-height:1.6em}"
+    },
+    {
+      "name": "Island Strip Item",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Archipelago entry: mincho island name, count and state dots; current island is matcha with a brush underline.",
+      "html": "<button class=\"ds-isle\" aria-current=\"true\">workspace <span class=\"ds-n\">6</span> <span class=\"ds-dot\">2</span></button>",
+      "css": ".ds-isle{position:relative;display:inline-flex;align-items:center;gap:8px;min-height:36px;padding:4px 10px;background:none;border:0;color:#c3cdc2;font-family:'Hiragino Mincho ProN','Yu Mincho',Georgia,serif;font-size:14px;cursor:pointer}.ds-isle:hover{color:#edf1e7}.ds-isle[aria-current=true]{color:#b9d891}.ds-isle[aria-current=true]::after{content:'';position:absolute;left:10px;right:10px;bottom:2px;height:2px;background:currentColor;border-radius:50%;transform:rotate(-.7deg)}.ds-n{font-family:'Avenir Next',system-ui,sans-serif;font-size:12px;color:#8fa298}.ds-dot{display:inline-flex;align-items:center;gap:3px;font-family:'Avenir Next',system-ui,sans-serif;font-size:11px;color:#8fa298}.ds-dot::before{content:'';width:7px;height:7px;border-radius:50%;background:#f29a4e}.ds-isle:focus-visible{outline:1.5px solid #b9d891;outline-offset:4px}"
+    },
+    {
+      "name": "Replay Scrubber",
+      "kind": "custom",
+      "refersTo": "button-ghost",
+      "description": "30-day scrubber: 1px control-line track, 14px matcha thumb, day readout.",
+      "html": "<span class=\"ds-replay\"><input class=\"ds-range\" type=\"range\" min=\"0\" max=\"30\" value=\"22\"><span class=\"ds-day\">Mon, Sep 22 · 2 repos touched</span></span>",
+      "css": ".ds-replay{display:inline-flex;align-items:center;gap:10px}.ds-range{-webkit-appearance:none;appearance:none;width:300px;height:28px;background:transparent;accent-color:#b9d891;cursor:pointer}.ds-range::-webkit-slider-runnable-track{height:1px;background:#6d8479}.ds-range::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;margin-top:-7px;border-radius:50%;background:#b9d891;border:0}.ds-range::-moz-range-track{height:1px;background:#6d8479}.ds-range::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#b9d891;border:0}.ds-day{font-family:'Avenir Next',system-ui,sans-serif;font-size:12px;color:#c3cdc2;letter-spacing:.02em}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Night Garden",
+    "overview": "Emptiness (ma, yohaku) is the main material. The ground is ink-black green with fixed mist and paper grain, and almost nothing sits on it in a box. Every repo is a bonsai whose form is seeded by its path, and its git state shows as weather around it, never as chrome. Matcha is new growth and the single live accent; vermilion is rare enough to read as a seal.\n\nDensity is low and typographic, and the garden carries a little history: a tree's trunk, canopy and limbs reflect the repo's age, recent activity and live branches, and the ground under it is lit by the real time of day. Rows are sparse, controls are quiet text with hairline underlines, and a mincho display face carries names and headings against a calm gothic text face. The list is an 820px column (880px in detail); the board is a borderless stage that fades into the void, with a single margin-note inspector at the right.\n\nThe build refuses card grids, boxed panels, colored edge stripes and dashboard gray. State is legible through the trees and a small set of semantic hues, and expression never replaces the label.",
+    "keyCharacteristics": [
+      "Dark-only (`color-scheme: dark`); one accent, matcha.",
+      "Hairlines and tonal ground, no boxes at rest.",
+      "Mincho display, gothic text, mono for paths and hashes.",
+      "One ornament: the tapered brush-stroke underline.",
+      "Git state encoded as weather outside the seeded tree geometry; history encoded as bounded vitals inside it.",
+      "Single-file constraint: the whole UI is one `dashboard.html` (inline CSS, JS, the embedded font and SVG/canvas drawing) because the server and tests load that one file. This is deliberate; do not split it."
+    ],
+    "rules": [
+      {
+        "name": "The Seal Rule",
+        "body": "Vermilion fill means a blocker or conflict and nothing else, whether the carved hanko seal on the board or the list badge. Never use it for decoration or emphasis.",
+        "section": "colors"
+      },
+      {
+        "name": "The One Meaning Rule",
+        "body": "Gold is clean, orange is local changes, lilac is stale, slate is unavailable, blue is ahead/behind, vermilion is blocked, matcha is growth and focus. Each state owns one hue and each hue one state; amber is no longer a state colour, and the same hues apply in list and detail views as on the board.",
+        "section": "colors"
+      },
+      {
+        "name": "The Redundant Signal Rule",
+        "body": "Hue never works alone. Severity also changes ring weight and pattern, and the text label always stays (see Bonsai weather).",
+        "section": "colors"
+      },
+      {
+        "name": "The Mincho Names Rule",
+        "body": "Names of things (repos, collections, islands) and headings use the display face; data, controls and paths use text or mono.",
+        "section": "typography"
+      },
+      {
+        "name": "The Seven Sizes Rule",
+        "body": "The scale is 11 / 12 / 14 / 18 / 22 / 26 / 44. Do not add intermediate sizes (the board's 9px disc numerals and 10px leaf legend glyphs are SVG one-offs).",
+        "section": "typography"
+      },
+      {
+        "name": "The Flat-At-Rest Rule",
+        "body": "Rows, tiles and controls carry no shadow or box at rest; hover is a faint matcha wash (5-6%) or a color shift.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "**Do** express repo state as weather on the tree and keep a text label alongside for legibility.",
+      "**Do** keep one hue per state: gold clean, orange changes, lilac stale, slate unavailable, blue sync, vermilion blocked, and vary ring weight/pattern with severity.",
+      "**Do** use hairlines, underlines and air before reaching for a box.",
+      "**Do** keep type to the 11/12/14/18/22/26/44 scale and set names in the display face.",
+      "**Do** disable all animation under `prefers-reduced-motion`.",
+      "**Do** keep the matcha `#b9d891` accent and dark color scheme; tests pin them.",
+      "**Do** keep the app in the single `dashboard.html`; the server and tests load that file.",
+      "**Do** keep the Shippori Mincho OFL notice with the embedded font and honour `prefers-contrast: more` and `forced-colors` when adding surfaces.",
+      "**Do** let history show only through bounded vitals and the ground through time of day; reserve the brief to one line."
+    ],
+    "donts": [
+      "**Don't** use card grids, boxed panels, colored edge stripes, or dashboard gray.",
+      "**Don't** add ornament beyond the brush underline (the ensō backdrop and sun/moon disc are existing scene elements, not a license for more decoration).",
+      "**Don't** reuse a semantic hue for decoration or another state.",
+      "**Don't** put git state into the seeded tree geometry; the same path and the same history must always grow the same tree.",
+      "**Don't** change the pinned board geometry (156x78 pitch, 128x148 sprite box) without updating tests."
+    ]
+  }
+}
