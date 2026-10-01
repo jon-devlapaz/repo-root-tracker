@@ -1,6 +1,15 @@
 This project uses Tink to manage Agent Skills under `.agents/skills/`.
 
 
+## git-golden
+
+A repository is `git-golden` when all of the following are true:
+
+- It is checked out on `main` with a clean working tree.
+- Local `main` is even with `origin/main`.
+- GitHub has no open pull requests and no open issues.
+- The latest `CI` run on `main` succeeded.
+
 <!-- AI-Native SDLC Router -->
 ## SDLC Workspace
 - Read `_system/SDLC.md` for setup, evidence boundaries, and recovery.
