@@ -280,7 +280,7 @@
   .repo-meta .branch { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: .02em; }
   .repo-meta .rel { font-size: 11px; }
   .repo-subject { margin-top: 2px; font-size: 12px; color: var(--body); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  @media (hover: hover) { .repo-card:not(:hover):not(:focus-within) .freshness, .repo-card:not(:hover):not(:focus-within) .gh-signal[data-tone="unknown"] { display: none; } }
+  @media (hover: hover) { .repo-card:not(:hover):not(:focus-within) .freshness, .repo-card:not(:hover):not(:focus-within) .gh-signal[data-tone="unknown"]:not(.workflow-signal) { display: none; } }
   .repo-label { font-size: 12px; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
   .repo-label.stale { color: var(--lilac); }
   .repo-actions { display: flex; gap: 6px; flex-shrink: 0; }
@@ -378,6 +378,16 @@
   /* ---- GitHub tab ---- */
   .gh-section-title { font-family: var(--display); font-size: 18px; letter-spacing: .03em; color: var(--body); margin: 26px 0 8px; }
   .gh-section-title:first-child { margin-top: 0; }
+  .workflow-signal, .workflow-health, .workflow-run { overflow-wrap: anywhere; min-width: 0; }
+  .attention-item[data-workflow-attention] > div { min-width: 0; overflow-wrap: anywhere; }
+  .attention-item .workflow-run a { white-space: normal; }
+  .workflow-summary { color: var(--signal); margin: 8px 0; }
+  .workflow-health[data-state="passing"] .workflow-summary { color: var(--green); }
+  .workflow-health[data-state="pending"] .workflow-summary { color: var(--yellow); }
+  .workflow-run { margin: 8px 0; }
+  .workflow-run a { color: var(--accent); text-decoration: none; font-size: 12px; }
+  .workflow-run a:hover { text-decoration: underline; }
+  .workflow-run .board-pr-meta { color: var(--muted); font-size: 12px; margin-top: 2px; }
   .pr-row, .issue-row { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: var(--radius-row); margin-bottom: 2px; }
   .pr-row:hover, .issue-row:hover { background: color-mix(in srgb, var(--accent) 5%, transparent); }
   .ci-badge { width: 20px; height: 20px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; margin-top: 1px; }
@@ -772,10 +782,10 @@
   </div>
   <div class="board-tools">
     <input id="board-search" type="search" aria-label="Search the island" placeholder="Find a project, branch, or path…" oninput="renderBoard()" onkeydown="if(event.key === 'Enter') selectBoardMatch()">
-    <label title="Known PR blockers, local conflicts, or unavailable repos—not ordinary changes."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
+    <label title="Known PR blockers, failing default-branch CI, local conflicts, or unavailable repos."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
     <span id="board-match-count" role="status"></span>
   </div>
-  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
+  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
   <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous island" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><span id="board-page-status" role="status" tabindex="-1">Island 1 of 1</span><button id="board-next" class="btn btn-ghost" aria-label="Next island" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
@@ -899,6 +909,37 @@
     return reasons;
   }
 
+  const WORKFLOW_FAILURES = ['failure', 'timed_out', 'action_required', 'startup_failure', 'error'];
+  function workflowSignal(info) {
+    const health = info?.workflows;
+    if (!health || (!info.has_github && !info.repo)) return {failures: 0, label: '', state: '', runs: []};
+    const runs = health.runs || [];
+    const failures = runs.filter(run => run.current_head && run.status === 'completed' && WORKFLOW_FAILURES.includes(run.conclusion)).length;
+    const branch = info.default_branch ? ' on ' + info.default_branch : '';
+    const state = health.state || 'unknown';
+    const cancelled = runs.some(run => run.current_head && run.conclusion === 'cancelled');
+    const label = 'Default-branch CI' + branch + ': ' + (failures ? failures + ' failing workflow' + (failures === 1 ? '' : 's') :
+      state === 'passing' ? 'passing' : state === 'pending' ? 'pending · unconfirmed' :
+      state === 'stale' ? 'stale · current commit unconfirmed' : 'unconfirmed' + (cancelled ? ' · cancelled' : ''));
+    return {failures, label, state, runs};
+  }
+
+  function workflowRunLabel(run) {
+    const result = run.conclusion || run.status || 'unknown';
+    const scope = run.current_head ? 'Current commit' : run.head_sha ? 'Older commit · current CI unconfirmed' : 'No run on current commit';
+    return scope + ' · ' + result + (run.workflow_state && run.workflow_state !== 'active' ? ' · ' + run.workflow_state + ' · unconfirmed' : '');
+  }
+
+  function workflowLinks(info) {
+    return workflowSignal(info).runs.map(run => `<div class="board-pr-item workflow-run"><a href="${escapeHtml(run.url || (info.repo_url + '/actions'))}" target="_blank" rel="noopener">${escapeHtml(run.name)}</a><div class="board-pr-meta">${escapeHtml(workflowRunLabel(run))}</div></div>`).join('');
+  }
+
+  function renderWorkflows(info) {
+    const w = workflowSignal(info);
+    if (!w.label) return '';
+    return `<section class="workflow-health" data-state="${escapeHtml(w.state)}" data-tone="${w.failures ? 'blocked' : w.state === 'stale' ? 'stale' : 'unknown'}"><div class="gh-section-title">Default-branch workflows · <a href="${escapeHtml(info.repo_url)}/actions" target="_blank" rel="noopener">${escapeHtml(info.default_branch || 'branch unavailable')}</a></div><p class="workflow-summary">${escapeHtml(w.label)}</p>${workflowLinks(info) || '<p class="local-note">No workflow runs confirmed for the current commit.</p>'}</section>`;
+  }
+
   async function fetchGithub(repo, refresh = false) {
     const slug = repo._status && repo._status.github_repo;
     const key = slug || repo.path;
@@ -944,7 +985,7 @@
   }
 
   function renderAttention() {
-    const seen = new Set(), items = [];
+    const seen = new Set(), items = [], ciItems = [];
     let unknown = 0, partial = 0, checked = 0;
     repos.forEach((r, i) => {
       const slug = r._status && r._status.github_repo;
@@ -953,17 +994,22 @@
       const info = r._github;
       if (!info) { unknown++; return; }
       checked++;
+      const ci = workflowSignal(info);
+      if (ci.failures) ciItems.push({r, ci});
       if (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached) partial++;
       (info.prs || []).forEach(pr => { const reasons = prReasons(pr); if (reasons.length) items.push({r, i, pr, reasons}); });
     });
+    const ciFailures = ciItems.reduce((n, item) => n + item.ci.failures, 0);
     const heading = document.getElementById('attention-heading');
-    heading.textContent = 'GitHub attention · ' + (items.length ? items.length + ' PR' + (items.length === 1 ? '' : 's') + ' with blockers' : checked ? 'no known PR blockers' : 'not checked') + (refreshingGithub ? ' · checking…' : '') + (unknown ? ' · ' + unknown + ' unchecked' : '') + (partial ? ' · ' + partial + ' incomplete' : '');
+    heading.textContent = 'GitHub attention · ' + (items.length ? items.length + ' PR' + (items.length === 1 ? '' : 's') + ' with blockers' : checked ? 'no known PR blockers' : 'not checked') + (ciItems.length ? ' · ' + ciFailures + ' failing default-branch workflow' + (ciFailures === 1 ? '' : 's') + ' across ' + ciItems.length + ' repo' + (ciItems.length === 1 ? '' : 's') : '') + (refreshingGithub ? ' · checking…' : '') + (unknown ? ' · ' + unknown + ' unchecked' : '') + (partial ? ' · ' + partial + ' incomplete' : '');
     const panel = document.getElementById('attention-panel');
-    if (items.length && !attentionAutoOpened) { panel.open = true; attentionAutoOpened = true; }
+    if ((items.length || ciItems.length) && !attentionAutoOpened) { panel.open = true; attentionAutoOpened = true; }
     document.getElementById('attention-list').innerHTML = items.slice(0, 5).map(({r, pr, reasons}) =>
       `<div class="attention-item"><div><strong>${escapeHtml(repoName(r.path))} · PR #${pr.number}${pr.draft ? ' · draft' : ''}</strong><p>${escapeHtml(pr.title)}</p><p>${escapeHtml(reasons.join(' · '))}</p>${checkedTime(r._github.checked_at, 'GitHub checked')}</div><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">View PR ↗</a></div>`).join('') +
       (items.length > 5 ? `<p class="local-note">${items.length - 5} more PRs with blockers. Use the GitHub attention filter and open a repo’s GitHub tab.</p>` : '') +
-      `<p class="local-note">${unknown || !checked ? 'Check GitHub to load PR signals. ' : ''}${partial ? 'Some GitHub data is unavailable; absence of a blocker is not an all-clear. ' : ''}This is repository-wide PR health, not a personalized review queue. Issues and ordinary local changes are not treated as blockers.</p>`;
+      ciItems.slice(0,5).map(({r, ci}) => `<div class="attention-item" data-workflow-attention><div><strong>${escapeHtml(repoName(r.path))} · ${escapeHtml(ci.label)}</strong>${workflowLinks(r._github)}${checkedTime(r._github.checked_at, 'GitHub checked')}</div><a href="#/repo/${encodeURIComponent(r.path)}?tab=github">View workflows</a></div>`).join('') +
+      (ciItems.length > 5 ? `<p class="local-note">${ciItems.length - 5} more repositories with failing default-branch CI. Use the GitHub attention filter.</p>` : '') +
+      `<p class="local-note">${unknown || !checked ? 'Check GitHub to load PR and default-branch CI signals. ' : ''}${partial ? 'Some GitHub data is unavailable; absence of a blocker is not an all-clear. ' : ''}This covers repository-wide PR blockers and default-branch workflow failures, counted separately. Issues and ordinary local changes are not treated as blockers.</p>`;
     const button = document.getElementById('github-refresh');
     button.disabled = refreshingGithub || refreshingLocal || repos.some(r => !r._status || r._checking);
     button.textContent = refreshingGithub ? 'Checking GitHub…' : organization.githubEnabled ? 'Refresh GitHub' : 'Check GitHub';
@@ -1082,7 +1128,7 @@
     if (filter === 'pinned') return organization.pins.includes(r.path);
     if (filter === 'changed') return !!(s && !s.error && !s.gone && s.dirty && !s.dirty.is_clean);
     if (filter === 'sync') return !!(s && !s.error && !s.gone && s.sync && s.sync.has_upstream && (s.sync.ahead || s.sync.behind));
-    if (filter === 'attention') return !!(r._github && (r._github.prs || []).some(pr => prReasons(pr).length));
+    if (filter === 'attention') return !!(boardGithub(r).blocked || boardGithub(r).workflowFailures);
     if (filter === 'unavailable') return !!(s && (s.error || s.gone));
     return true;
   }
@@ -1210,7 +1256,7 @@
 
   function repoAttentionTone(repo, github = boardGithub(repo)) {
     const local = localAttentionTone(repo);
-    if (local === 'blocked' || github.blocked) return 'blocked';
+    if (local === 'blocked' || github.blocked || github.workflowFailures) return 'blocked';
     if (local === 'unavailable' || github.incomplete) return 'unavailable';
     return local;
   }
@@ -1235,13 +1281,10 @@
       `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
     const stale = s && s.stale_branches && s.stale_branches.length
       ? `<span class="repo-label stale" title="${escapeHtml(s.stale_branches.map(b => b.name).join(', '))}">${s.stale_branches.length} stale</span>` : '';
-    const info = r._github;
-    const blocked = info ? (info.prs || []).filter(pr => prReasons(pr).length).length : 0;
-    const checkingGithub = githubTasks.has((s && s.github_repo) || r.path);
-    const incompleteGithub = info && (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached);
-    const githubLabel = checkingGithub ? 'GitHub checking…' : !info ? (s && s.github_repo ? 'GitHub not checked' : '') : blocked ? blocked + ' PR' + (blocked === 1 ? '' : 's') + ' with blockers' + (incompleteGithub ? ' · incomplete' : '') : incompleteGithub ? 'GitHub incomplete' : info.has_github ? 'No known PR blockers' : '';
-    const githubTone = blocked ? 'blocked' : incompleteGithub ? 'unavailable' : 'unknown';
-    const githubSignal = githubLabel ? `<a class="gh-signal attention-pill" data-tone="${githubTone}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
+    const info = r._github, gh = boardGithub(r);
+    const githubLabel = gh.label === 'No GitHub remote' || (!info && !s?.github_repo) ? '' : gh.label;
+    const githubTone = gh.blocked || gh.workflowFailures ? 'blocked' : gh.incomplete ? 'unavailable' : gh.workflowState === 'stale' ? 'stale' : 'unknown';
+    const githubSignal = githubLabel ? `<a class="gh-signal attention-pill${info?.workflows ? ' workflow-signal' : ''}" data-tone="${githubTone}" title="${escapeHtml(githubLabel)}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
     return `<article class="repo-card" id="card-${i}" data-tone="${repoAttentionTone(r)}">
       ${organizing ? `<input class="repo-select" type="checkbox" id="select-${encodeURIComponent(r.path)}" aria-label="Select ${name}" ${selectedRepos.has(r.path) ? 'checked' : ''} onchange="selectRepo(${i}, this.checked)">` : ''}
       <button id="pin-${encodeURIComponent(r.path)}" class="pin-button" aria-label="${pinned ? 'Unpin' : 'Pin'} ${name}" aria-pressed="${pinned}" onclick="togglePin(${i})"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.8l1.9 4.2 4.6.5-3.4 3.1 1 4.5L8 11.7l-4.1 2.4 1-4.5L1.5 6.5 6.1 6z" fill="${pinned ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg></button>
@@ -1634,7 +1677,7 @@
     const last = Date.parse(s.last_commit && s.last_commit.date), days = Number.isFinite(last) ? Math.max(0, Math.floor((Date.now() - last) / 864e5)) : null;
     return {stage: 'ok', days, dirty: d.is_clean === false, files, conflicted: !!(d.kinds && d.kinds.conflicted),
       ahead: up ? (s.sync.ahead || 0) : 0, behind: up ? (s.sync.behind || 0) : 0, stale: (s.stale_branches || []).length,
-      blocked: github ? github.blocked : 0};
+      blocked: github ? github.blocked : 0, workflowFailures: github?.workflowFailures || 0};
   }
 
   function bonsaiWeather(path, facts, opts = {}) {
@@ -1646,7 +1689,7 @@
       for (let i = 0; i < (facts.days >= 120 ? 7 : 3); i++) { const rx = 3 + rand() * 3.6; moss += `<ellipse class="moss" cx="${bn((rand() - .5) * 60)}" cy="${bn(3 + rand() * 7)}" rx="${bn(rx)}" ry="${bn(rx * .38)}"/>`; }
       out += `<g data-marker="dormant" class="tree-fx">${moss}</g>`;
     }
-    if (facts.stage === 'ok' && !facts.dirty && !facts.conflicted && !facts.ahead && !facts.behind && !facts.stale && !facts.blocked) {
+    if (facts.stage === 'ok' && !facts.dirty && !facts.conflicted && !facts.ahead && !facts.behind && !facts.stale && !facts.blocked && !facts.workflowFailures) {
       let glints = '';
       for (let i = 0; i < 1; i++) glints += `<path class="glint" d="M0 -3.4Q.7 -.7 3.4 0Q.7 .7 0 3.4Q-.7 .7 -3.4 0Q-.7 -.7 0 -3.4Z" transform="translate(${bn((rand() - .5) * 46)} ${bn(-34 - rand() * 32)})" style="animation-delay:${-bn(rand() * 4)}s"/>`;
       out += `<g data-marker="calm" class="tree-fx"${animate}>${glints}</g>`;
@@ -1707,15 +1750,29 @@
     known.forEach(r => { const tone = repoAttentionTone(r); if (by[tone]) by[tone].push(r); });
     const names = list => list.length === 1 ? repoName(list[0].path) : list.length === 2 ? repoName(list[0].path) + ' and ' + repoName(list[1].path) : repoName(list[0].path) + ' and ' + (list.length - 1) + ' others';
     const parts = [];
-    if (by.blocked.length) parts.push(names(by.blocked) + (by.blocked.length === 1 ? ' is blocked' : ' are blocked'));
+    const githubKey = r => r._github?.repo || r._status.github_repo || r._status.project_id || r.path;
+    const ciRepos = [...new Map(known.filter(r => boardGithub(r).workflowFailures).map(r => [githubKey(r), r])).values()];
+    const otherBlocked = by.blocked.filter(r => !boardGithub(r).workflowFailures);
+    if (otherBlocked.length) parts.push(names(otherBlocked) + (otherBlocked.length === 1 ? ' is blocked' : ' are blocked'));
+    if (ciRepos.length) parts.push(names(ciRepos) + (ciRepos.length === 1 ? ' has failing default-branch CI' : ' have failing default-branch CI'));
     if (by.changed.length) parts.push(by.changed.length + ' uncommitted');
     if (by.sync.length) parts.push(by.sync.length + ' ahead or behind');
     if (by.unavailable.length) parts.push(by.unavailable.length + ' unreadable');
     if (by.stale.length) parts.push(by.stale.length + ' stale');
+    const unconfirmedCi = new Set(known.filter(r => {
+      const w = workflowSignal(r._github);
+      return w.label && !['passing', 'failing'].includes(w.state);
+    }).map(githubKey));
+    if (unconfirmedCi.size) parts.push(unconfirmedCi.size + ' default-branch CI unconfirmed');
     let text = parts.length ? parts.join(' \u00b7 ') : (known.length === 1 ? 'The only repo is calm.' : 'All ' + known.length + ' repos are calm.');
     if (known.length < repos.length) text += ' \u00b7 ' + (repos.length - known.length) + ' still checking';
     const worst = TONE_ORDER.find(k => by[k].length) || 'unknown';
-    return {text, attention: by.blocked.length + by.unavailable.length, worst};
+    const localAttention = known.filter(r => ['blocked', 'unavailable'].includes(localAttentionTone(r))).length;
+    const githubAttention = new Set(known.filter(r => {
+      const gh = boardGithub(r);
+      return gh.blocked || gh.workflowFailures || gh.incomplete;
+    }).map(githubKey));
+    return {text, attention: localAttention + githubAttention.size, worst};
   }
   let lastFavicon = '';
   function faviconFor(tone) {
@@ -1778,11 +1835,13 @@
   }
 
   function boardFamilyGithub(g) {
-    const seen = new Set(), prs = [];
+    const seen = new Set(), prs = [], workflows = [], seenWorkflows = new Set();
     const members = (g.familyPaths || g.paths).map(path => repos.find(r => r.path === path)).filter(Boolean);
     members.forEach(repo => {
       const info = repo._github;
-      if (!info || !info.has_github) return;
+      if (!info || (!info.has_github && !info.repo)) return;
+      const slug = info.repo || repo._status?.github_repo || repo.path;
+      if (!seenWorkflows.has(slug) && workflowSignal(info).label) { seenWorkflows.add(slug); workflows.push(info); }
       (info.prs || []).forEach(pr => {
         const key = pr.number + '|' + (info.repo || repo._status?.github_repo || repo.path);
         if (seen.has(key) || !prReasons(pr).length) return;
@@ -1804,16 +1863,19 @@
     if (prs.length && incomplete) label += ' · incomplete';
     if (checking && (prs.length || incomplete)) label += ' · checking…';
     if (unchecked && (prs.length || incomplete || checking)) label += ' · unchecked';
-    return {blocked: prs.length, prs, checking, incomplete, unchecked, label};
+    const workflowFailures = workflows.reduce((n, info) => n + workflowSignal(info).failures, 0);
+    const workflowUnconfirmed = workflows.some(info => !['passing', 'failing'].includes(workflowSignal(info).state));
+    if (workflows.length) label += ' · ' + workflows.map(info => workflowSignal(info).label).join(' · ');
+    return {blocked: prs.length, prs, workflows, workflowFailures, workflowUnconfirmed, checking, incomplete, unchecked, label};
   }
 
   function boardFamilyBadge(g) {
     if(g.key==='workspace')return '';
     const f=boardFamilyGithub(g);
-    if (!f.blocked && !f.checking && !f.incomplete && !f.unchecked) return '';
+    if (!f.blocked && !f.workflowFailures && !f.workflowUnconfirmed && !f.checking && !f.incomplete && !f.unchecked) return '';
     const cx=g.x+g.width/2, cy=g.y+36;
     let color='var(--accent-dim)', text='?';
-    if (f.blocked) { color='var(--danger-fill)'; text=f.blocked; }
+    if (f.blocked || f.workflowFailures) { color='var(--danger-fill)'; text=f.workflowFailures ? 'CI' : f.blocked; }
     else if (f.checking) { color='var(--warning-fill)'; text='…'; }
     else if (f.incomplete) { color='var(--warning-fill)'; text='!'; }
     return `<g data-family-gh="${escapeHtml(g.key)}"><circle cx="${cx}" cy="${cy-3}" r="9" fill="${color}"/><text x="${cx}" y="${cy+1}" text-anchor="middle" font-size="11" fill="white">${text}</text><title>Project-wide GitHub: ${escapeHtml(f.label)}</title></g>`;
@@ -1961,11 +2023,12 @@
     const p=pose.island.theme, selected=boardSelectedPath===repo.path, L=bonsaiLayout(repo.path);
     const flag=selected ? `<g class="plot-flag" transform="translate(${cx+28},${gy-84})"><line x1="3.5" y1="-2" x2="3.5" y2="4" stroke="var(--accent)" stroke-width="1"/><polygon points="0,4 7,4 7,32 3.5,27 0,32" fill="var(--accent)"/></g>` : '';
     const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+1}" rx="27" ry="12.5"/>` : '';
-    const blocked=pose.island.key==='workspace' ? boardGithub(repo).blocked : 0;
-    const badge=blocked ? `<g data-repo-gh="${escapeHtml(repo.path)}" class="hanko" filter="url(#hanko-edge)" transform="rotate(-5 ${cx-37} ${gy+7})"><rect x="${cx-46}" y="${gy-2}" width="18" height="18" rx="2" fill="var(--danger-fill)"/><rect x="${cx-44}" y="${gy}" width="14" height="14" fill="none" stroke="#f6e6df" stroke-opacity=".55" stroke-width="1"/><text x="${cx-37}" y="${gy+12.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#f6e6df">${blocked}</text></g>` : '';
+    const gh=boardGithub(repo), blocked=pose.island.key==='workspace' ? gh.blocked : 0;
+    const workflowFailures=pose.island.key==='workspace' ? gh.workflowFailures : 0;
+    const badge=blocked || workflowFailures ? `<g data-workflow-ci="${!!workflowFailures}" data-repo-gh="${escapeHtml(repo.path)}" class="hanko" filter="url(#hanko-edge)" transform="rotate(-5 ${cx-37} ${gy+7})"><rect x="${cx-46}" y="${gy-2}" width="18" height="18" rx="2" fill="var(--danger-fill)"/><rect x="${cx-44}" y="${gy}" width="14" height="14" fill="none" stroke="#f6e6df" stroke-opacity=".55" stroke-width="1"/><text x="${cx-37}" y="${gy+12.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#f6e6df">${workflowFailures ? 'CI' : blocked}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
     if (b.stage === 'gone') return `<g class="island-tree"><ellipse class="tree-hit" cx="${cx}" cy="${gy-4}" rx="22" ry="12" fill="transparent"/><g transform="translate(${cx} ${gy})">${bonsaiPot(L,p,false)}<ellipse cx="0" cy="-8.4" rx="14" ry="4.8" fill="#16211b"/><ellipse cx="4" cy="-9" rx="3.6" ry="2" fill="#56625b"/></g>${outline}${flag}</g>`;
     const paused=b.stage==='error'||b.stage==='loading';
-    const facts=bonsaiFacts(repo,{blocked});
+    const facts=bonsaiFacts(repo,{blocked:gh.blocked,workflowFailures:gh.workflowFailures});
     // git weather lives outside [data-tree-variant]: the tree's geometry never depends on health
     const weather=`<g transform="translate(${cx} ${gy})">${bonsaiWeather(repo.path,{...facts,dirty:facts.dirty&&b.stage==='attention-dirty'})}</g>`;
     return `<g class="island-tree"><ellipse cx="${cx+4}" cy="${gy+3}" rx="22" ry="8.5" fill="#000" opacity=".26"/>${outline}`+
@@ -2300,11 +2363,13 @@
     else if (g?.has_github) label = 'No known PR blockers';
     else if (repo._status && Object.hasOwn(repo._status, 'github_repo') && !repo._status.github_repo) label = 'No GitHub remote';
     else label = 'GitHub not checked';
-    return {blocked, label, incomplete:!!incomplete};
+    const workflow = workflowSignal(g);
+    if (workflow.label) label += ' · ' + workflow.label;
+    return {blocked, label, incomplete:!!incomplete, workflowFailures:workflow.failures, workflowState:workflow.state};
   }
 
   function boardNeedsAttention(repo) {
-    return !!(boardGithub(repo).blocked || repo._status?.error || repo._status?.gone || repo._status?.dirty?.kinds?.conflicted);
+    return !!(boardGithub(repo).blocked || boardGithub(repo).workflowFailures || repo._status?.error || repo._status?.gone || repo._status?.dirty?.kinds?.conflicted);
   }
 
   function boardMatches(repo) {
@@ -2361,9 +2426,9 @@
     const family = boardNeighborhoods.find(g => g.paths.includes(repo.path));
     const familyGh = boardFamilyGithub(family || {paths:[repo.path]});
     el.dataset.tone = repoAttentionTone(repo, familyGh);
-    const familyTone = familyGh.blocked ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking ? 'unknown' : 'clean';
-    const familyInfo = `<p class="board-family-gh attention-summary" data-tone="${familyTone}" data-blocked="${!!familyGh.blocked}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
-      (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '');
+    const familyTone = familyGh.blocked || familyGh.workflowFailures ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking || familyGh.workflowUnconfirmed ? 'unknown' : 'clean';
+    const familyInfo = `<p class="board-family-gh attention-summary" data-tone="${familyTone}" data-blocked="${!!(familyGh.blocked || familyGh.workflowFailures)}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
+      (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '') + familyGh.workflows.map(info => workflowLinks(info)).join('');
     el.innerHTML = `<div class="inspector-sprite" aria-hidden="true">${bonsaiGlyph(repo, {theme: bonsaiRepoTheme(repo), large: true, still: false})}</div><h3 id="board-inspector-title" tabindex="-1">${escapeHtml(repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
       `<p>${escapeHtml(s.branch || 'Branch not checked')}${s.is_worktree ? ' · Linked worktree' : ''}</p>` +
       vitalsLine(s) +
@@ -2393,7 +2458,7 @@
     return `<span class="board-label"><span class="tile-name" title="${escapeHtml(name)}">${escapeHtml(name)}</span>` +
       `<span class="tile-branch" title="${escapeHtml(branch)}">${escapeHtml(branch || 'Branch not checked')}</span>` +
       `<span class="tile-status ${b.stage === 'attention-dirty' ? 'board-local-badge' : ''}">${b.stage === 'attention-dirty' ? '✎ ' : ''}${escapeHtml(b.summary + sync)}</span>` +
-      `<span class="${gh.blocked ? 'board-gh-badge' : 'tile-status'}">${gh.blocked ? '● ' : ''}${escapeHtml(gh.label)}</span></span>`;
+      `<span class="${gh.blocked || gh.workflowFailures ? 'board-gh-badge' : 'tile-status'}">${gh.blocked || gh.workflowFailures ? '● ' : ''}${escapeHtml(gh.label)}</span></span>`;
   }
 
   function boardTileSvg(repo, b, pose) {
@@ -2807,14 +2872,14 @@
     const controls = `<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button>${checkedTime(g.checked_at, g.errors && g.errors.length ? 'GitHub check attempted' : 'GitHub checked')}</div>`;
     const warnings = (g.errors || []).map(error => `<p class="warning-note">${escapeHtml(error)}</p>`).join('');
     if (!g.has_github) {
-      el.innerHTML = controls + warnings + (g.gh_unavailable
+      el.innerHTML = controls + warnings + renderWorkflows(g) + (g.gh_unavailable
         ? '<div class="empty"><p>GitHub data is unavailable. Check gh authentication, connectivity, and repository access, then refresh.</p></div>'
         : '<div class="empty"><p>No GitHub remote for this repo.</p></div>');
       return;
     }
     const prsUnavailable = (g.errors || []).some(error => error.startsWith('Pull requests'));
     const issuesUnavailable = (g.errors || []).some(error => error.startsWith('Issues'));
-    let html = controls + warnings + `<div class="gh-section-title">Open pull requests (${prsUnavailable ? 'unknown' : g.prs.length}) · <a href="${escapeHtml(g.repo_url)}/pulls" target="_blank" rel="noopener" style="color:var(--accent);text-transform:none">${escapeHtml(g.repo)}</a></div>`;
+    let html = controls + warnings + renderWorkflows(g) + `<div class="gh-section-title">Open pull requests (${prsUnavailable ? 'unknown' : g.prs.length}) · <a href="${escapeHtml(g.repo_url)}/pulls" target="_blank" rel="noopener" style="color:var(--accent);text-transform:none">${escapeHtml(g.repo)}</a></div>`;
     html += g.prs.length ? g.prs.map(pr =>
       `<div class="pr-row">${ciBadge(pr.ci)}
         <div class="pr-body">

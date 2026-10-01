@@ -142,7 +142,7 @@ def test_prs_and_issues_mapped(tmp_path: Path) -> None:
     assert info.prs[0].ci.state == "pass"
     assert len(info.issues) == 1
     assert info.issues[0].number == 3
-    assert calls["n"] == 2
+    assert calls["n"] == 3
 
 
 def test_cache_bounds_calls(tmp_path: Path) -> None:
@@ -160,7 +160,7 @@ def test_cache_bounds_calls(tmp_path: Path) -> None:
         get_github_info(tmp_path)
         get_github_info(tmp_path)
         get_github_info(tmp_path)
-    assert calls["n"] == 2  # one pr + one issue call, then cache hits
+    assert calls["n"] == 3  # PRs, issues, default-branch metadata, then cache hits
 
 
 # ---------------------------------------------------------------------------
