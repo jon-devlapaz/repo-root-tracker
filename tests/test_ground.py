@@ -3,6 +3,7 @@ from test_board import PATHS, goto_board, page  # noqa: F401
 
 def test_ground_is_painted_not_blank(page):
     goto_board(page)
+    page.wait_for_function('groundDraws >= 1')
     stats = page.evaluate("""() => {
       const c = document.getElementById('board-ground'), d = c.getContext('2d').getImageData(0, 0, c.width, c.height).data;
       let opaque = 0; const seen = new Set();
@@ -23,6 +24,7 @@ def test_light_follows_the_hour(page):
 def test_each_tree_casts_a_shadow_and_the_hour_changes_the_ground(page):
     goto_board(page)
     page.evaluate('boardHourOverride = 23; renderBoard();')
+    page.wait_for_function('groundCache.sig !== "" && groundCache.shadows > 0')
     night = page.evaluate('({shadows: groundCache.shadows, sig: groundCache.sig})')
     assert night['shadows'] == len(PATHS)
     page.evaluate('boardHourOverride = 7; renderBoard();')
@@ -32,6 +34,7 @@ def test_each_tree_casts_a_shadow_and_the_hour_changes_the_ground(page):
 
 def test_redraw_is_cached_until_something_the_ground_shows_changes(page):
     goto_board(page)
+    page.wait_for_function('groundDraws >= 1')
     before = page.evaluate('groundDraws')
     page.evaluate('renderBoard(); renderBoard(); renderBoard();')
     assert page.evaluate('groundDraws') == before
@@ -47,6 +50,7 @@ def test_drawing_the_ground_is_fast_even_with_a_full_island(page):
 
 def test_rechecking_a_repo_does_not_repaint_the_bed(page):
     goto_board(page)
+    page.wait_for_function('groundDraws >= 1')
     before = page.evaluate('groundDraws')
     page.evaluate("repos[0]._boardQueued = true; renderBoard(); repos[0]._boardQueued = false; renderBoard();")
     page.wait_for_timeout(400)

@@ -1908,8 +1908,10 @@
       // cast shadow, away from the light; length follows the light's height
       const L = bonsaiLayout(q.path), len = 62 * L.scale * (1.05 - sky.elev) * .62;
       const vx = -sky.x * len, vy = len * .22 + 3;
-      ctx.save(); ctx.filter = 'blur(2.4px)'; ctx.fillStyle = 'rgba(0,0,0,.36)';
-      ctx.beginPath(); ctx.ellipse(s.x + vx / 2, s.y + 1 + vy / 2, Math.hypot(vx, vy) / 2 + 9, 5.2, Math.atan2(vy, vx), 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      ctx.save(); ctx.translate(s.x + vx / 2, s.y + 1 + vy / 2); ctx.rotate(Math.atan2(vy, vx));
+      const rx = Math.hypot(vx, vy) / 2 + 9; ctx.scale(rx, 5.2);
+      const soft = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); soft.addColorStop(0, 'rgba(0,0,0,.42)'); soft.addColorStop(.6, 'rgba(0,0,0,.26)'); soft.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = soft; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       shadows++;
     });
     ctx.restore();
@@ -1921,6 +1923,17 @@
     return {canvas: c, shadows};
   }
 
+  function quickGround(g, scale, sky) {
+    const W = boardScene.width, H = boardScene.height, p = g.theme;
+    const c = document.createElement('canvas'); c.width = Math.ceil(W * scale); c.height = Math.ceil(H * scale);
+    const ctx = c.getContext('2d'); ctx.scale(scale, scale);
+    const point = (col, row) => { const s = boardGridToWorld(col, row); return {x: s.x + g.x + g.origin.x, y: s.y + g.y + g.origin.y}; };
+    const top = point(-.5, -.5), right = point(g.cols - .5, -.5), bottom = point(g.cols - .5, g.rows - .5), left = point(-.5, g.rows - .5);
+    ctx.beginPath(); ctx.moveTo(top.x, top.y); ctx.lineTo(right.x, right.y); ctx.lineTo(bottom.x, bottom.y); ctx.lineTo(left.x, left.y); ctx.closePath();
+    ctx.fillStyle = mixHex(p.gravel, sky.tint, sky.amount); ctx.fill();
+    return c;
+  }
+
   function boardGroundFor(g) {
     const sky = skyAt(boardHourOverride ?? (new Date().getHours() + new Date().getMinutes() / 60));
     const dpr = window.devicePixelRatio || 1, scale = Math.min(4, Math.max(2, dpr * 2));
@@ -1929,18 +1942,18 @@
     const sig = [structure, states, Math.round(sky.hour * 4), g.paths.map(p => bonsaiLayout(p).scale).join(',')].join('|');
     const paint = () => { const out = drawGround(g, scale, sky); Object.assign(groundCache, {sig, structure, canvas: out.canvas, shadows: out.shadows}); groundDraws++; };
     if (groundCache.sig === sig) return {canvas: groundCache.canvas, sky};
-    if (groundCache.canvas && groundCache.structure === structure) {
-      // same bed, only its details changed: keep showing the last bitmap and repaint once things settle
-      clearTimeout(groundTimer);
-      groundTimer = setTimeout(() => {
-        paint();
-        const live = document.getElementById('board-ground');
-        if (live && live.width === groundCache.canvas.width) { const ctx = live.getContext('2d'); ctx.clearRect(0, 0, live.width, live.height); ctx.drawImage(groundCache.canvas, 0, 0); }
-      }, 160);
-      return {canvas: groundCache.canvas, sky};
-    }
+    const sameBed = groundCache.canvas && groundCache.structure === structure;
+    // a new bed shows a flat placeholder now and paints the real ground right after first paint;
+    // the same bed with only its details changed keeps its bitmap and repaints once things settle
+    if (!sameBed) Object.assign(groundCache, {canvas: quickGround(g, scale, sky), structure, sig: '', shadows: 0});
     clearTimeout(groundTimer);
-    paint();
+    const run = () => {
+      paint();
+      const live = document.getElementById('board-ground');
+      if (live && live.width === groundCache.canvas.width) { const ctx = live.getContext('2d'); ctx.clearRect(0, 0, live.width, live.height); ctx.drawImage(groundCache.canvas, 0, 0); }
+    };
+    // never on the first-paint path: wait for the next frame, then a beat more
+    groundTimer = setTimeout(() => requestAnimationFrame(() => { groundTimer = setTimeout(run, 60); }), sameBed ? 100 : 0);
     return {canvas: groundCache.canvas, sky};
   }
 

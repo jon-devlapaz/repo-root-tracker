@@ -14,3 +14,11 @@ runs/**/.writer-lock
 .impeccable/review/
 .impeccable/build/
 .impeccable/mocks/
+
+# Impeccable tool installs (reinstall with: npx impeccable install)
+.agents/skills/impeccable/
+.claude/
+.codex/
+.github/agents/
+.github/hooks/
+.github/skills/
