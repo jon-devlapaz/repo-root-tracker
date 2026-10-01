@@ -811,7 +811,7 @@
     <div><button id="board-github-refresh" class="btn btn-ghost" onclick="refreshGithubAll(true)">Check GitHub</button> <button id="board-refresh" class="btn btn-ghost" onclick="fetchBoardAll(false)">Refresh local Git</button></div>
   </div>
   <div class="board-tools">
-    <input id="board-search" type="search" aria-label="Search the island" placeholder="Find a project, branch, or path…" oninput="renderBoard()" onkeydown="if(event.key === 'Enter') selectBoardMatch()">
+    <input id="board-search" type="search" aria-label="Search the island" placeholder="Find a project, branch, or path…" oninput="renderBoard()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); selectBoardMatch(event); }">
     <label title="Known PR blockers, failing default-branch CI, local conflicts, or unavailable repos."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
     <span id="board-match-count" role="status"></span>
   </div>
@@ -2366,10 +2366,10 @@
     const paths=project.worktreePaths;
     if (paths.length<=3) return paths.slice();
     const filtered=document.getElementById('board-search').value.trim() || document.getElementById('board-attention').checked;
-    // The normal third member can itself be hidden by a promotion. It must also
-    // be reachable while a different overflow checkout remains selected.
+    // Selection must always have a rendered, pressed checkout. A competing
+    // hidden member remains accessible through its inspector checkout row.
     const frontPaths=paths.slice(2);
-    const front=[boardFocusedPath,boardSelectedPath].find(path=>frontPaths.includes(path)) ||
+    const front=[boardSelectedPath,boardFocusedPath].find(path=>frontPaths.includes(path)) ||
       (filtered && paths.slice(3).find(path=>boardMatches(repoByPath.get(path)))) || paths[2];
     return [paths[0],paths[1],front];
   }
@@ -3068,11 +3068,10 @@
     ensureBoardRepoVisible(path);renderBoard();
     document.getElementById('board-tile-'+encodeURIComponent(path))?.focus({preventScroll:true});
   }
-  function selectBoardMatch() {
+  function selectBoardMatch(event) {
     const project=boardProjects.find(boardPlotMatches), path=project?.paths.find(path=>boardMatches(repoByPath.get(path)));
     if (!path) return;
-    selectBoardRepo(path);
-    document.getElementById('board-tile-'+encodeURIComponent(path))?.focus();
+    selectBoardRepo(path,event);
   }
   function boardCheckoutRows(project, chooser=false) {
     return project.paths.map(path=>{
@@ -3347,17 +3346,27 @@
   document.getElementById('board-view').addEventListener('keydown', event => {
     const dir={ArrowRight:[1,0],ArrowLeft:[-1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
     const member=dir && !event.metaKey && !event.ctrlKey && event.target.closest?.('.board-select');
+    const checkout=event.altKey && !event.metaKey && !event.ctrlKey && event.target.closest?.('.board-checkout-list button');
+    if ((member || checkout) && event.altKey && ['ArrowLeft','ArrowRight'].includes(event.key) && boardScene) {
+      event.preventDefault();
+      const current=member?.dataset.path || checkout.dataset.checkoutPath, project=projectForPath(current);
+      if (!project) return;
+      const paths=project.paths, index=(paths.indexOf(current)+(event.key==='ArrowRight'?1:-1)+paths.length)%paths.length;
+      const path=paths[index];
+      presentBoardMember(path);
+      const button=document.getElementById('board-tile-'+encodeURIComponent(path));
+      if (button) { button.focus({preventScroll:true});revealBoardPlot(path); }
+      else {
+        // Keep a selected front sapling pressed while cycling other hidden
+        // members. Native checkout rows provide focus and Enter/Space access.
+        const row=[...document.querySelectorAll('.board-checkout-list button')].find(row=>row.dataset.checkoutPath===path);
+        row?.focus();
+      }
+      return;
+    }
     if (member && boardScene) {
       event.preventDefault();
-      if (event.altKey) {
-        if (!['ArrowLeft','ArrowRight'].includes(event.key)) return;
-        const project=projectForPath(member.dataset.path), paths=project.paths;
-        const index=(paths.indexOf(member.dataset.path)+(event.key==='ArrowRight'?1:-1)+paths.length)%paths.length;
-        const path=paths[index];
-        presentBoardMember(path);
-        document.getElementById('board-tile-'+encodeURIComponent(path))?.focus({preventScroll:true});revealBoardPlot(path);
-        return;
-      }
+      if (event.altKey) return;
       const from=boardScene.targets.find(t=>t.path===member.dataset.path);
       const candidates=[];
       if (from) for (const target of boardScene.targets) {

@@ -68,7 +68,7 @@ def test_project_badge_includes_blocker_outside_active_25_checkout_chunk(page):
     }''')
     assert page.locator('.tile').count() == 1
     assert page.locator('.board-select').count() == 4
-    assert page.locator('.plot-more').inner_text() == '+22'
+    assert page.locator('.plot-more').text_content() == '+22'
     assert '1 PR with blockers' in page.locator('[data-family-gh] title').text_content()
     assert '1 PR with blockers' in page.locator('#board-inspector .board-family-gh').inner_text()
     assert page.locator('#board-pager').is_hidden()

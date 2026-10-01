@@ -211,7 +211,9 @@ def test_worktree_search_dims_siblings_and_exposes_hidden_match(page):
     assert '1 of 1 matching projects · 1 matching checkouts' in page.locator('#board-match-count').inner_text()
     assert page.evaluate('({camera:{...boardCamera},plots:boardScene.plots.map(p=>[p.x,p.y,p.number])})') == before
     page.get_by_role('searchbox', name='Search the island').press('Enter')
-    assert active_path(page) == WORKTREES[-1]
+    # Search Enter is keyboard selection, so §4.3 requires inspector focus.
+    assert page.evaluate('document.activeElement.id') == 'board-inspector-title'
+    assert member(page, WORKTREES[-1]).get_attribute('aria-pressed') == 'true'
     assert page.evaluate('boardSelectedPath') == WORKTREES[-1]
     page.get_by_role('searchbox', name='Search the island').fill('oak')
     assert page.locator('.board-member[data-matched="true"]').count() == 4
@@ -254,7 +256,10 @@ def test_plot_description_and_checkout_list_include_overflow_members(page):
     rows = page.locator('.board-checkout-list button')
     assert rows.evaluate_all('els=>els.map(el=>el.dataset.checkoutPath)') == paths
     assert rows.locator('[id^="board-tile-"]').count() == 0
-    rows.first.click()
+    # §4.3 requires heading focus after keyboard selection. Desktop pointer
+    # selection is only required to select the checkout and update the panel.
+    rows.first.focus()
+    page.keyboard.press('Enter')
     assert page.evaluate('boardSelectedPath') == MAIN
     assert page.evaluate('document.activeElement.id') == 'board-inspector-title'
 
@@ -325,18 +330,61 @@ def test_ninety_projects_with_worktrees_have_bounded_visible_dom(page):
     assert 'Page 1 of 4' in page.locator('#board-page-status').inner_text()
 
 
-def test_alt_navigation_reaches_displaced_third_member_while_overflow_selected(page):
-    project_board(page, 8)
+def test_alt_navigation_keeps_selected_overflow_pressed_and_reaches_hidden_rows(page):
+    paths = project_board(page, 8)
     page.evaluate('path=>selectBoardRepo(path)', WORKTREES[-1])
     member(page, MAIN).focus()
-    for path in WORKTREES[:3]:
+    before = page.evaluate('boardScene.plots.map(p=>[p.x,p.y,p.number])')
+    for path in paths[1:] + [MAIN]:
         page.keyboard.press('Alt+ArrowRight')
-        assert active_path(page) == path
+        assert page.evaluate('document.activeElement.dataset.path || document.activeElement.dataset.checkoutPath') == path
         assert page.evaluate('boardSelectedPath') == WORKTREES[-1]
+        assert member(page, WORKTREES[-1]).get_attribute('data-slot') == 'front'
+        assert member(page, WORKTREES[-1]).get_attribute('aria-pressed') == 'true'
+        assert page.locator('.board-select[aria-pressed="true"]').count() == 1
+        assert page.locator('.board-sapling').count() == 3
+        assert page.locator('.plot-more').text_content() == '+5'
+        assert page.evaluate('boardScene.plots.map(p=>[p.x,p.y,p.number])') == before
+        if path in WORKTREES[2:-1]:
+            assert member(page, path).count() == 0
+            assert page.evaluate('document.activeElement.matches(".board-checkout-list button")')
+            assert page.evaluate('document.activeElement.matches(":focus-visible")')
+    # Reverse cycling still reaches every member, and activating a hidden row
+    # changes selection, exposes that checkout, and focuses the heading.
+    for path in reversed(WORKTREES[2:]):
+        page.keyboard.press('Alt+ArrowLeft')
+        assert page.evaluate('document.activeElement.dataset.path || document.activeElement.dataset.checkoutPath') == path
+        assert member(page, WORKTREES[-1]).get_attribute('aria-pressed') == 'true'
+    page.keyboard.press('Enter')
+    assert page.evaluate('boardSelectedPath') == WORKTREES[2]
     assert member(page, WORKTREES[2]).get_attribute('data-slot') == 'front'
-    page.locator('#board-names-toggle').focus()
-    page.wait_for_function('boardScene.targets.some(t=>t.slot==="front"&&t.path===boardSelectedPath)')
-    assert member(page, WORKTREES[-1]).get_attribute('aria-pressed') == 'true'
+    assert member(page, WORKTREES[2]).get_attribute('aria-pressed') == 'true'
+    assert page.locator('.board-select[aria-pressed="true"]').count() == 1
+    assert page.evaluate('document.activeElement.id') == 'board-inspector-title'
+
+
+@pytest.mark.parametrize('selected', [WORKTREES[2], WORKTREES[-1]])
+def test_selected_front_member_wins_over_hidden_focus_and_search(page, selected):
+    project_board(page, 8)
+    page.evaluate('path=>selectBoardRepo(path)', selected)
+    other = WORKTREES[-2]
+    page.get_by_role('searchbox', name='Search the island').fill('feature/06')
+    page.evaluate('path=>presentBoardMember(path)', other)
+    assert page.evaluate('boardSelectedPath') == selected
+    assert member(page, selected).get_attribute('data-slot') == 'front'
+    assert member(page, selected).get_attribute('aria-pressed') == 'true'
+    assert member(page, selected).locator('.plot-flag').count() == 1
+    assert member(page, other).count() == 0
+    assert page.locator('.board-select[aria-pressed="true"]').count() == 1
+    assert page.locator('.board-sapling').count() == 3
+    assert page.locator('.plot-more').text_content() == '+5'
+    # Selecting the matching checkout replaces the pinned front member.
+    page.get_by_role('searchbox', name='Search the island').press('Enter')
+    assert page.evaluate('boardSelectedPath') == other
+    assert member(page, other).get_attribute('data-slot') == 'front'
+    assert member(page, other).get_attribute('aria-pressed') == 'true'
+    assert page.locator('.board-select[aria-pressed="true"]').count() == 1
+    assert page.evaluate('document.activeElement.id') == 'board-inspector-title'
 
 
 def test_reduced_motion_stills_main_saplings_and_replay_effects(page):

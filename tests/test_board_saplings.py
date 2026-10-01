@@ -43,12 +43,13 @@ def member(page, path):
 
 
 def set_camera(page, zoom, path=MAIN):
-    """Use deliberate pan as well as zoom; leave every sample near the stage center."""
-    page.evaluate('''({zoom,path}) => {
+    """Use the app's clamped, rounded camera, including pan where zoom permits it."""
+    page.evaluate('''async ({zoom,path}) => {
       const stage=document.getElementById('board-stage'),target=boardScene.targets.find(t=>t.path===path);
       boardCamera={zoom,x:stage.clientWidth/2-target.x*zoom-17,y:stage.clientHeight/2-target.y*zoom+13};
       boardFitPending=false;
-      document.getElementById('board-world').style.transform=`translate(${boardCamera.x}px,${boardCamera.y}px) scale(${zoom})`;
+      applyBoardCamera();
+      await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
     }''', {'zoom': zoom, 'path': path})
 
 
@@ -83,11 +84,11 @@ def test_overflow_indicator_counts_only_unrendered_worktrees(page):
     project_board(page, 8)
     assert page.locator('.tile').count() == 1
     assert page.locator('.board-sapling').count() == 3
-    assert page.locator('.plot-more').inner_text() == '+5'
+    assert page.locator('.plot-more').text_content() == '+5'
     before = page.evaluate('boardScene.plots.map(p=>[p.x,p.y,p.number])')
     page.evaluate('path=>selectBoardRepo(path)', WORKTREES[-1])
     assert member(page, WORKTREES[-1]).get_attribute('data-slot') == 'front'
-    assert page.locator('.plot-more').inner_text() == '+5'
+    assert page.locator('.plot-more').text_content() == '+5'
     assert page.evaluate('boardScene.plots.map(p=>[p.x,p.y,p.number])') == before
     assert page.locator('.board-select[aria-pressed="true"]').count() == 1
     assert member(page, MAIN).locator('.plot-flag').count() == 0
@@ -162,15 +163,18 @@ def test_error_retains_last_successful_normalized_vitals(page):
 def test_main_sapling_and_diamond_pick_distinct_repo_paths(page, zoom):
     project_board(page)
     set_camera(page, zoom)
-    result = page.evaluate('''() => {
-      const stage=document.getElementById('board-stage').getBoundingClientRect();
-      const points=boardScene.targets.map(t=>({path:t.path,x:t.x,y:t.y-52*t.scale*bonsaiLayout(t.path).scale}));
-      const p=boardScene.plots[0];points.push({path:p.path,x:p.x-68,y:p.y});
-      return points.map(p=>{const x=p.x*boardCamera.zoom+boardCamera.x,y=p.y*boardCamera.zoom+boardCamera.y;
-        return {expected:p.path,picked:pickBoardPlot(x,y),native:document.elementFromPoint(x+stage.left,y+stage.top)?.closest('.board-select')?.dataset.path,
-          x:x+stage.left,y:y+stage.top};});
-    }''')
-    for point in result:
+    samples = page.evaluate('boardScene.targets.map(t=>({path:t.path,diamond:false})).concat({path:boardScene.plots[0].path,diamond:true})')
+    for sample in samples:
+        # Selection may reveal an anchor; compute each point from the current
+        # camera instead of reusing screen coordinates from before that reveal.
+        point = page.evaluate('''({path,diamond}) => {
+          const stage=document.getElementById('board-stage').getBoundingClientRect();
+          const t=boardScene.targets.find(t=>t.path===path),p=boardScene.plots.find(p=>p.path===path);
+          const world=diamond?{x:p.x-68,y:p.y}:{x:t.x,y:t.y-52*t.scale*bonsaiLayout(t.path).scale};
+          const x=Math.round(world.x*boardCamera.zoom+boardCamera.x+stage.left),y=Math.round(world.y*boardCamera.zoom+boardCamera.y+stage.top);
+          return {expected:path,picked:pickBoardPlot(x-stage.left,y-stage.top),
+            native:document.elementFromPoint(x,y)?.closest('.board-select')?.dataset.path,x,y};
+        }''', sample)
         assert point['picked'] == point['expected'] == point['native']
         page.mouse.move(point['x'], point['y'])
         page.wait_for_function('path=>boardHoveredPath===path', arg=point['expected'])
@@ -184,17 +188,27 @@ def foreground_sample(page, painted):
       const plot=boardScene.plots.find(p=>p.project.paths.includes('/projects/oak'));
       const target=plot.targets.find(t=>t.slot==='left'),rear=boardScene.plots.find(p=>p.path==='/projects/rear');
       const stage=document.getElementById('board-stage').getBoundingClientRect();
-      for(let dx=-18;dx<=18;dx+=.5)for(let dy=-36;dy<5;dy+=.5){
-        const world={x:target.x+dx,y:target.y+dy};
+      const screen=(x,y)=>({x:x*boardCamera.zoom+boardCamera.x+stage.left,y:y*boardCamera.zoom+boardCamera.y+stage.top});
+      const min=screen(target.x-18,target.y-36),max=screen(target.x+18,target.y+5);
+      const expected=painted?target.path:rear.path;
+      const owns=(x,y)=>document.elementFromPoint(x,y)?.closest('.board-select')?.dataset.path===expected&&pickBoardPlot(x-stage.left,y-stage.top)===expected;
+      let best=null,score=-1;
+      // Use whole screen pixels shared by the sampled native hit and mouse
+      // events, and prefer the interior rather than the first shape edge.
+      for(let x=Math.ceil(min.x);x<=Math.floor(max.x);x++)for(let y=Math.ceil(min.y);y<=Math.floor(max.y);y++){
+        const world=boardScreenToWorld(x-stage.left,y-stage.top);
         if(Math.abs(world.x-rear.x)/78+Math.abs(world.y-rear.y)/39>.98)continue;
         if(boardSpriteContains(target,world)!==painted)continue;
-        const x=world.x*boardCamera.zoom+boardCamera.x,y=world.y*boardCamera.zoom+boardCamera.y;
-        const native=document.elementFromPoint(x+stage.left,y+stage.top)?.closest('.board-select')?.dataset.path;
-        const expected=painted?target.path:rear.path;
-        if(native!==expected || pickBoardPlot(x,y)!==expected)continue;
-        return {x:x+stage.left,y:y+stage.top,expected,picked:pickBoardPlot(x,y),native};
+        if(!owns(x,y))continue;
+        let clearance=0;
+        for(const radius of [.25,.5,1,1.5,2,3]){
+          if(![[radius,0],[-radius,0],[0,radius],[0,-radius]].every(([dx,dy])=>owns(x+dx,y+dy)))break;
+          clearance=radius;
+        }
+        if(clearance>score){score=clearance;best={x,y,expected,picked:pickBoardPlot(x-stage.left,y-stage.top),
+          native:document.elementFromPoint(x,y)?.closest('.board-select')?.dataset.path};}
       }
-      return null;
+      return best;
     }''', painted)
 
 
@@ -204,6 +218,7 @@ def test_front_sapling_owns_visible_overlap_with_rear_plot(page, zoom):
     set_camera(page, zoom)
     point = foreground_sample(page, True)
     assert point is not None, 'A foreground sapling must own its painted overlap with rear ground'
+    assert point['picked'] == point['native'] == point['expected'] == WORKTREES[0]
     page.mouse.move(point['x'], point['y'])
     page.wait_for_function('path=>boardHoveredPath===path', arg=point['expected'])
     page.mouse.click(point['x'], point['y'])
@@ -220,6 +235,9 @@ def test_sapling_bounds_weather_and_shadow_do_not_steal_rear_ground(page, zoom):
         assert member(page, WORKTREES[0]).locator(selector).first.evaluate("el=>getComputedStyle(el).pointerEvents") == 'none'
     point = foreground_sample(page, False)
     assert point is not None
+    assert point['picked'] == point['native'] == point['expected'] == '/projects/rear'
+    page.mouse.move(point['x'], point['y'])
+    page.wait_for_function('boardHoveredPath==="/projects/rear"')
     page.mouse.click(point['x'], point['y'])
     assert page.evaluate('boardSelectedPath') == '/projects/rear'
 
@@ -246,8 +264,16 @@ def test_all_seeded_tree_styles_have_stable_click_centers(page, zoom):
         assert target.bounding_box() == before
         page.evaluate('path=>{repoByPath.get(path)._status={error:true};renderBoard()}', path)
         assert target.bounding_box() == before
+        page.evaluate('clearBoardSelection()')
+        assert page.evaluate('boardSelectedPath') is None
+        assert target.bounding_box() == before
         point = target.bounding_box()
-        x,y = point['x']+point['width']/2,point['y']+point['height']/2
+        x,y = round(point['x']+point['width']/2),round(point['y']+point['height']/2)
         picked = page.evaluate('''({x,y})=>{const s=document.getElementById('board-stage').getBoundingClientRect();return pickBoardPlot(x-s.left,y-s.top)}''', {'x':x,'y':y})
         assert picked == path
+        assert page.evaluate('''({x,y})=>document.elementFromPoint(x,y)?.closest('.board-select')?.dataset.path''', {'x':x,'y':y}) == path
+        page.mouse.move(x, y)
+        page.wait_for_function('path=>boardHoveredPath===path', arg=path)
+        page.mouse.click(x, y)
+        assert page.evaluate('boardSelectedPath') == path
     assert len(seen) == 8
