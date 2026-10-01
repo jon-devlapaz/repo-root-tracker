@@ -1,6 +1,17 @@
 from test_board import PATHS, goto_board, page  # noqa: F401
 
 
+def settled_draws(page):
+    """Wait until the ground has stopped repainting (a slow runner repaints late), then return the draw count."""
+    page.wait_for_function('groundDraws >= 1')
+    page.wait_for_function('''() => new Promise(resolve => {
+      let last = groundDraws, quiet = 0;
+      const t = setInterval(() => { if (groundDraws === last) quiet++; else { quiet = 0; last = groundDraws; }
+        if (quiet >= 4) { clearInterval(t); resolve(true); } }, 150);
+    })''', timeout=20000)
+    return page.evaluate('groundDraws')
+
+
 def test_ground_is_painted_not_blank(page):
     goto_board(page)
     page.wait_for_function('groundDraws >= 1')
@@ -34,8 +45,7 @@ def test_each_tree_casts_a_shadow_and_the_hour_changes_the_ground(page):
 
 def test_redraw_is_cached_until_something_the_ground_shows_changes(page):
     goto_board(page)
-    page.wait_for_function('groundDraws >= 1')
-    before = page.evaluate('groundDraws')
+    before = settled_draws(page)
     page.evaluate('renderBoard(); renderBoard(); renderBoard();')
     assert page.evaluate('groundDraws') == before
     page.evaluate("repos[3]._status.dirty = {is_clean: false, modified: 1}; renderBoard();")
@@ -50,11 +60,9 @@ def test_drawing_the_ground_is_fast_even_with_a_full_island(page):
 
 def test_rechecking_a_repo_does_not_repaint_the_bed(page):
     goto_board(page)
-    page.wait_for_function('groundDraws >= 1')
-    before = page.evaluate('groundDraws')
+    before = settled_draws(page)
     page.evaluate("repos[0]._boardQueued = true; renderBoard(); repos[0]._boardQueued = false; renderBoard();")
-    page.wait_for_timeout(400)
-    assert page.evaluate('groundDraws') == before
+    assert settled_draws(page) == before
 
 
 def test_numbers_appear_on_the_state_discs_only_when_asked_for(page):
