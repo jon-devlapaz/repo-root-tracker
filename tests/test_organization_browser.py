@@ -308,7 +308,7 @@ def test_migration_requires_missing_file_and_empty_content(workspace, exists, po
 
 def test_rename_keeps_stable_target_when_conflict_reorders_collections(workspace):
     open_page, fake = workspace
-    page = open_page(legacy())
+    page = open_page({**legacy(), "grouping": "collection"})
     page.get_by_role("button", name="Rename Work", exact=True).click()
     page.get_by_label("Collection name", exact=True).fill("My entered name")
     fake.state.update(revision=2, collections=[{"id": "other", "name": "Other"}, {"id": "work", "name": "Work"}])
@@ -343,7 +343,7 @@ def test_rename_removed_target_keeps_input_and_changes_nothing(workspace, positi
 @pytest.mark.parametrize("removed", [False, True])
 def test_delete_revalidates_stable_target_after_confirmation(workspace, removed):
     open_page, fake = workspace
-    page = open_page(legacy())
+    page = open_page({**legacy(), "grouping": "collection"})
     replacement = {**fake.state, "revision": 2, "collections": [{"id": "other", "name": "Other"}]}
     if not removed:
         replacement["collections"].append({"id": "work", "name": "Work"})
