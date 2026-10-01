@@ -80,7 +80,7 @@ def test_failing_ci_without_prs_overrides_clean_and_reaches_every_view(page):
     plot = page.locator(f'.board-select[data-path="{PATHS[0]}"]')
     assert plot.locator('.plot-number').get_attribute('data-tone') == 'blocked'
     assert plot.locator('.status-ring[data-tone="blocked"]').count() == 1
-    assert plot.locator('[data-workflow-ci="true"] text').inner_text() == 'CI'
+    assert plot.locator('[data-workflow-ci="true"] text').text_content() == 'CI'
     assert plot.locator('[data-marker="calm"]').count() == 0
     assert 'failing default-branch CI' in page.locator('#board-brief').inner_text()
     page.locator('#board-attention').check()
@@ -110,7 +110,7 @@ def test_shared_worktree_ci_is_checked_and_counted_once_without_pr_blockers(page
     goto_board(page)
     page.evaluate('selectBoardRepo(repos[1].path)')
     assert page.locator('[data-family-gh]').count() == 1
-    assert page.locator('[data-family-gh] text').inner_text() == 'CI'
+    assert page.locator('[data-family-gh] text').text_content() == 'CI'
     assert page.locator('.board-family [data-repo-gh]').count() == 0
     family = page.evaluate("boardFamilyGithub(boardNeighborhoods.find(g => g.key === 'shared'))")
     assert family['blocked'] == 0
