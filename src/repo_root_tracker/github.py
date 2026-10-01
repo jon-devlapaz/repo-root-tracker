@@ -14,10 +14,12 @@ import threading
 from datetime import datetime, timezone
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from urllib.parse import quote, urlencode
 
 CACHE_TTL_SECONDS = 60
 PR_LIMIT = 200
 ISSUE_LIMIT = 20
+WORKFLOW_LIMIT = 100
 
 _cache: dict[str, tuple[float, "GithubInfo"]] = {}
 _locks: dict[str, threading.Lock] = {}
@@ -53,6 +55,27 @@ class Issue:
 
 
 @dataclass
+class WorkflowRun:
+    name: str = ""
+    workflow_id: int = 0
+    status: str = ""
+    conclusion: str = ""
+    url: str = ""
+    updated_at: str = ""
+    current_head: bool = False
+    head_sha: str = ""
+    workflow_state: str = "active"
+
+
+@dataclass
+class WorkflowHealth:
+    state: str = "unknown"  # failing | pending | passing | unknown | stale
+    head_sha: str = ""
+    runs: list[WorkflowRun] = field(default_factory=list)
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass
 class GithubInfo:
     has_github: bool = False
     repo: str = ""  # "owner/name"
@@ -65,6 +88,8 @@ class GithubInfo:
     pr_limit_reached: bool = False
     pr_limit: int = PR_LIMIT
     issue_limit_reached: bool = False
+    default_branch: str = ""
+    workflows: WorkflowHealth = field(default_factory=WorkflowHealth)
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -121,6 +146,109 @@ def _rollup(checks: list) -> CheckSummary:
     return CheckSummary(state=state, passing=passing, total=len(checks), failing=failing, pending=pending)
 
 
+def _api_record(endpoint: str, fields: str, path: Path) -> dict | None:
+    # Wrap the selected API object in a list to use the same gh timeout/error path.
+    data = _gh("api", endpoint, "--method", "GET", "--jq", f"[. | {{{fields}}}]", cwd=path)
+    return data[0] if data and isinstance(data[0], dict) else None
+
+
+def _workflow_health(slug: str, path: Path) -> tuple[str, WorkflowHealth, bool]:
+    health = WorkflowHealth()
+    base = f"repos/{slug}"
+    metadata = _api_record(base, "default_branch", path)
+    branch = (metadata or {}).get("default_branch")
+    if not isinstance(branch, str) or not branch:
+        health.errors.append("Default branch could not be checked. Check gh authentication, connectivity, and repository access.")
+        return "", health, False
+    head = _api_record(f"{base}/branches/{quote(branch, safe='')}", "sha: .commit.sha", path)
+    health.head_sha = (head or {}).get("sha") or ""
+    if not isinstance(health.head_sha, str) or not health.head_sha:
+        health.head_sha = ""
+        health.errors.append("Default-branch head could not be checked.")
+        return branch, health, True
+
+    catalog = _api_record(f"{base}/actions/workflows?per_page={WORKFLOW_LIMIT}", "total_count,workflows", path)
+    query = urlencode({"branch": branch, "head_sha": health.head_sha, "per_page": WORKFLOW_LIMIT})
+    current = _api_record(f"{base}/actions/runs?{query}", "total_count,workflow_runs", path)
+
+    def records(response: dict | None, key: str, label: str) -> list[dict]:
+        if response is None or not isinstance(response.get(key), list):
+            health.errors.append(f"Default-branch {label} could not be checked.")
+            return []
+        rows = response[key]
+        count = response.get("total_count")
+        if not isinstance(count, int) or count > len(rows) or len(rows) > WORKFLOW_LIMIT:
+            health.errors.append(f"Default-branch {label} coverage is incomplete (limit {WORKFLOW_LIMIT}).")
+        if any(not isinstance(row, dict) for row in rows):
+            health.errors.append(f"Default-branch {label} returned invalid data.")
+        return [row for row in rows[:WORKFLOW_LIMIT] if isinstance(row, dict)]
+
+    workflows = records(catalog, "workflows", "workflows")
+    current_runs = records(current, "workflow_runs", "workflow runs")
+    if any(not isinstance(workflow.get("id"), int) for workflow in workflows):
+        health.errors.append("Default-branch workflow inventory returned invalid IDs.")
+
+    def latest(runs: list[dict], *, current_head: bool) -> dict[int, dict]:
+        def order(run: dict) -> tuple[int, int, int]:
+            return tuple(run.get(key) if isinstance(run.get(key), int) else 0
+                         for key in ("run_number", "id", "run_attempt"))
+
+        selected = {}
+        for run in runs:
+            # PR checks are reported separately. Never borrow a result from another branch.
+            if (run.get("head_branch") != branch or run.get("event") in {"pull_request", "pull_request_target"}
+                    or (run.get("head_sha") == health.head_sha) != current_head):
+                continue
+            wid = run.get("workflow_id")
+            if not isinstance(wid, int):
+                health.errors.append("Default-branch workflow run has no workflow ID.")
+                continue
+            if wid not in selected or order(run) > order(selected[wid]):
+                selected[wid] = run
+        return selected
+
+    selected = latest(current_runs, current_head=True)
+    # Include confirmed runs even if the workflow inventory is inaccessible or truncated.
+    inventory = {w["id"]: w for w in workflows if isinstance(w.get("id"), int)}
+    for wid, run in selected.items():
+        inventory.setdefault(wid, {"id": wid, "name": run.get("name", ""), "state": "active"})
+    missing = set(inventory) - set(selected)
+    older = {}
+    if missing and current is not None:
+        query = urlencode({"branch": branch, "per_page": WORKFLOW_LIMIT})
+        history = _api_record(f"{base}/actions/runs?{query}", "total_count,workflow_runs", path)
+        older = latest(records(history, "workflow_runs", "workflow history"), current_head=False)
+    for wid, workflow in inventory.items():
+        run = selected.get(wid) or older.get(wid) or {}
+        health.runs.append(WorkflowRun(
+            name=workflow.get("name") or run.get("name") or f"Workflow {wid}", workflow_id=wid,
+            status=run.get("status") or "unknown", conclusion=run.get("conclusion") or "",
+            url=run.get("html_url") or workflow.get("html_url") or "",
+            updated_at=run.get("updated_at") or "", head_sha=run.get("head_sha") or "",
+            current_head=wid in selected, workflow_state=workflow.get("state") or "unknown",
+        ))
+
+    def outcome(run: WorkflowRun) -> str:
+        if not run.current_head:
+            return "stale" if run.head_sha else "unknown"
+        if run.status == "completed" and run.conclusion in {"failure", "timed_out", "action_required", "startup_failure", "error"}:
+            return "failing"
+        if run.workflow_state != "active":
+            return "unknown"
+        if run.status in {"queued", "in_progress", "waiting", "pending", "requested"}:
+            return "pending"
+        if run.status == "completed" and run.conclusion == "success":
+            return "passing"
+        # Cancelled, skipped, neutral, and unrecognised results are explicitly not passing.
+        return "unknown"
+
+    states = [outcome(run) for run in health.runs]
+    health.state = ("failing" if "failing" in states else "pending" if "pending" in states else
+                    "unknown" if health.errors or not states or "unknown" in states else
+                    "stale" if "stale" in states else "passing")
+    return branch, health, True
+
+
 def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
     repo_path = Path(path).expanduser().resolve()
     slug = _github_remote(repo_path)
@@ -145,9 +273,11 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
                 errors.append("Pull requests could not be checked. Check gh authentication, connectivity, and repository access.")
             if issues_raw is None:
                 errors.append("Issues could not be checked. Check gh authentication, connectivity, and repository access.")
+            default_branch, workflows, workflow_access = _workflow_health(slug, repo_path)
+            errors.extend(workflows.errors)
             info = GithubInfo(
-                has_github=prs_raw is not None or issues_raw is not None,
-                gh_unavailable=prs_raw is None and issues_raw is None,
+                has_github=prs_raw is not None or issues_raw is not None or workflow_access,
+                gh_unavailable=prs_raw is None and issues_raw is None and not workflow_access,
                 repo=slug, repo_url=f"https://github.com/{slug}",
                 prs=[PullRequest(
                     number=p.get("number", 0), title=p.get("title", ""),
@@ -160,6 +290,7 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
                 errors=errors, checked_at=datetime.now(timezone.utc).isoformat(),
                 pr_limit_reached=prs_raw is not None and len(prs_raw) > PR_LIMIT,
                 issue_limit_reached=issues_raw is not None and len(issues_raw) >= ISSUE_LIMIT,
+                default_branch=default_branch, workflows=workflows,
             )
         _cache[key] = (time.monotonic(), info)
         return info
