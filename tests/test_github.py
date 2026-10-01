@@ -212,28 +212,79 @@ def test_endpoint_untracked_404(live_server: str, tmp_path: Path) -> None:
     assert e.value.code == 404
 
 
-def test_endpoint_live_github(live_server: str) -> None:
-    """Live test against tink-route (real PRs). Skipped without gh auth."""
-    tink_route = Path("/Users/jondev/dev/active/tink-route")
-    if not (tink_route / ".git").exists():
-        pytest.skip("tink-route checkout not present")
-    probe = subprocess.run(["gh", "auth", "status"], capture_output=True, timeout=10)
-    if probe.returncode != 0:
-        pytest.skip("gh not authenticated")
+# ---------------------------------------------------------------------------
+# Live GitHub profile: explicit, opt-in, read-only.
+#
+#   RRT_LIVE_GITHUB=1                       request the live profile
+#   RRT_LIVE_GITHUB_REPO=<owner>/<name>     a sandbox repository you control (required)
+#
+# Not requested: the live test is skipped and says why. Requested: any missing
+# prerequisite FAILS, so a requested run can never look green by skipping.
+# Nothing here creates, closes or pushes anything, and assertions never depend on
+# how many PRs or issues the sandbox happens to have.
+# ---------------------------------------------------------------------------
+
+def live_profile(env: dict[str, str], gh_ok) -> tuple[str, str | None, str | None]:
+    """Return (decision, slug, problem): decision is 'skip', 'run' or 'fail'."""
+    if env.get("RRT_LIVE_GITHUB") != "1":
+        return "skip", None, "live GitHub profile not requested (set RRT_LIVE_GITHUB=1)"
+    slug = env.get("RRT_LIVE_GITHUB_REPO", "").strip()
+    if not slug:
+        return "fail", None, "RRT_LIVE_GITHUB=1 but RRT_LIVE_GITHUB_REPO=<owner>/<name> is not set"
+    if slug.count("/") != 1 or any(c.isspace() for c in slug) or slug.startswith("/") or slug.endswith("/"):
+        return "fail", None, f"RRT_LIVE_GITHUB_REPO must look like owner/name, got {slug!r}"
+    if not gh_ok():
+        return "fail", slug, "RRT_LIVE_GITHUB=1 but the gh CLI is missing or not authenticated"
+    return "run", slug, None
+
+
+def _gh_authenticated() -> bool:
+    try:
+        return subprocess.run(["gh", "auth", "status"], capture_output=True, timeout=10).returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
+
+
+def test_live_profile_is_opt_in_and_never_silently_green() -> None:
+    ok, no = (lambda: True), (lambda: False)
+    assert live_profile({}, ok)[0] == "skip"
+    assert live_profile({"RRT_LIVE_GITHUB": "0", "RRT_LIVE_GITHUB_REPO": "a/b"}, ok)[0] == "skip"
+    assert live_profile({"RRT_LIVE_GITHUB": "1"}, ok)[0] == "fail"                                   # no repo named
+    assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "not-a-slug"}, ok)[0] == "fail"
+    assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "a b/c"}, ok)[0] == "fail"
+    assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "a/b"}, no)[0] == "fail"    # gh missing
+    assert live_profile({"RRT_LIVE_GITHUB": "1", "RRT_LIVE_GITHUB_REPO": "a/b"}, ok) == ("run", "a/b", None)
+
+
+def test_endpoint_live_github(live_server: str, tmp_path: Path) -> None:
+    """Live read-only check of /api/github against the sandbox repo you name (see above)."""
+    import os
+
+    decision, slug, problem = live_profile(dict(os.environ), _gh_authenticated)
+    if decision == "skip":
+        pytest.skip(problem)
+    if decision == "fail":
+        pytest.fail(problem)
+    repo = tmp_path / "sandbox"
+    repo.mkdir()
+    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", f"https://github.com/{slug}.git"], check=True, capture_output=True)
     req = urllib.request.Request(
         live_server + "/api/repos",
-        data=json.dumps({"path": str(tink_route)}).encode(),
+        data=json.dumps({"path": str(repo)}).encode(),
         headers={"Content-Type": "application/json"},
         method="POST",
     )
-    try:
-        with urllib.request.urlopen(req, timeout=5):
-            pass
-    except urllib.error.HTTPError:
-        pass  # already tracked is fine
-    url = live_server + "/api/github?path=" + urllib.parse.quote(str(tink_route))
+    with urllib.request.urlopen(req, timeout=5):
+        pass
+    url = live_server + "/api/github?path=" + urllib.parse.quote(str(repo)) + "&refresh=1"
     with urllib.request.urlopen(url, timeout=30) as r:
-        data = json.loads(r.read().decode())
-    assert data["has_github"] is True
-    assert data["repo"] == "jon-devlapaz/tink-route"
-    assert len(data["prs"]) >= 1
+        body = r.read().decode()
+    data = json.loads(body)
+    assert data["has_github"] is True, data.get("errors")
+    assert data["repo"] == slug
+    assert isinstance(data["prs"], list) and isinstance(data["issues"], list)   # never a particular count
+    assert not data.get("gh_unavailable") and not data.get("errors"), data.get("errors")
+    assert data["checked_at"]
+    for secret in (os.environ.get("GH_TOKEN"), os.environ.get("GITHUB_TOKEN")):
+        assert not secret or secret not in body                                  # secret-safe output
