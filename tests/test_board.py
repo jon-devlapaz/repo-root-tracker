@@ -3,6 +3,8 @@ from urllib.parse import quote, unquote
 
 import pytest
 
+from organization_fake import route_organization
+
 playwright = pytest.importorskip('playwright.sync_api')
 DASHBOARD = Path(__file__).parents[1] / 'src/repo_root_tracker/dashboard.html'
 KEY = 'repo-root-tracker.organization.v1'
@@ -26,6 +28,7 @@ def page():
     with playwright.sync_playwright() as p:
         browser = p.chromium.launch()
         page = browser.new_page(viewport={'width': 1280, 'height': 900})
+        route_organization(page)
         errors = []
         page.on('pageerror', lambda error: errors.append(str(error)))
         page.route('http://dashboard.test/', lambda route: route.fulfill(content_type='text/html', body=DASHBOARD.read_text().replace('__HOME__', '/home/test', 1)))
@@ -42,7 +45,7 @@ def page():
 
         page.route('**/api/repos/status?*', status)
         page.goto('http://dashboard.test/')
-        page.wait_for_function('repos.every(r => r._status)')
+        page.wait_for_function('repos.length === 5 && repos.every(r => r._status)')
         yield page
         assert errors == []
         browser.close()
