@@ -73,9 +73,9 @@ def test_three_saplings_fit_the_pinned_sprite_box(page):
     assert result['box'] == [128, 148]
     assert result['siblings'] and result['roles'] == ['main', 'worktree', 'worktree', 'worktree']
     assert result['offsets'] == [[0, 0]] * 4
-    assert [s['anchor'] for s in result['saplings']] == [[22, 93], [106, 93], [64, 116]]
+    assert [s['anchor'] for s in result['saplings']] == [[20, 94], [108, 94], [64, 122]]
     assert all(0 <= s['x'] < s['right'] <= 128 and 0 <= s['y'] < s['bottom'] <= 148 for s in result['saplings'])
-    assert all(s['potScale'] < .4 and not s['ink'] for s in result['saplings'])
+    assert all(s['potScale'] < .55 and not s['ink'] for s in result['saplings'])
     assert page.evaluate('BOARD_ART_DIRECTION.tile') == [156, 78]
     assert member(page, MAIN).locator('.tile-top').get_attribute('points') == '64,47 142,86 64,125 -14,86'
 
@@ -105,7 +105,7 @@ def test_each_sapling_has_its_own_local_weather(page):
     assert member(page, MAIN).locator('[data-marker="local-work"], [data-marker="sync"], [data-marker="stale"]').count() == 0
     for path, marker in zip(WORKTREES, ['local-work', 'sync', 'stale']):
         assert member(page, path).locator(f'[data-marker="{marker}"]').count() == 1
-        assert member(page, path).locator('.tree-fx').first.locator('xpath=..').get_attribute('transform').endswith('scale(0.4)')
+        assert member(page, path).locator('.tree-fx').first.locator('xpath=..').get_attribute('transform').endswith('scale(0.55)')
     page.evaluate("repos[1]._status.dirty={is_clean:false,kinds:{conflicted:1}};repos[2]._status={error:true};repos[3]._status={error:true,gone:true};renderBoard();")
     assert member(page, WORKTREES[0]).locator('[data-marker="local-conflict"]').count() == 1
     assert member(page, WORKTREES[1]).locator('.is-faded .tree-bounds').count() == 1

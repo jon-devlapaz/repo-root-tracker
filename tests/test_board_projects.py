@@ -41,7 +41,7 @@ def test_project_id_creates_one_plot_for_main_and_worktrees(page):
     assert result['plots'] == 1 and result['mapped'] and result['indexed']
     assert result['project']['paths'] == [MAIN, *WORKTREES]
     assert [target['slot'] for target in result['targets']] == ['main', 'left', 'right', 'front']
-    assert [target['scale'] for target in result['targets']] == [1, .4, .4, .4]
+    assert [target['scale'] for target in result['targets']] == [1, .55, .55, .55]
 
 
 def test_missing_and_error_status_keep_last_known_family_identity(page):
@@ -84,7 +84,7 @@ def test_untracked_main_is_an_unselectable_empty_pot(page):
     goto_board(page)
     assert page.evaluate('boardProjects[0].mainRepoPath') is None
     assert page.evaluate('boardProjects[0].centralRepoPath') is None
-    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.scale===.4)')
+    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.scale===.55)')
     assert page.locator('.board-main-placeholder').get_attribute('aria-label') == 'Main checkout not tracked.'
     assert page.locator('.board-main-placeholder .tree-hit').count() == 0
     assert page.evaluate(f'boardScene.targets.some(t=>t.path==={MAIN!r})') is False
@@ -98,7 +98,7 @@ def test_worktree_only_family_never_promotes_a_full_bonsai(page):
     identities = {path: {'project_id': '/git/common', 'is_worktree': True} for path in WORKTREES}
     seed_projects(page, WORKTREES, identities)
     goto_board(page)
-    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.slot!=="main" && t.scale===.4)')
+    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.slot!=="main" && t.scale===.55)')
     assert page.locator('.board-main-placeholder').get_attribute('aria-label') == 'Main checkout not identified.'
     assert page.locator('.board-main [data-tree-variant]').count() == 0
     assert page.locator('.board-sapling [data-tree-variant]').count() == 3
@@ -123,7 +123,7 @@ def test_known_worktree_without_family_id_stays_a_separate_sapling_project(page)
     goto_board(page)
     assert len(project_state(page)) == 3
     assert all(project['identityState'] == 'worktree-unresolved' and project['centralRepoPath'] is None for project in project_state(page))
-    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.scale===.4)')
+    assert page.evaluate('boardScene.targets.every(t=>t.role==="worktree" && t.scale===.55)')
     assert page.locator('.board-main-placeholder').count() == 3
 
 

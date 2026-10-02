@@ -31,7 +31,7 @@ def test_theme_text_contrast_and_selection_tokens(page):
     assert min(contrast['primary'], contrast['hover']) >= 4.5
     assert contrast['control'] >= 3
     assert contrast['scheme'] == 'dark'
-    assert contrast['accent'] == '#b9d891'
+    assert contrast['accent'] == '#3aa99f'
     goto_board(page)
     click_plot(selected_tile(page))
     assert page.locator('.plot-flag polygon').evaluate('el=>getComputedStyle(el).fill') == page.locator('.plot-name[data-selected="true"]').evaluate('el=>getComputedStyle(el).borderTopColor')

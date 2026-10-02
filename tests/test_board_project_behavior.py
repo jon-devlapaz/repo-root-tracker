@@ -531,7 +531,7 @@ def test_ground_cache_tracks_saplings_without_repainting_on_recheck(page):
     records = page.evaluate('groundCache.records')
     assert len(records) == 1 and len(records[0]['members']) == 4
     assert records[0]['clearRx'] > 36 and records[0]['clearRy'] > 17.5
-    assert [m['scale'] for m in records[0]['members']] == [1, .4, .4, .4]
+    assert [m['scale'] for m in records[0]['members']] == [1, .55, .55, .55]
     assert page.evaluate('groundCache.shadows') == 4
     page.evaluate('repos[1]._boardQueued=true;renderBoard();repos[1]._boardQueued=false;renderBoard()')
     assert settled_draws(page) == before
@@ -555,7 +555,7 @@ def test_untracked_main_casts_only_a_pot_shadow(page):
     placeholder = records[0]
     assert placeholder['role'] == 'placeholder' and placeholder['path'] is None
     assert placeholder['potOnly'] and placeholder['canopyHeight'] == 0
-    assert all(m['scale'] == .4 for m in records[1:])
+    assert all(m['scale'] == .55 for m in records[1:])
     assert page.evaluate('groundCache.shadows') == 4
 
 
