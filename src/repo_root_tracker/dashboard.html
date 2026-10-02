@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-remote="0">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -772,6 +772,7 @@
   <span class="badge" id="count-badge">— repos</span>
   <span role="group" aria-label="View"><button id="view-board" class="btn btn-ghost view-toggle" onclick="location.hash='#/board'" aria-pressed="true">Board</button> <button id="view-list" class="btn btn-ghost view-toggle" onclick="location.hash='#/list'" aria-pressed="false">List</button></span>
   <span class="kbd-hint"><kbd>⌘K</kbd> jump to repo</span>
+  <form id="signout" method="post" action="/logout" hidden><button class="btn btn-ghost" type="submit">Sign out</button></form>
 </header>
 
 <main id="list-view">
@@ -933,6 +934,12 @@
 <div class="toast" id="toast"></div>
 
 <script>
+  // Remote mode: an expired session sends the page to the sign-in form instead of showing broken data.
+  if (document.documentElement.dataset.remote === '1') {
+    document.getElementById('signout').hidden = false;
+    const nativeFetch = window.fetch.bind(window);
+    window.fetch = async (...args) => { const response = await nativeFetch(...args); if (response.status === 401) location.assign('/login'); return response; };
+  }
   /* Sections, in order: utilities and storage · GitHub signals · list view · bonsai generator and weather ·
      ambient (title, favicon, brief) · board scene, camera and picking · replay · inspector and tiles ·
      detail view · commit graph and diffs · command palette and keyboard.
