@@ -140,3 +140,19 @@ def test_session_key_file_is_private_and_stable(tmp_path, monkeypatch):
     first = auth.load_secret(tmp_path)
     assert auth.load_secret(tmp_path) == first
     assert (tmp_path / "session.key").stat().st_mode & 0o777 == 0o600
+
+
+def test_negative_or_junk_content_length_cannot_hang_login(run):
+    request = run(remote=True)
+    for value in ("-1", "abc"):
+        response, _ = request("POST", "/login", body="password=x", headers={"Content-Length": value})
+        assert response.status in (400, 401)
+    assert request("OPTIONS", "/api/repos")[0].status == 405
+
+
+def test_limiter_forgets_expired_addresses():
+    limiter = auth.LoginLimiter()
+    for n in range(auth.MAX_TRACKED + 50):
+        limiter.failed(f"10.0.{n // 250}.{n % 250}", now=0)
+    limiter.locked_for("1.2.3.4", now=auth.LOCKOUT_SECONDS + 5)
+    assert len(limiter._fails) == 0

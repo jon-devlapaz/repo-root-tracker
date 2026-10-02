@@ -18,6 +18,7 @@ from pathlib import Path
 SESSION_SECONDS = 7 * 24 * 3600
 MAX_FAILURES = 5
 LOCKOUT_SECONDS = 15 * 60
+MAX_TRACKED = 1000
 _N, _R, _P = 2**14, 8, 1
 
 
@@ -82,7 +83,12 @@ class LoginLimiter:
     def locked_for(self, ip: str, now: float | None = None) -> int:
         now = now if now is not None else time.time()
         recent = [t for t in self._fails.get(ip, []) if now - t < LOCKOUT_SECONDS]
-        self._fails[ip] = recent
+        if recent:
+            self._fails[ip] = recent
+        else:
+            self._fails.pop(ip, None)
+        if len(self._fails) > MAX_TRACKED:  # forget addresses whose failures have all expired
+            self._fails = {k: v for k, v in self._fails.items() if any(now - t < LOCKOUT_SECONDS for t in v)}
         if len(recent) >= MAX_FAILURES:
             return int(LOCKOUT_SECONDS - (now - recent[0])) + 1
         return 0

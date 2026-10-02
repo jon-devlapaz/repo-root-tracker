@@ -142,7 +142,10 @@ class Handler(BaseHTTPRequestHandler):
             self.send_header("Content-Length", "0")
             self.end_headers()
             return
-        length = min(int(self.headers.get("Content-Length", 0) or 0), 4096)
+        try:
+            length = max(0, min(int(self.headers.get("Content-Length", "0") or "0"), 4096))
+        except ValueError:
+            length = 0
         form = dict(kv.split("=", 1) for kv in self.rfile.read(length).decode(errors="replace").split("&") if "=" in kv)
         password = unquote(form.get("password", "").replace("+", " "))
         if PASSWORD_HASH and auth.verify_password(password, PASSWORD_HASH):
@@ -181,6 +184,10 @@ class Handler(BaseHTTPRequestHandler):
         else:
             self._json(401, {"error": "Sign in required"})
         return False
+
+    def do_OPTIONS(self) -> None:
+        # No CORS and no method listing, signed in or not.
+        self.send_error(405)
 
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
