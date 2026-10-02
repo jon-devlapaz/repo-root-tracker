@@ -548,6 +548,9 @@
   #board-replay-range::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--accent); border: 0; }
   #board-stage[data-replay] .tile:not([data-glow]) { opacity: .42; }
   .tile[data-glow] .plot-pool { fill: url(#board-glow); opacity: calc(.35 + var(--glow, 0) * .65); }
+  .member-replay-pool { fill: url(#board-glow); opacity: 0; pointer-events: none !important; }
+  .board-member[data-glow] .member-replay-pool { opacity: calc(.35 + var(--member-glow, 0) * .65); }
+  .plot-more[data-glow] { fill: var(--accent); }
   .board-neighborhood { min-width: 0; }
   #board-inspector { max-height: calc(100vh - 100px); overflow-y: auto; position: sticky; top: 84px; padding: 4px 0 4px 26px; border-left: 1px solid var(--border); min-width: 0; }
   #board-inspector .inspector-sprite { margin: 0 0 4px -10px; }
@@ -577,11 +580,13 @@
   #board-inspector .board-pr-item a:hover { text-decoration: underline; }
   #board-inspector .board-pr-meta { color: var(--muted); font-size: 11px; margin-top: 2px; }
   #board-inspector .board-pr-list { margin: 8px 0; }
-  #board-match-count { font-size: 12px; color: var(--muted); }
+  #board-match-count, #board-project-count { font-size: 12px; color: var(--muted); }
   @media (max-width: 850px) {
     .board-workspace { grid-template-columns: minmax(0, 1fr); }
     #board-inspector { display: none; }
-    #board-inspector .btn { min-height: 44px; padding: 10px; }
+    #board-inspector .btn { min-height: 44px; min-width: 44px; padding: 10px; }
+    #board-inspector .inspector-close { width: 44px; height: 44px; padding: 0; }
+    .board-camera-tools button, .isle { min-width: 44px; min-height: 44px; }
     #board-inspector[data-selected="true"] {
       display: block; position: fixed; top: auto; bottom: 12px; left: 12px; right: 12px; max-height: 44vh; overflow: auto; z-index: 50;
       padding: 18px 20px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface2); box-shadow: 0 -4px 12px #0008;
@@ -714,10 +719,14 @@
   .glyph-ring { stroke: var(--signal, transparent); stroke-width: 1.4; opacity: 0; }
   [data-tone]:not([data-tone="clean"]):not([data-tone="unknown"]) .glyph-ring { opacity: .75; }
   @media (prefers-reduced-motion: reduce) { .bonsai-sway, .tree-fx .leaf, .tree-fx .mote-up, .tree-fx .mote-down, .tree-fx .glint { animation: none !important; } .tree-fx[data-moving] .leaf { opacity: .9; } .tree-fx[data-moving] .mote-up, .tree-fx[data-moving] .mote-down { opacity: .85; } }
+  @media (pointer: coarse) {
+    .board-camera-tools button, .isle { min-width: 44px; min-height: 44px; }
+    #board-inspector .inspector-close { width: 44px; height: 44px; min-width: 44px; min-height: 44px; }
+  }
   @media (forced-colors: active) {
     .btn, .btn-ghost { border: 1px solid ButtonText; }
     .tab.active, .view-toggle[aria-pressed="true"], .filter[aria-pressed="true"] { text-decoration: underline; text-decoration-thickness: 2px; }
-    .plot-pool, .board-bloom { display: none; }
+    .plot-pool, .member-replay-pool, .board-bloom { display: none; }
     #board-stage { forced-color-adjust: none; }
     #board-world .board-select:focus-visible .member-focus { forced-color-adjust: none; stroke: Highlight; opacity: 1; }
   }
@@ -813,9 +822,9 @@
   <div class="board-tools">
     <input id="board-search" type="search" aria-label="Search the island" placeholder="Find a project, branch, or path…" oninput="renderBoard()" onkeydown="if(event.key === 'Enter') { event.preventDefault(); selectBoardMatch(event); }">
     <label title="Known PR blockers, failing default-branch CI, local conflicts, or unavailable repos."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
-    <span id="board-match-count" role="status"></span>
+    <span id="board-project-count"></span><span id="board-match-count" role="status"></span>
   </div>
-  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
+  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
   <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
@@ -1017,6 +1026,92 @@
   const RESUME_COOLDOWN_MS = 60000;
   let resumeRefreshing = false, lastResumeRefreshAt = 0;
   const searchCollapsed = new Set(), selectedRepos = new Set(), githubTasks = new Map();
+  const githubBySlug = new Map(), githubByPath = new Map(), githubRequestNumbers = new Map();
+  const githubForcedFollowups = new Map();
+  let dashboardUpdateDepth=0, projectAggregates=null, checkoutGithubSignals=null, checkoutVitals=null, dashboardGithubSources=null;
+  function dashboardUpdate(work) {
+    if (!dashboardUpdateDepth) { ensureProjectRegistry();repos.forEach(githubSlugForRepo);projectAggregates=new Map();checkoutGithubSignals=new Map();checkoutVitals=new Map(); }
+    dashboardUpdateDepth++;
+    try { return work(); }
+    finally { if (!--dashboardUpdateDepth) { projectAggregates=null;checkoutGithubSignals=null;checkoutVitals=null;dashboardGithubSources=null; } }
+  }
+  function invalidateProjectAggregates() { projectAggregates?.clear();checkoutGithubSignals?.clear();dashboardGithubSources=null; }
+
+  function githubSlugForRepo(repo) {
+    if(repoByPath.has(repo.path) && repoByPath.get(repo.path)!==repo)return githubIdentityByPath.get(repo.path);
+    const status=repo._status;
+    if (status && !status.error && !status.gone && Object.hasOwn(status,'github_repo') &&
+        (status.github_repo===null || usableIdentityString(status.github_repo))) {
+      const slug=status.github_repo;
+      if (!githubIdentityByPath.has(repo.path) || githubIdentityByPath.get(repo.path)!==slug) {
+        githubIdentityByPath.set(repo.path,slug);githubByPath.delete(repo.path);
+        delete repo._github;delete repo._githubCheckedAt;
+        invalidateProjectAggregates();
+      }
+    }
+    return githubIdentityByPath.get(repo.path);
+  }
+  function githubSnapshotForRepo(repo) {
+    const slug=githubSlugForRepo(repo);
+    return typeof slug==='string' ? githubBySlug.get(slug) : githubByPath.get(repo.path);
+  }
+  function githubSourceRepos(registry=repos) {
+    if(registry===repos && dashboardGithubSources)return dashboardGithubSources;
+    const sources=new Map();
+    for(const repo of [...registry].sort((a,b)=>exactPathOrder(a.path,b.path))){
+      const key=githubSlugForRepo(repo) || 'path:'+repo.path;
+      if(!sources.has(key))sources.set(key,repo);
+    }
+    const result=[...sources.values()];
+    if(registry===repos && dashboardUpdateDepth)dashboardGithubSources=result;
+    return result;
+  }
+  function githubSnapshotFresh(snapshot, now=Date.now()) {
+    if (!snapshot) return false;
+    const checked=snapshot.checkedAt ? Date.parse(snapshot.checkedAt) : snapshot.receivedAt;
+    return Number.isFinite(checked) && checked<=now && now-checked<RESUME_COOLDOWN_MS;
+  }
+  function githubSnapshotDate(snapshot) {
+    return snapshot?.checkedAt || (Number.isFinite(snapshot?.receivedAt)?new Date(snapshot.receivedAt).toISOString():null);
+  }
+  function githubRequestRepo(slug) {
+    const availability=repo=>!repo._status?1:repo._status.error || repo._status.gone?2:0;
+    return repos.filter(repo=>githubSlugForRepo(repo)===slug).sort((a,b)=>availability(a)-availability(b) || exactPathOrder(a.path,b.path))[0] || null;
+  }
+  function acceptGithubEntry(store,key,requestNumber,info,receivedAt=Date.now()) {
+    const sequenceKey=store===githubBySlug?'slug:'+key:'path:'+key;
+    if (requestNumber<(githubRequestNumbers.get(sequenceKey)||0) || requestNumber<=(store.get(key)?.requestNumber||0)) return false;
+    githubRequestNumbers.set(sequenceKey,requestNumber);
+    const copy=structuredClone(info), received=typeof receivedAt==='string'?Date.parse(receivedAt):receivedAt;
+    const missingSections=!Array.isArray(copy.prs) || !Array.isArray(copy.issues);
+    copy.errors=copy.errors || [];
+    if(!Array.isArray(copy.prs)){copy.prs=[];copy.errors.push('Pull requests unavailable in this check.');}
+    if(!Array.isArray(copy.issues)){copy.issues=[];copy.errors.push('Issues unavailable in this check.');}
+    const entry={requestNumber,info:copy,checkedAt:copy.checked_at||null,receivedAt:received,
+      checking:githubTasks.has(key),transportFailed:!!copy.transport_failed,
+      incomplete:!!(copy.transport_failed || copy.gh_unavailable || copy.errors?.length || copy.pr_limit_reached ||
+        copy.workflows?.errors?.length || missingSections)};
+    store.set(key,entry);
+    scheduleGithubExpiry();
+    invalidateProjectAggregates();
+    for (const repo of repos) {
+      if ((store===githubBySlug && githubSlugForRepo(repo)===key) || (store===githubByPath && repo.path===key && typeof githubSlugForRepo(repo)!=='string')) {
+        repo._github=structuredClone(copy);repo._githubCheckedAt=new Date(received).toISOString();
+      }
+    }
+    return true;
+  }
+  function acceptGithubSnapshot(slug,requestNumber,info,receivedAt=Date.now()) {
+    if(info.repo && info.repo!==slug)return false;
+    return acceptGithubEntry(githubBySlug,slug,requestNumber,{...info,repo:slug},receivedAt);
+  }
+  let githubExpiryTimer=null;
+  function scheduleGithubExpiry() {
+    clearTimeout(githubExpiryTimer);
+    const now=Date.now(),expiries=[...githubBySlug.values(),...githubByPath.values()].map(entry=>
+      (entry.checkedAt?Date.parse(entry.checkedAt):entry.receivedAt)+RESUME_COOLDOWN_MS).filter(time=>Number.isFinite(time) && time>now);
+    if(expiries.length)githubExpiryTimer=setTimeout(()=>{scheduleLocalRender();scheduleGithubExpiry();},Math.min(...expiries)-now+1);
+  }
   let matchingEntries = [];
   const FILTERS = [['all', 'All'], ['pinned', 'Pinned'], ['changed', 'Changed'], ['sync', 'Sync needed'], ['attention', 'GitHub attention'], ['unavailable', 'Unavailable']];
 
@@ -1073,63 +1168,91 @@
     return `<section class="workflow-health" data-state="${escapeHtml(w.state)}" data-tone="${w.failures ? 'blocked' : w.state === 'stale' ? 'stale' : 'unknown'}"><div class="gh-section-title">Default-branch workflows · <a href="${escapeHtml(info.repo_url)}/actions" target="_blank" rel="noopener">${escapeHtml(info.default_branch || 'branch unavailable')}</a></div><p class="workflow-summary">${escapeHtml(w.label)}</p>${workflowLinks(info) || '<p class="local-note">No workflow runs confirmed for the current commit.</p>'}</section>`;
   }
 
+  const githubOrdinaryRequests=new Set();
   async function fetchGithub(repo, refresh = false) {
-    const slug = repo._status && repo._status.github_repo;
-    const key = slug || repo.path;
-    if (githubTasks.has(key)) return githubTasks.get(key);
-    const task = (async () => {
+    const slug=githubSlugForRepo(repo), key=slug || repo.path;
+    const trackedAtDispatch=repoByPath.get(repo.path)===repo;
+    const existing=githubTasks.get(key);
+    if (existing) {
+      if (!refresh || !githubOrdinaryRequests.has(key)) return existing;
+      if (!githubForcedFollowups.has(key)) {
+        const followup=existing.then(() => {
+          const source=typeof slug==='string'?githubRequestRepo(slug):
+            (repoByPath.get(repo.path)===repo || (!trackedAtDispatch && !repoByPath.has(repo.path)))?repo:null;
+          return source?fetchGithub(source,true):githubSnapshotForRepo(repo)?.info;
+        }).finally(()=>githubForcedFollowups.delete(key));
+        githubForcedFollowups.set(key,followup);
+      }
+      return githubForcedFollowups.get(key);
+    }
+    const sequenceKey=(slug?'slug:':'path:')+key;
+    const requestNumber=(githubRequestNumbers.get(sequenceKey)||0)+1;
+    githubRequestNumbers.set(sequenceKey,requestNumber);
+    if (!refresh) githubOrdinaryRequests.add(key);
+    const snapshot=githubSnapshotForRepo(repo);if(snapshot)snapshot.checking=true;
+    const task=(async () => {
+      await Promise.resolve(); // register ownership before any completion/render
       let info;
       try {
-        const res = await fetch('/api/github?path=' + encodeURIComponent(repo.path) + (refresh ? '&refresh=1' : ''));
-        if (!res.ok) throw new Error('GitHub request failed');
-        info = await res.json();
-        if (!Array.isArray(info.prs) || !Array.isArray(info.issues)) throw new Error('Invalid GitHub response');
-        info.errors = info.errors || [];
+        const response=await fetch('/api/github?path='+encodeURIComponent(repo.path)+(refresh?'&refresh=1':''));
+        if (!response.ok) throw new Error('GitHub request failed');
+        info=await response.json();
+        if (!info || typeof info!=='object' || Array.isArray(info)) throw new Error('Invalid GitHub response');
+        if (slug && info.repo && info.repo!==slug) throw new Error('GitHub remote changed; refresh local Git');
       } catch {
-        info = {has_github: false, gh_unavailable: true, prs: [], issues: [], errors: ['GitHub could not be checked. Check the server, gh authentication, connectivity, and repository access.']};
+        info={has_github:false,repo:slug||'',gh_unavailable:true,transport_failed:true,prs:[],issues:[],
+          errors:['GitHub could not be checked. Check the server, gh authentication, connectivity, and repository access.']};
       }
-      repos.forEach(r => {
-        if (r === repo || (slug && r._status && r._status.github_repo === slug)) {
-          r._github = info;
-          r._githubCheckedAt = new Date().toISOString();
-        }
-      });
-      return info;
-    })();
-    githubTasks.set(key, task);
-    render();
-    try { return await task; }
-    finally { githubTasks.delete(key); render(); }
+      if (slug) acceptGithubSnapshot(slug,requestNumber,{...info,repo:slug});
+      else if (githubSlugForRepo(repo)===slug && (trackedAtDispatch?repoByPath.get(repo.path)===repo:!repoByPath.has(repo.path))) {
+        if (slug===undefined && usableIdentityString(info.repo)) {
+          githubIdentityByPath.set(repo.path,info.repo);
+          // An anonymous response may discover a source, but cannot displace
+          // a check that was already dispatched with that source's identity.
+          if(!githubRequestNumbers.has('slug:'+info.repo))acceptGithubSnapshot(info.repo,1,info);
+        } else acceptGithubEntry(githubByPath,repo.path,requestNumber,info);
+      }
+      return githubSnapshotForRepo(repo)?.info || info;
+    })().finally(() => {
+      githubTasks.delete(key);githubOrdinaryRequests.delete(key);
+      const entry=slug?githubBySlug.get(slug):githubByPath.get(repo.path);if(entry)entry.checking=false;
+      invalidateProjectAggregates();render();
+    });
+    githubTasks.set(key,task);invalidateProjectAggregates();render();
+    return task;
   }
 
+  let githubBulkTask=null,githubBulkForcedFollowup=null;
   async function refreshGithubAll(force = false) {
-    if (refreshingGithub) return;
+    if(refreshingGithub){
+      if(force && !githubBulkForcedFollowup)githubBulkForcedFollowup=githubBulkTask.then(()=>refreshGithubAll(true)).finally(()=>githubBulkForcedFollowup=null);
+      return force?githubBulkForcedFollowup:githubBulkTask;
+    }
     if (force) { organization.githubEnabled = true; persistOrganization(true); }
     refreshingGithub = true;
     render();
-    const unique = new Map();
-    repos.forEach(r => { if (r._status && !r._status.error && r._status.github_repo) unique.set(r._status.github_repo, r); });
-    const queue = [...unique.values()];
-    try {
-      await Promise.all(Array.from({length: Math.min(3, queue.length)}, async () => {
-        while (queue.length) await fetchGithub(queue.shift(), force);
-      }));
-    } finally { refreshingGithub = false; render(); }
+    const queue = githubSourceRepos().filter(r=>githubSlugForRepo(r)).map(r=>githubRequestRepo(githubSlugForRepo(r)));
+    githubBulkTask=(async()=>{
+      try{await Promise.all(Array.from({length:Math.min(3,queue.length)},async()=>{while(queue.length)await fetchGithub(queue.shift(),force);}));}
+      finally{refreshingGithub=false;render();}
+    })();
+    return githubBulkTask;
   }
 
   function renderAttention() {
     const seen = new Set(), items = [], ciItems = [];
     let unknown = 0, partial = 0, checked = 0;
-    repos.forEach((r, i) => {
-      const slug = r._status && r._status.github_repo;
+    githubSourceRepos().forEach(r => {
+      const i=repos.indexOf(r);
+      const slug = githubSlugForRepo(r);
       if (!slug || seen.has(slug)) return;
       seen.add(slug);
-      const info = r._github;
+      const snapshot=githubSnapshotForRepo(r), info=snapshot?.info;
       if (!info) { unknown++; return; }
       checked++;
       const ci = workflowSignal(info);
       if (ci.failures) ciItems.push({r, ci});
-      if (info.gh_unavailable || (info.errors && info.errors.length) || info.pr_limit_reached) partial++;
+      if (boardGithub(r).incomplete) partial++;
       (info.prs || []).forEach(pr => { const reasons = prReasons(pr); if (reasons.length) items.push({r, i, pr, reasons}); });
     });
     const ciFailures = ciItems.reduce((n, item) => n + item.ci.failures, 0);
@@ -1138,9 +1261,9 @@
     const panel = document.getElementById('attention-panel');
     if ((items.length || ciItems.length) && !attentionAutoOpened) { panel.open = true; attentionAutoOpened = true; }
     document.getElementById('attention-list').innerHTML = items.slice(0, 5).map(({r, pr, reasons}) =>
-      `<div class="attention-item"><div><strong>${escapeHtml(repoName(r.path))} · PR #${pr.number}${pr.draft ? ' · draft' : ''}</strong><p>${escapeHtml(pr.title)}</p><p>${escapeHtml(reasons.join(' · '))}</p>${checkedTime(r._github.checked_at, 'GitHub checked')}</div><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">View PR ↗</a></div>`).join('') +
+      `<div class="attention-item"><div><strong>${escapeHtml(repoName(r.path))} · PR #${pr.number}${pr.draft ? ' · draft' : ''}</strong><p>${escapeHtml(pr.title)}</p><p>${escapeHtml(reasons.join(' · '))}</p>${checkedTime(githubSnapshotDate(githubSnapshotForRepo(r)), githubSnapshotFresh(githubSnapshotForRepo(r))?'GitHub checked':'Previous GitHub check')}</div><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">View PR ↗</a></div>`).join('') +
       (items.length > 5 ? `<p class="local-note">${items.length - 5} more PRs with blockers. Use the GitHub attention filter and open a repo’s GitHub tab.</p>` : '') +
-      ciItems.slice(0,5).map(({r, ci}) => `<div class="attention-item" data-workflow-attention><div><strong>${escapeHtml(repoName(r.path))} · ${escapeHtml(ci.label)}</strong>${workflowLinks(r._github)}${checkedTime(r._github.checked_at, 'GitHub checked')}</div><a href="#/repo/${encodeURIComponent(r.path)}?tab=github">View workflows</a></div>`).join('') +
+      ciItems.slice(0,5).map(({r, ci}) => `<div class="attention-item" data-workflow-attention><div><strong>${escapeHtml(repoName(r.path))} · ${escapeHtml(ci.label)}</strong>${workflowLinks(githubSnapshotForRepo(r)?.info)}${checkedTime(githubSnapshotDate(githubSnapshotForRepo(r)), githubSnapshotFresh(githubSnapshotForRepo(r))?'GitHub checked':'Previous GitHub check')}</div><a href="#/repo/${encodeURIComponent(r.path)}?tab=github">View workflows</a></div>`).join('') +
       (ciItems.length > 5 ? `<p class="local-note">${ciItems.length - 5} more repositories with failing default-branch CI. Use the GitHub attention filter.</p>` : '') +
       `<p class="local-note">${unknown || !checked ? 'Check GitHub to load PR and default-branch CI signals. ' : ''}${partial ? 'Some GitHub data is unavailable; absence of a blocker is not an all-clear. ' : ''}This covers repository-wide PR blockers and default-branch workflow failures, counted separately. Issues and ordinary local changes are not treated as blockers.</p>`;
     const button = document.getElementById('github-refresh');
@@ -1447,7 +1570,7 @@
 
   function filterCount(candidates, key) {
     const count = candidates.filter(r => matchesFilter(r, key)).length;
-    const unknown = key === 'attention' && candidates.some(r => !r._status || (r._status.github_repo && (!r._github || r._github.gh_unavailable || (r._github.errors && r._github.errors.length) || r._github.pr_limit_reached)));
+    const unknown=key==='attention' && candidates.some(r=>!r._status || (githubSlugForRepo(r) && (boardGithub(r).unchecked || boardGithub(r).incomplete)));
     return unknown ? (count ? count + ' + ?' : '–') : count;
   }
 
@@ -1536,9 +1659,8 @@
     }
     if (Object.hasOwn(status, 'github_repo') && (status.github_repo === null || usableIdentityString(status.github_repo))) {
       const slug = status.github_repo;
-      githubIdentityByPath.set(path, slug);
-      const repo = repoByPath.get(path);
-      if (repo?._github && repo._github.repo !== slug) { delete repo._github; delete repo._githubCheckedAt; }
+      const repo=repoByPath.get(path);
+      if(repo)githubSlugForRepo(repo);else githubIdentityByPath.set(path,slug);
     }
     if (identityChanged || !observed) rebuildProjectModel();
   }
@@ -1714,7 +1836,7 @@
     if (lastResumeRefreshAt && now >= lastResumeRefreshAt && now - lastResumeRefreshAt < RESUME_COOLDOWN_MS) return;
     const stale = date => !date || !Number.isFinite(Date.parse(date)) || now < Date.parse(date) || now - Date.parse(date) >= RESUME_COOLDOWN_MS;
     const localDue = repos.some(r => stale(r._checkedAt));
-    const githubDue = organization.githubEnabled && repos.some(r => r._status.github_repo && !r._status.error && stale(r._github?.checked_at || r._githubCheckedAt));
+    const githubDue = organization.githubEnabled && repos.some(r => githubSlugForRepo(r) && !githubSnapshotFresh(githubSnapshotForRepo(r)));
     if (!localDue && !githubDue) return;
     resumeRefreshing = true;
     lastResumeRefreshAt = now;
@@ -1791,8 +1913,8 @@
       `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
     const stale = s && s.stale_branches && s.stale_branches.length
       ? `<span class="repo-label stale" title="${escapeHtml(s.stale_branches.map(b => b.name).join(', '))}">${s.stale_branches.length} stale</span>` : '';
-    const info = r._github, gh = boardGithub(r);
-    const githubLabel = gh.label === 'No GitHub remote' || (!info && !s?.github_repo) ? '' : gh.label;
+    const snapshot=githubSnapshotForRepo(r), info=snapshot?.info, gh=boardGithub(r);
+    const githubLabel = gh.label === 'No GitHub remote' || (!info && !githubSlugForRepo(r)) ? '' : gh.label;
     const githubTone = gh.blocked || gh.workflowFailures ? 'blocked' : gh.incomplete ? 'unavailable' : gh.workflowState === 'stale' ? 'stale' : 'unknown';
     const githubSignal = githubLabel ? `<a class="gh-signal attention-pill${info?.workflows ? ' workflow-signal' : ''}" data-tone="${githubTone}" title="${escapeHtml(githubLabel)}" href="#/repo/${encodeURIComponent(r.path)}?tab=github">${escapeHtml(githubLabel)}</a>` : '';
     return `<article class="repo-card" id="card-${i}" data-tone="${repoAttentionTone(r)}">
@@ -1804,7 +1926,7 @@
         <div class="repo-path" title="${escapeHtml(r.path)}">${escapeHtml(shortHome(r.path))}</div>
         ${s && s.branch ? `<div class="repo-meta"><span class="branch">${escapeHtml(s.branch)}</span>${s.last_commit && s.last_commit.relative ? `<span class="rel" title="Last commit">${escapeHtml(s.last_commit.relative)}</span>` : ''}${s.is_worktree ? `<span class="rel">Worktree of ${escapeHtml(repoName(s.project_path || r.path))}</span>` : ''}</div>` : ''}
       </div>
-      <div class="repo-signals"><span class="repo-label attention-pill ${tone}" data-tone="${tone || 'unknown'}"><span class="repo-status ${dot}" aria-hidden="true"></span>${escapeHtml(label)}</span>${syncLabel}${stale}${githubSignal}${repoCheckingLabel(r)}${info && info.checked_at ? checkedTime(info.checked_at, 'GitHub checked') : ''}</div>
+      <div class="repo-signals"><span class="repo-label attention-pill ${tone}" data-tone="${tone || 'unknown'}"><span class="repo-status ${dot}" aria-hidden="true"></span>${escapeHtml(label)}</span>${syncLabel}${stale}${githubSignal}${repoCheckingLabel(r)}${snapshot ? checkedTime(githubSnapshotDate(snapshot), gh.expired?'Previous GitHub check':'GitHub checked') : ''}</div>
       <div class="repo-actions"><details class="repo-menu" data-path="${escapeHtml(r.path)}">
         <summary id="menu-${encodeURIComponent(r.path)}" aria-label="Actions for ${name}"><svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><circle cx="3" cy="8" r="1.3" fill="currentColor"/><circle cx="8" cy="8" r="1.3" fill="currentColor"/><circle cx="13" cy="8" r="1.3" fill="currentColor"/></svg></summary>
         <div class="menu-panel">
@@ -1846,10 +1968,11 @@
     }).join('');
   }
 
-  function render() {
+  function render() { return dashboardUpdate(renderDashboard); }
+  function renderDashboard() {
     ensureProjectRegistry();
     syncAmbient();
-    if (detailPath) return;
+    if (detailPath) { if(githubLoadedForPath===detailPath)renderGithub();return; }
     if (location.hash === '#/board' || location.hash.startsWith('#/board?')) { renderBoard(); return; }
     const list = document.getElementById('repo-list');
     const badge = document.getElementById('count-badge');
@@ -2122,10 +2245,11 @@
     return repo._bonsaiVitals.normalized;
   }
   function bonsaiVitalsOf(path) {
+    if(checkoutVitals?.has(path))return checkoutVitals.get(path);
     const repo = repoByPath.get(path) || repos.find(r=>r.path===path), s=repo?._status;
     // Direct render callers can supply successful fixtures too; errors never replace retained form.
-    if (s && !s.error && !s.gone) return recordBonsaiVitals(repo,s);
-    return repo?._bonsaiVitals?.normalized || normalizeBonsaiVitals({});
+    const vitals=s && !s.error && !s.gone?recordBonsaiVitals(repo,s):repo?._bonsaiVitals?.normalized || normalizeBonsaiVitals({});
+    checkoutVitals?.set(path,vitals);return vitals;
   }
 
   const bonsaiLayouts = new Map();
@@ -2176,7 +2300,15 @@
   }
 
   /* The tree itself. Returned markup is wrapped by the caller in a scaled <g data-tree-variant>. */
-  function bonsaiTree(path, palette, ink = false) {
+  const bonsaiTreeMarkup=new Map();
+  function bonsaiTree(path,palette,ink=false) {
+    const key=path+'|'+bonsaiVitalsOf(path).key+'|'+JSON.stringify(palette)+'|'+ink;
+    if(bonsaiTreeMarkup.has(key))return bonsaiTreeMarkup.get(key);
+    const markup=buildBonsaiTree(path,palette,ink);
+    if(bonsaiTreeMarkup.size>1024)bonsaiTreeMarkup.delete(bonsaiTreeMarkup.keys().next().value);
+    bonsaiTreeMarkup.set(key,markup);return markup;
+  }
+  function buildBonsaiTree(path, palette, ink = false) {
     const L = bonsaiLayout(path), W = BONSAI_WOOD;
     const trunks = L.strokes.map(s => `<path d="${s.d}" fill="${W.mid}"/><path d="${s.hi}" fill="none" stroke="${W.light}" stroke-width="1.2" stroke-linecap="round" opacity=".85"/><path d="${s.mid}" fill="none" stroke="${W.light}" stroke-width=".8" stroke-linecap="round" stroke-dasharray="5 2.4 1.6 3.4" opacity=".55"/><path d="${s.lo}" fill="none" stroke="#000" stroke-width="1.1" stroke-linecap="round" stroke-dasharray="6 1.6 2.4 2.2" opacity=".5"/>`).join('');
     const shade = L.strokes.map(s => `<path d="${s.d}" fill="${W.dark}" opacity=".32" transform="translate(1.4 0)"/>`).join('');
@@ -2267,40 +2399,44 @@
   }
 
   const boardCalmState = new Map();
-  function boardIslandCalm(g) { return g.paths.length > 0 && g.paths.every(path => { const r = repos.find(x => x.path === path); return r && repoAttentionTone(r) === 'clean'; }); }
+  function boardIslandCalm(g) {
+    const keys=g.allProjectKeys || g.projectKeys || [];
+    return keys.length>0 && keys.every(key=>{const project=boardProjectByKey.get(key) || boardCommittedProjects.get(key);return project && boardProjectAggregate(project).calm;});
+  }
   /* ---------- ambient: the garden speaks even when the tab is in the background ---------- */
   const TONE_ORDER = ['blocked', 'unavailable', 'changed', 'sync', 'stale', 'clean'];
   const TONE_HEX = {blocked: '#e8705c', unavailable: '#8d9a94', changed: '#f29a4e', sync: '#8fbfe0', stale: '#b9a2e6', clean: '#f2dc7a', unknown: '#5d6863'};
   function gardenSummary() {
-    const known = repos.filter(r => r._status);
-    if (!known.length) return {text: '', attention: 0, worst: 'unknown'};
-    const by = Object.fromEntries(TONE_ORDER.map(k => [k, []]));
-    known.forEach(r => { const tone = repoAttentionTone(r); if (by[tone]) by[tone].push(r); });
-    const names = list => list.length === 1 ? repoName(list[0].path) : list.length === 2 ? repoName(list[0].path) + ' and ' + repoName(list[1].path) : repoName(list[0].path) + ' and ' + (list.length - 1) + ' others';
-    const parts = [];
-    const githubKey = r => r._github?.repo || r._status.github_repo || r._status.project_id || r.path;
-    const ciRepos = [...new Map(known.filter(r => boardGithub(r).workflowFailures).map(r => [githubKey(r), r])).values()];
-    const otherBlocked = by.blocked.filter(r => !boardGithub(r).workflowFailures);
-    if (otherBlocked.length) parts.push(names(otherBlocked) + (otherBlocked.length === 1 ? ' is blocked' : ' are blocked'));
-    if (ciRepos.length) parts.push(names(ciRepos) + (ciRepos.length === 1 ? ' has failing default-branch CI' : ' have failing default-branch CI'));
-    if (by.changed.length) parts.push(by.changed.length + ' uncommitted');
-    if (by.sync.length) parts.push(by.sync.length + ' ahead or behind');
-    if (by.unavailable.length) parts.push(by.unavailable.length + ' unreadable');
-    if (by.stale.length) parts.push(by.stale.length + ' stale');
-    const unconfirmedCi = new Set(known.filter(r => {
-      const w = workflowSignal(r._github);
-      return w.label && !['passing', 'failing'].includes(w.state);
-    }).map(githubKey));
-    if (unconfirmedCi.size) parts.push(unconfirmedCi.size + ' default-branch CI unconfirmed');
-    let text = parts.length ? parts.join(' \u00b7 ') : (known.length === 1 ? 'The only repo is calm.' : 'All ' + known.length + ' repos are calm.');
-    if (known.length < repos.length) text += ' \u00b7 ' + (repos.length - known.length) + ' still checking';
-    const worst = TONE_ORDER.find(k => by[k].length) || 'unknown';
-    const localAttention = known.filter(r => ['blocked', 'unavailable'].includes(localAttentionTone(r))).length;
-    const githubAttention = new Set(known.filter(r => {
-      const gh = boardGithub(r);
-      return gh.blocked || gh.workflowFailures || gh.incomplete;
-    }).map(githubKey));
-    return {text, attention: localAttention + githubAttention.size, worst};
+    const known=repos.filter(r=>r._status);
+    const sources=githubSourceRepos();
+    if(!known.length && !sources.some(r=>githubSnapshotForRepo(r)))return {text:'',attention:0,worst:'unknown'};
+    const by=Object.fromEntries(TONE_ORDER.map(k=>[k,[]]));
+    known.forEach(r=>{const tone=localAttentionTone(r);if(by[tone])by[tone].push(r);});
+    const names=list=>list.length===1?repoName(list[0].path):list.length===2?repoName(list[0].path)+' and '+repoName(list[1].path):repoName(list[0].path)+' and '+(list.length-1)+' others';
+    const ciRepos=sources.filter(r=>boardGithub(r).workflowFailures),prRepos=sources.filter(r=>boardGithub(r).blocked && !boardGithub(r).workflowFailures);
+    const blocked=[...new Set([...by.blocked,...prRepos])],parts=[];
+    if(blocked.length)parts.push(names(blocked)+(blocked.length===1?' is blocked':' are blocked'));
+    if(ciRepos.length)parts.push(names(ciRepos)+(ciRepos.length===1?' has failing default-branch CI':' have failing default-branch CI'));
+    if(by.changed.length)parts.push(by.changed.length+' uncommitted');
+    if(by.sync.length)parts.push(by.sync.length+' ahead or behind');
+    if(by.unavailable.length)parts.push(by.unavailable.length+' unreadable');
+    if(by.stale.length)parts.push(by.stale.length+' stale');
+    const unconfirmed=sources.filter(r=>boardGithub(r).workflowUnconfirmed && githubSnapshotForRepo(r));
+    if(unconfirmed.length)parts.push(unconfirmed.length+' default-branch CI unconfirmed');
+    const uncovered=sources.filter(r=>githubSlugForRepo(r) && boardGithub(r).unchecked);
+    if(uncovered.length)parts.push(uncovered.length+' GitHub source'+(uncovered.length===1?'':'s')+' unchecked');
+    const expired=sources.filter(r=>boardGithub(r).expired && !boardGithub(r).localNoRemote);
+    if(expired.length)parts.push(expired.length+' previous GitHub check'+(expired.length===1?'':'s')+' expired');
+    const incomplete=sources.filter(r=>boardGithub(r).incomplete);
+    if(incomplete.length)parts.push(incomplete.length+' GitHub source'+(incomplete.length===1?'':'s')+' incomplete');
+    const checking=sources.filter(r=>boardGithub(r).checking);
+    if(checking.length)parts.push(checking.length+' GitHub source'+(checking.length===1?'':'s')+' checking');
+    let text=parts.length?parts.join(' · '):!known.length?'':known.length===1?'The only repo is calm.':'All '+known.length+' repos are calm.';
+    if(known.length<repos.length)text+=(text?' · ':'')+(repos.length-known.length)+' still checking';
+    const tones=repos.map(r=>repoAttentionTone(r)),worst=TONE_ORDER.find(t=>tones.includes(t)) || 'unknown';
+    const localAttention=known.filter(r=>['blocked','unavailable'].includes(localAttentionTone(r))).length;
+    const githubAttention=sources.filter(r=>{const gh=boardGithub(r);return gh.blocked || gh.workflowFailures || gh.incomplete;}).length;
+    return {text,attention:localAttention+githubAttention,worst};
   }
   let lastFavicon = '';
   function faviconFor(tone) {
@@ -2431,41 +2567,56 @@
     return {empty:false,width,height:g.y+g.height+18,islands:[g],plots,targets:plots.flatMap(plot=>plot.targets)};
   }
 
-  function boardFamilyGithub(g) {
-    const seen = new Set(), prs = [], workflows = [], seenWorkflows = new Set();
-    const members = (g.familyPaths || g.paths).map(path => repos.find(r => r.path === path)).filter(Boolean);
-    members.forEach(repo => {
-      const info = repo._github;
-      if (!info || (!info.has_github && !info.repo)) return;
-      const slug = info.repo || repo._status?.github_repo || repo.path;
-      if (!seenWorkflows.has(slug) && workflowSignal(info).label) { seenWorkflows.add(slug); workflows.push(info); }
-      (info.prs || []).forEach(pr => {
-        const key = pr.number + '|' + (info.repo || repo._status?.github_repo || repo.path);
-        if (seen.has(key) || !prReasons(pr).length) return;
-        seen.add(key);
-        prs.push({pr, repo: repo.path, slug: info.repo});
-      });
-    });
-    const checking = members.some(repo => githubTasks.has(repo._status?.github_repo || repo.path));
-    const incomplete = members.some(repo => {
-      const info = repo._github;
-      return info && (info.gh_unavailable || info.errors?.length || info.pr_limit_reached);
-    });
-    const unchecked = members.some(repo => !repo._github &&
-      !(repo._status && Object.hasOwn(repo._status, 'github_repo') && !repo._status.github_repo));
-    const hasGithub = members.some(repo => repo._github?.has_github);
-    let label = prs.length ? prs.length + ' PR' + (prs.length===1?'':'s') + ' with blockers' :
-      incomplete ? 'GitHub incomplete' : checking ? 'GitHub checking…' : unchecked ? 'GitHub not checked' :
-      hasGithub ? 'No known PR blockers' : 'No GitHub remote';
-    if (prs.length && incomplete) label += ' · incomplete';
-    if (checking && (prs.length || incomplete)) label += ' · checking…';
-    if (unchecked && (prs.length || incomplete || checking)) label += ' · unchecked';
-    const workflowFailures = workflows.reduce((n, info) => n + workflowSignal(info).failures, 0);
-    const workflowUnconfirmed = workflows.some(info => !['passing', 'failing'].includes(workflowSignal(info).state));
-    if (workflows.length) label += ' · ' + workflows.map(info => workflowSignal(info).label).join(' · ');
-    return {blocked: prs.length, prs, workflows, workflowFailures, workflowUnconfirmed, checking, incomplete, unchecked, label};
+  function boardFamilyGithub(project) {
+    return boardProjectAggregate(project).github;
   }
+  function boardProjectAggregate(project) {
+    if(project.key && projectAggregates?.has(project.key))return projectAggregates.get(project.key);
+    const current=project.key && boardProjectByKey.get(project.key);
+    const members=(current?.paths || project.familyPaths || project.paths).map(path=>repoByPath.get(path)).filter(Boolean);
+    const sources=new Map(), localTones=members.map(localAttentionTone);
+    for(const repo of members){const slug=githubSlugForRepo(repo),key=slug || 'path:'+repo.path,previous=sources.get(key);if(!previous || exactPathOrder(repo.path,previous.path)<0)sources.set(key,repo);}
+    const prs=[],workflows=[],signals=[],seenPrs=new Set();
+    for(const [key,repo] of [...sources].sort(([a],[b])=>exactPathOrder(a,b))){
+      const snapshot=githubSnapshotForRepo(repo),info=snapshot?.info,signal=boardGithub(repo);signals.push(signal);
+      if(info && (info.has_github || info.repo)){
+        if(workflowSignal(info).label)workflows.push(info);
+        for(const pr of info.prs || [])if(prReasons(pr).length && !seenPrs.has(key+'|'+pr.number)){seenPrs.add(key+'|'+pr.number);prs.push({pr,repo:repo.path,slug:key});}
+      }
+    }
+    const blocked=prs.length,workflowFailures=signals.reduce((n,s)=>n+s.workflowFailures,0);
+    const checking=signals.some(s=>s.checking),incomplete=signals.some(s=>s.incomplete),unchecked=signals.some(s=>s.unchecked);
+    const expired=signals.some(s=>s.expired && !s.localNoRemote),workflowUnconfirmed=signals.some(s=>s.workflowUnconfirmed);
+    const hasGithub=signals.some(s=>!s.noRemote && !s.unchecked);
+    let label=blocked?blocked+' PR'+(blocked===1?'':'s')+' with blockers':incomplete?'GitHub incomplete':
+      checking?'GitHub checking…':unchecked?'GitHub not checked':hasGithub?'No known PR blockers':'No GitHub remote';
+    if(blocked && incomplete)label+=' · incomplete';
+    if(checking && (blocked || incomplete))label+=' · checking…';
+    if(unchecked && (blocked || incomplete || checking))label+=' · unchecked';
+    // Keep the full workflow label, including pending/cancelled/current-head copy.
+    if(workflows.length)label+=' · '+workflows.map(info=>workflowSignal(info).label).join(' · ');
+    if(signals.some(s=>s.workflowUnconfirmed && !s.workflowState && !s.unchecked))label+=' · Default-branch CI: unconfirmed (coverage missing)';
+    if(expired)label+=' · previous check (expired)';
+    const github={blocked,prs,workflows,workflowFailures,workflowUnconfirmed,checking,incomplete,unchecked,expired,label};
+    const tones=[...localTones];
+    if(blocked || workflowFailures)tones.push('blocked');
+    if(incomplete)tones.push('unavailable');
+    const order=['blocked','unavailable','changed','sync','stale','unknown','clean'];
+    const tone=order.find(t=>tones.includes(t)) || 'unknown';
+    const calm=members.length>0 && localTones.every(t=>t==='clean') && members.every(r=>!r._checking && !r._boardQueued) &&
+      !checking && !incomplete && !unchecked && !expired && !workflowUnconfirmed && !blocked && !workflowFailures;
+    const localOrder=['gone','error','attention-dirty','attention-sync','attention-stale','loading','healthy'];
+    const localState=members.map(boardState).sort((a,b)=>localOrder.indexOf(a.stage)-localOrder.indexOf(b.stage))[0] || {stage:'loading'};
+    const aggregate={tone,github,calm,localState,localConflict:members.some(r=>!r._status?.error && !r._status?.gone && r._status?.dirty?.kinds?.conflicted)};
+    if(project.key)projectAggregates?.set(project.key,aggregate);
+    return aggregate;
+  }
+  function boardPlotTone(project) { return boardProjectAggregate(project).tone; }
 
+  function githubBadgeTone(signal) {
+    return signal.blocked || signal.workflowFailures?'blocked':signal.incomplete?'unavailable':
+      signal.unchecked || signal.checking || signal.workflowUnconfirmed || signal.expired?'unknown':'clean';
+  }
   function boardFamilyBadge(g) {
     if(g.key==='workspace')return '';
     const f=boardFamilyGithub(g);
@@ -2488,7 +2639,7 @@
       const s=point(c,r),w=4+rng()*5;
       stones+=`<ellipse cx="${s.x}" cy="${s.y+2.5}" rx="${w+2}" ry="${w/2+1}" fill="#000" opacity=".35"/><path d="M${s.x-w} ${s.y+2}Q${s.x-w*.7} ${s.y-w*.95} ${s.x+w*.1} ${s.y-w}Q${s.x+w} ${s.y-w*.7} ${s.x+w} ${s.y+2}Z" fill="${p.stone}"/><path d="M${s.x-w*.7} ${s.y-w*.1}Q${s.x-w*.3} ${s.y-w*.85} ${s.x+w*.1} ${s.y-w*.9}" fill="none" stroke="#dfe9d2" stroke-opacity=".22" stroke-width="1"/>`;
     });
-    const caption=g.name+' · '+g.paths.length+(g.paths.length<g.total?'/'+g.total:'');
+    const caption=g.name+' · '+g.projectKeys.length+(g.projectKeys.length<g.total?'/'+g.total:'')+' projects';
     const cap=Math.floor(g.width/9)-2;
     const calm=boardIslandCalm(g);
     const name=caption.length>cap?caption.slice(0,cap-1)+'…':caption;
@@ -2516,7 +2667,29 @@
   }
   const mixHex = (hex, rgb, amt) => { const n = parseInt(hex.slice(1), 16), c = [n >> 16, (n >> 8) & 255, n & 255]; return 'rgb(' + c.map((v, k) => Math.round(lerp(v, rgb[k], amt))).join(',') + ')'; };
 
-  function drawGround(g, scale, sky) {
+  const boardGroundRecordCache=new Map();
+  function boardGroundRecords(g) {
+    return boardScene.plots.filter(plot=>plot.island===g).map(plot=>{
+      const project=plot.project,family=project.worktreePaths.length>0,disturbed=project.paths.some(path=>groundDisturbed(repoByPath.get(path)));
+      const signature=JSON.stringify([plot.col,plot.row,plot.x,plot.y,family,disturbed,repoByPath.has(project.centralRepoPath),plot.targets.map(t=>[t.path,t.x,t.y,t.scale,t.role,repoByPath.get(t.path)?._status?.gone,bonsaiVitalsOf(t.path).key])]);
+      const cached=boardGroundRecordCache.get(project.key);if(cached?.signature===signature)return cached.record;
+      const members=plot.targets.map(target=>{
+        const repo=repoByPath.get(target.path),layout=bonsaiLayout(target.path);
+        return {...target,bodyScale:target.scale*layout.scale,potOnly:!!repo?._status?.gone,
+          canopyHeight:-Math.min(...layout.pads.map(pad=>pad.y-pad.ry)),geometryKey:bonsaiVitalsOf(target.path).key};
+      });
+      if(!project.centralRepoPath || !repoByPath.has(project.centralRepoPath))members.unshift({path:null,role:'placeholder',
+        x:plot.x,y:plot.y,scale:1,bodyScale:1,potOnly:true,canopyHeight:0,geometryKey:'pot'});
+      const record={projectKey:project.key,c:plot.col,r:plot.row,x:plot.x,y:plot.y,family,clearRx:family?60:36,clearRy:family?30:17.5,disturbed,members};
+      boardGroundRecordCache.set(project.key,{signature,record});return record;
+    });
+  }
+  function drawGround(g,scale,sky) {
+    const steps=groundDrawingSteps(g,scale,sky);let result;
+    do{result=steps.next();}while(!result.done);
+    return result.value;
+  }
+  function* groundDrawingSteps(g,scale,sky,records=boardGroundRecords(g)) {
     const W = boardScene.width, H = boardScene.height, p = g.theme;
     const c = document.createElement('canvas'); c.width = Math.ceil(W * scale); c.height = Math.ceil(H * scale);
     const ctx = c.getContext('2d'); ctx.scale(scale, scale);
@@ -2537,26 +2710,36 @@
       if (Math.abs(x - cx) / ((right.x - left.x) / 2) + Math.abs(y - cy) / ((bottom.y - top.y) / 2) > 1) continue;
       ctx.fillStyle = rng() < .6 ? 'rgba(228,238,214,' + (.04 + rng() * .07) + ')' : 'rgba(0,0,0,' + (.08 + rng() * .1) + ')';
       ctx.fillRect(x, y, .5 + rng() * .5, .5 + rng() * .5);
+      if(i%100===99)yield;
     }
-    // rake: three-tine passes that flow around every pot
-    const pots = g.paths.map((path, i) => ({c: i % g.cols, r: Math.floor(i / g.cols), path}));
-    const bend = (col, row) => pots.reduce((acc, q) => { const dx = col - q.c, dy = row - q.r; return acc + Math.tanh(dy / .1) * .3 * Math.exp(-(dx * dx + dy * dy) / (2 * .34 * .34)); }, row);
-    const pass = (rr, dxp, dyp, style) => {
+    // Calculate each rake line once, and reuse it for its dark/light relief.
+    const pots=records,nearby=new Map(pots.map(q=>[q.c+','+q.r,q]));
+    const bend=(col,row)=>{
+      let result=row;
+      for(let c=Math.floor(col)-1;c<=Math.ceil(col)+1;c++)for(let r=Math.floor(row)-1;r<=Math.ceil(row)+1;r++){
+        const q=nearby.get(c+','+r);if(!q)continue;
+        const dx=col-q.c,dy=row-q.r,radius=q.family ? .48 : .34;
+        result+=Math.tanh(dy/.1)*.3*Math.exp(-(dx*dx+dy*dy)/(2*radius*radius));
+      }
+      return result;
+    };
+    const pass = (points, dxp, dyp, style) => {
       ctx.beginPath();
-      for (let col = -.5; col <= g.cols - .5 + .001; col += .05) { const s = point(col, bend(col, rr)); col === -.5 ? ctx.moveTo(s.x + dxp, s.y + dyp) : ctx.lineTo(s.x + dxp, s.y + dyp); }
+      points.forEach((s,i)=>i?ctx.lineTo(s.x+dxp,s.y+dyp):ctx.moveTo(s.x+dxp,s.y+dyp));
       ctx.strokeStyle = style; ctx.lineWidth = .7; ctx.stroke();
     };
     for (let rr = -.5 + .08; rr < g.rows - .5; rr += .17) for (let tine = -1; tine <= 1; tine++) {
       const r2 = rr + tine * .03; if (r2 < -.5 || r2 > g.rows - .5) continue;
-      pass(r2, .6, .6, 'rgba(0,0,0,.32)'); pass(r2, -.3, -.4, 'rgba(228,238,214,.15)');
+      const points=[];for(let col=-.5;col<=g.cols-.5+.001;col+=.05)points.push(point(col,bend(col,r2)));
+      pass(points,.6,.6,'rgba(0,0,0,.32)');pass(points,-.3,-.4,'rgba(228,238,214,.15)');
+      yield;
     }
     // pots: gravel swept clear, then raked rings that are slightly imperfect
     let shadows = 0;
-    pots.forEach((q, i) => {
-      const s = point(q.c, q.r), repo = repos.find(r => r.path === q.path);
-      const disturbed = groundDisturbed(repo);
-      ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, 36, 17.5, 0, 0, Math.PI * 2); ctx.fillStyle = base; ctx.fill();
-      [23, 28.5, 34].forEach((rx, k) => {
+    for(const [i,q] of pots.entries()) {
+      const s={x:q.x,y:q.y+(q.family?8:0)},disturbed=q.disturbed;
+      ctx.beginPath(); ctx.ellipse(s.x, s.y + 1, q.clearRx, q.clearRy, 0, 0, Math.PI * 2); ctx.fillStyle = base; ctx.fill();
+      (q.family?[43,50,57]:[23,28.5,34]).forEach((rx,k)=>{
         const ring = (dx, dy, style) => {
           ctx.beginPath(); ctx.setLineDash(disturbed && k > 0 ? [2 + k * 2, 5 + k * 2] : []);
           for (let a = 0; a <= Math.PI * 2 + .05; a += .12) { const w = 1 + Math.sin(a * 5 + i + k) * .012 + Math.sin(a * 3 + i * 2) * .01; const x = s.x + Math.cos(a) * rx * w + dx, y = s.y + 1 + Math.sin(a) * rx / 2 * w + dy; a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y); }
@@ -2565,14 +2748,17 @@
         ring(.5, .6, 'rgba(0,0,0,' + (.34 - k * .06) + ')'); ring(-.3, -.35, 'rgba(228,238,214,' + (.2 - k * .04) + ')');
       });
       // cast shadow, away from the light; length follows the light's height
-      const L = bonsaiLayout(q.path), len = 62 * L.scale * (1.05 - sky.elev) * .62;
-      const vx = -sky.x * len, vy = len * .22 + 3;
-      ctx.save(); ctx.translate(s.x + vx / 2, s.y + 1 + vy / 2); ctx.rotate(Math.atan2(vy, vx));
-      const rx = Math.hypot(vx, vy) / 2 + 9; ctx.scale(rx, 5.2);
+      for(const member of q.members){
+      const len=member.potOnly?0:member.canopyHeight*member.bodyScale*(1.05-sky.elev)*.62;
+      const vx=-sky.x*len,vy=len*.22+3*member.scale;
+      ctx.save(); ctx.translate(member.x+vx/2,member.y+member.scale+vy/2); ctx.rotate(Math.atan2(vy, vx));
+      const rx=Math.hypot(vx,vy)/2+9*member.bodyScale;ctx.scale(rx,5.2*member.bodyScale);
       const soft = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); soft.addColorStop(0, 'rgba(0,0,0,.42)'); soft.addColorStop(.6, 'rgba(0,0,0,.26)'); soft.addColorStop(1, 'rgba(0,0,0,0)');
       ctx.fillStyle = soft; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
       shadows++;
-    });
+      }
+      yield;
+    }
     ctx.restore();
     // the bed dissolves into the void
     ctx.save(); ctx.globalCompositeOperation = 'destination-in';
@@ -2593,29 +2779,37 @@
     return c;
   }
 
+  function groundChunk(job) {
+    const start=performance.now();let result;
+    do{result=job.steps.next();}while(!result.done && performance.now()-start<4);
+    job.workMs+=performance.now()-start;
+    return result;
+  }
+  function finishBoardGround(job,result,sig,structure,records) {
+    const start=performance.now();
+    Object.assign(groundCache,{sig,pendingSig:'',structure,canvas:result.value.canvas,shadows:result.value.shadows,records});groundDraws++;
+    const live=document.getElementById('board-ground');
+    if(live && live.width===groundCache.canvas.width){const ctx=live.getContext('2d');ctx.clearRect(0,0,live.width,live.height);ctx.drawImage(groundCache.canvas,0,0);live._groundSource=groundCache.canvas;}
+    job.workMs+=performance.now()-start;groundCache.workMs=job.workMs;
+  }
   function boardGroundFor(g) {
-    const sky = skyAt(boardHourOverride ?? (new Date().getHours() + new Date().getMinutes() / 60));
-    const dpr = window.devicePixelRatio || 1, scale = Math.min(4, Math.max(2, dpr * 2));
-    const states = g.paths.map(path => groundDisturbed(repos.find(x => x.path === path)) ? 1 : 0).join('');
-    const structure = [g.key, boardScene.width, boardScene.height, g.paths.join(','), scale].join('|');
-    const sig = [structure, states, Math.round(sky.hour * 4), g.paths.map(p => bonsaiLayout(p).scale).join(',')].join('|');
-    const paint = () => { const out = drawGround(g, scale, sky); Object.assign(groundCache, {sig, structure, canvas: out.canvas, shadows: out.shadows}); groundDraws++; };
-    if (groundCache.sig === sig) return {canvas: groundCache.canvas, sky};
-    const sameBed = groundCache.canvas && groundCache.structure === structure;
-    // a new bed shows a flat placeholder now and paints the real ground right after first paint;
-    // the same bed with only its details changed keeps its bitmap and repaints once things settle
-    if (!sameBed) Object.assign(groundCache, {canvas: quickGround(g, scale, sky), structure, sig: '', shadows: 0});
-    clearTimeout(groundTimer);
-    const generation=++groundRequest;
-    const run = () => {
-      if (generation!==groundRequest || boardScene.empty || boardScene.islands[0].pageKey!==g.pageKey) return;
-      paint();
-      const live = document.getElementById('board-ground');
-      if (live && live.width === groundCache.canvas.width) { const ctx = live.getContext('2d'); ctx.clearRect(0, 0, live.width, live.height); ctx.drawImage(groundCache.canvas, 0, 0); }
+    const sky=skyAt(boardHourOverride ?? (new Date().getHours()+new Date().getMinutes()/60));
+    const dpr=window.devicePixelRatio || 1,scale=Math.min(4,Math.max(2,dpr*2)),records=boardGroundRecords(g);
+    const structure=[g.pageKey,boardScene.width,boardScene.height,records.map(q=>[q.projectKey,q.x,q.y,q.clearRx,q.clearRy]),scale].join('|');
+    const sig=JSON.stringify([structure,dpr,Math.floor(sky.hour*4),records.map(q=>[q.disturbed,q.members.map(m=>[m.path,m.x,m.y,m.scale,m.bodyScale,m.potOnly,m.geometryKey])])]);
+    if(groundCache.sig===sig || groundCache.pendingSig===sig)return {canvas:groundCache.canvas,sky};
+    const sameBed=groundCache.canvas && groundCache.structure===structure;
+    if(!sameBed)Object.assign(groundCache,{canvas:quickGround(g,scale,sky),structure,sig:'',shadows:0});
+    clearTimeout(groundTimer);groundCache.pendingSig=sig;
+    const generation=++groundRequest,job={steps:groundDrawingSteps(g,scale,sky,records),workMs:0,originUpdateId:window.boardWorkProbe?.currentId || null};
+    const run=()=>{
+      if(generation!==groundRequest || boardScene.empty || boardScene.islands[0].pageKey!==g.pageKey)return;
+      const result=groundChunk(job);
+      if(!result.done){groundTimer=setTimeout(run,0);return;}
+      finishBoardGround(job,result,sig,structure,records);
     };
-    // never on the first-paint path: wait for the next frame, then a beat more
-    groundTimer = setTimeout(() => requestAnimationFrame(() => { if (generation===groundRequest && !boardScene.empty && boardScene.islands[0].pageKey===g.pageKey) groundTimer = setTimeout(run, 60); }), sameBed ? 100 : 0);
-    return {canvas: groundCache.canvas, sky};
+    groundTimer=setTimeout(()=>requestAnimationFrame(()=>{if(generation===groundRequest)groundTimer=setTimeout(run,60);}),sameBed?100:0);
+    return {canvas:groundCache.canvas,sky};
   }
 
   function boardTreeSprite(repo, b, pose, cx, gy, opts = {}) {
@@ -2631,7 +2825,9 @@
     const weather=gone ? '' : `<g transform="translate(${cx} ${gy}) scale(${scale})">${bonsaiWeather(repo.path,{...facts,dirty:facts.dirty&&b.stage==='attention-dirty'})}</g>`;
     const badge= !opts.sharedGithub && (gh.blocked || gh.workflowFailures) ? `<g class="plot-marks hanko" data-repo-gh="${escapeHtml(repo.path)}" data-workflow-ci="${!!gh.workflowFailures}" filter="url(#hanko-edge)" transform="rotate(-5 ${cx-37} ${gy+7})"><rect x="${cx-46}" y="${gy-2}" width="18" height="18" rx="2" fill="var(--danger-fill)"/><rect x="${cx-44}" y="${gy}" width="14" height="14" fill="none" stroke="#f6e6df" stroke-opacity=".55" stroke-width="1"/><text x="${cx-37}" y="${gy+12.2}" text-anchor="middle" font-size="12" font-weight="700" fill="#f6e6df">${gh.workflowFailures?'CI':gh.blocked}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
     const shadow=gone&&scale===1?'':`<ellipse class="tree-shadow" cx="${cx+4*scale}" cy="${gy+3*scale}" rx="${22*scale}" ry="${8.5*scale}" fill="#000" opacity=".26"/>`;
-    return `<g class="island-tree">${shadow}${outline}`+
+    // A singleton already has its own plot pool. Families add member pools.
+    const memberPool=opts.sharedGithub || opts.role==='worktree'?`<ellipse class="member-replay-pool" cx="${cx}" cy="${gy+scale}" rx="${27*scale}" ry="${12.5*scale}"/>`:'';
+    return `<g class="island-tree">${shadow}${memberPool}${outline}`+
       `<g class="${paused?'is-faded':''} ${facts.days>=120?'age-fallow':facts.days>=45?'age-dormant':''}"><g class="member-body"${gone?'':` data-tree-variant="${L.variant}"`} transform="translate(${cx} ${gy}) scale(${gone&&scale===1?1:bodyScale})">${body}</g></g>${weather}${badge}${flag}${focus}</g>`;
   }
 
@@ -2657,6 +2853,11 @@
     layoutBoardNames();
   }
 
+  const boardLabelMeasurements=new Map();
+  document.fonts?.addEventListener('loadingdone',()=>{
+    boardLabelMeasurements.clear();const layer=document.getElementById('board-name-overlay');
+    if(layer)delete layer.dataset.sig;layoutBoardNames();
+  });
   function layoutBoardNames() {
     const layer=document.getElementById('board-name-overlay'),stage=document.getElementById('board-stage');
     if(!layer||!stage||!boardScene)return;
@@ -2682,7 +2883,10 @@
       const label=document.createElement('span');
       label.className=item.sapling?'sapling-name':'plot-name';label.dataset.path=item.path;label.dataset.selected=String(item.selected||item.path===boardSelectedPath);
       label.textContent=item.text;label.title=item.path+' · '+(s.branch||'Branch not checked');layer.append(label);
-      const w=label.offsetWidth,h=label.offsetHeight;
+      const measureKey=label.className+'|'+label.dataset.selected+'|'+label.textContent;
+      let size=boardLabelMeasurements.get(measureKey);
+      if(!size){size={w:label.offsetWidth,h:label.offsetHeight};boardLabelMeasurements.set(measureKey,size);}
+      const {w,h}=size;
       const anchorX=item.x*boardCamera.zoom+boardCamera.x,anchorY=item.y*boardCamera.zoom+boardCamera.y;
       const candidates=[];
       for(let row=-6;row<=6;row++)for(let col=-3;col<=3;col++){
@@ -2783,7 +2987,7 @@
   const REPLAY_DAYS = 30;
   const boardReplay = {open: false, data: null, ago: 0, timer: null};
   const replayKey = ago => { const d = new Date(); d.setDate(d.getDate() - ago); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); };
-  function replayCommits(path, ago) { const r = repos.find(x => x.path === path); if (r && r._status && r._status.gone) return 0; return ((boardReplay.data?.repos || {})[path] || {})[replayKey(ago)] || 0; }
+  function replayCommits(path, ago) { const r=repoByPath.get(path);if(r?._status?.gone) return 0; return ((boardReplay.data?.repos || {})[path] || {})[replayKey(ago)] || 0; }
   function replayGlow(path, ago) {
     const fade = [1, .55, .3, .15];
     return fade.reduce((g, f, k) => replayCommits(path, ago + k) ? Math.max(g, f) : g, 0);
@@ -2822,28 +3026,43 @@
     }, 420);
     syncReplayControls();
   }
+  function replayProjectActivity(project,ago) {
+    const activePaths=project.paths.filter(path=>replayCommits(path,ago)>0);
+    return {glow:Math.max(0,...project.paths.map(path=>replayGlow(path,ago))),activePaths,
+      maxCheckoutCommits:Math.max(0,...project.paths.map(path=>replayCommits(path,ago)))};
+  }
   function applyReplay() {
-    const stage = document.getElementById('board-stage');
-    if (!stage) return;
-    const on = boardReplay.open && !!boardReplay.data;
-    stage.toggleAttribute('data-replay', on);
-    const touched = [];
-    stage.querySelectorAll('.tile').forEach(tile => {
-      const glow = on ? replayGlow(tile.dataset.path, boardReplay.ago) : 0;
-      if (glow > 0) { tile.dataset.glow = String(glow); tile.style.setProperty('--glow', glow); } else { tile.removeAttribute('data-glow'); tile.style.removeProperty('--glow'); }
-      const n = on ? replayCommits(tile.dataset.path, boardReplay.ago) : 0;
-      if (n) touched.push([repoName(tile.dataset.path), n]);
-    });
-    const label = document.getElementById('board-replay-day');
-    if (!on) { label.textContent = ''; return; }
-    const d = new Date(); d.setDate(d.getDate() - boardReplay.ago);
-    const day = boardReplay.ago === 0 ? 'Today' : d.toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric'});
-    touched.sort((a, b) => b[1] - a[1]);
-    const total = touched.reduce((a, [, n]) => a + n, 0);
-    label.textContent = day + ' · ' + (touched.length ? touched.length + (touched.length === 1 ? ' repo' : ' repos') + ', ' + total + (total === 1 ? ' commit' : ' commits') + ': ' + touched.slice(0, 3).map(([name, n]) => name + ' ' + n).join(', ') + (touched.length > 3 ? ' …' : '') : 'quiet');
-    document.getElementById('board-replay-range').setAttribute('aria-valuetext', label.textContent);
+    const stage=document.getElementById('board-stage');if(!stage)return;
+    const on=boardReplay.open && !!boardReplay.data, touched=[];let activeProjects=0;
+    stage.toggleAttribute('data-replay',on);
+    const setGlow=(el,glow,variable)=>{
+      if(glow>0){el.dataset.glow=String(glow);el.style.setProperty(variable,glow);}
+      else{el.removeAttribute('data-glow');el.style.removeProperty(variable);}
+    };
+    for(const tile of stage.querySelectorAll('.tile')){
+      const project=boardProjectByKey.get(tile.dataset.project) || boardCommittedProjects.get(tile.dataset.project);
+      if(!project)continue;
+      const activity=on?replayProjectActivity(project,boardReplay.ago):{glow:0,activePaths:[]};
+      setGlow(tile,activity.glow,'--glow');
+      if(activity.activePaths.length)activeProjects++;
+      for(const path of activity.activePaths)touched.push([repoName(path),replayCommits(path,boardReplay.ago)]);
+      const visible=new Set();
+      for(const member of tile.querySelectorAll('.board-member')){visible.add(member.dataset.path);setGlow(member,on?replayGlow(member.dataset.path,boardReplay.ago):0,'--member-glow');}
+      const more=tile.querySelector('.plot-more');
+      if(more)setGlow(more,on?Math.max(0,...project.worktreePaths.filter(path=>!visible.has(path)).map(path=>replayGlow(path,boardReplay.ago))):0,'--glow');
+    }
+    const label=document.getElementById('board-replay-day');
+    if(!on){label.textContent='';document.getElementById('board-replay-range').removeAttribute('aria-valuetext');return;}
+    const date=new Date();date.setDate(date.getDate()-boardReplay.ago);
+    const day=boardReplay.ago===0?'Today':date.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'});
+    touched.sort((a,b)=>b[1]-a[1]);
+    label.textContent=day+' · '+(touched.length?activeProjects+' active project'+(activeProjects===1?'':'s')+' · '+
+      touched.length+' active checkout'+(touched.length===1?'':'s')+' · checkout commit counts: '+
+      touched.slice(0,3).map(([name,n])=>name+' '+n).join(', ')+(touched.length>3?' …':''):'quiet');
+    document.getElementById('board-replay-range').setAttribute('aria-valuetext',label.textContent);
   }
 
+  const boardRenderedMarkup=new Map();
   function renderIsometricScene(groups) {
     const signature=JSON.stringify([boardActivePageKey,groups.map(g => [g.key,g.projectKeys.map(key => {const p=boardCommittedProjects.get(key);return [key,p.paths,p.centralRepoPath,p.worktreePaths];})])]);
     const entering=signature!==boardSceneSignature;
@@ -2851,8 +3070,9 @@
     boardScene=makeBoardScene(groups);
     const plots=boardScene.plots;
     const terrain=boardScene.empty ? '' : boardScene.islands.map(boardTerrainSvg).join('');
+    const tileMarkup=new Map();
     const islands=boardScene.islands.map(g => `<div class="board-neighborhood ${g.key==='workspace'?'':'board-family'}" data-project="${escapeHtml(g.key)}" style="position:absolute;left:0;top:0;width:100%;height:100%;padding:0;border:0;pointer-events:none;">`+
-      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { if(!p.project.paths.some(path=>repoByPath.has(path)))return '';return boardTileSvg(p.project,{...p,depth:plots.indexOf(p)+2}); }).join('')+'</div>').join('');
+      plots.filter(p => p.island===g).sort((a,b)=>a.number-b.number).map(p => { if(!p.project.paths.some(path=>repoByPath.has(path)))return '';const html=boardTileSvg(p.project,{...p,depth:plots.indexOf(p)+2});tileMarkup.set('board-plot-'+encodeURIComponent(p.project.key),html);return html; }).join('')+'</div>').join('');
     let stage=document.getElementById('board-stage');
     if (!stage) {
       stage=document.createElement('div');stage.id='board-stage';
@@ -2860,16 +3080,16 @@
       bindBoardInteractions(stage);
       boardResizeObserver.disconnect();boardResizeObserver.observe(stage);
     }
-    if (boardScene.empty) { groundRequest++; clearTimeout(groundTimer); Object.assign(groundCache,{sig:'',structure:'',canvas:null,shadows:0}); }
+    if (boardScene.empty) { groundRequest++; clearTimeout(groundTimer); Object.assign(groundCache,{sig:'',pendingSig:'',structure:'',canvas:null,shadows:0}); }
     const ground=boardScene.empty ? null : boardGroundFor(boardScene.islands[0]);
     const markup=`<div id="board-sky" aria-hidden="true"></div><div id="board-world" style="width:${boardScene.width}px;height:${boardScene.height}px;">${boardScene.empty ? '' : `<svg id="board-terrain" width="${boardScene.width}" height="${boardScene.height}" role="presentation" aria-hidden="true">${terrain}</svg>`}${islands}</div><div id="board-name-overlay"></div><div id="board-hover-tip" hidden></div>`;
-    if (entering || !document.getElementById('board-world')) stage.innerHTML=markup;
+    if(entering || !document.getElementById('board-world')){stage.innerHTML=markup;boardRenderedMarkup.clear();}
     else {
-      const template=document.createElement('template'); template.innerHTML=markup;
-      const next=template.content;
-      const terrainNode=document.getElementById('board-terrain'), nextTerrain=next.querySelector('#board-terrain');
-      if (terrainNode && nextTerrain && terrainNode.innerHTML!==nextTerrain.innerHTML) terrainNode.innerHTML=nextTerrain.innerHTML;
-      for (const tile of next.querySelectorAll('.tile')) {
+      const terrainNode=document.getElementById('board-terrain');
+      if(terrainNode && terrainNode.innerHTML!==terrain)terrainNode.innerHTML=terrain;
+      for(const [id,html] of tileMarkup){
+        if(boardRenderedMarkup.get(id)===html)continue;
+        const template=document.createElement('template');template.innerHTML=html;const tile=template.content.firstElementChild;
         const current=document.getElementById(tile.id);
         if (!current) continue;
         syncBoardAttributes(current,tile);
@@ -2890,21 +3110,25 @@
       }
     }
 
+    for(const [id,html] of tileMarkup)boardRenderedMarkup.set(id,html);
     boardScene.islands.forEach(g => {
-      const calm = boardIslandCalm(g), was = boardCalmState.get(g.key);
-      boardCalmState.set(g.key, calm);
-      if (calm && was === false && !entering) {
+      const calm=boardIslandCalm(g),was=boardCalmState.get(g.key),membership=g.allProjectKeys.map(key=>key+':'+(boardProjectByKey.get(key)?.paths.join('|') || '')).join(';');
+      const sameMembership=was?.membership===membership;
+      const problem=g.allProjectKeys.some(key=>{const a=boardProjectAggregate(boardProjectByKey.get(key) || boardCommittedProjects.get(key));return !['clean','unknown'].includes(a.tone) || a.github.incomplete || a.github.unchecked || a.github.expired || a.github.workflowUnconfirmed;});
+      const needsCalmBloom=problem || (sameMembership && was.needsCalmBloom);
+      boardCalmState.set(g.key,{calm,membership,needsCalmBloom:calm?false:needsCalmBloom});
+      if(calm && needsCalmBloom && sameMembership && !entering) {
         stage.insertAdjacentHTML('beforeend', '<div class="board-bloom" aria-hidden="true"></div>');
         setTimeout(() => stage.querySelectorAll('.board-bloom').forEach(el => el.remove()), 3000);
         toast(g.name + ' is all calm', 'success');
       }
     });
     if (ground) {
-      const c = document.getElementById('board-ground') || document.createElement('canvas'); c.id = 'board-ground'; c.width = ground.canvas.width; c.height = ground.canvas.height;
+      const c=document.getElementById('board-ground') || document.createElement('canvas');c.id='board-ground';
+      if(c._groundSource!==ground.canvas){c.width=ground.canvas.width;c.height=ground.canvas.height;c.getContext('2d').drawImage(ground.canvas,0,0);c._groundSource=ground.canvas;}
       c.style.cssText = 'position:absolute;left:0;top:0;width:' + boardScene.width + 'px;height:' + boardScene.height + 'px;pointer-events:none';
-      c.getContext('2d').drawImage(ground.canvas, 0, 0);
       c.setAttribute('aria-hidden', 'true');
-      document.getElementById('board-world').insertBefore(c, document.getElementById('board-terrain'));
+      const terrain=document.getElementById('board-terrain');if(c.nextSibling!==terrain)document.getElementById('board-world').insertBefore(c,terrain);
       const sky = ground.sky, el = document.getElementById('board-sky');
       el.dataset.kind = sky.kind;
       el.style.left = (50 + sky.x * 40) + '%'; el.style.top = (9 + (1 - sky.elev) * 28) + '%';
@@ -3025,19 +3249,30 @@
   }
 
   function boardGithub(repo) {
-    const g = repo._github;
-    const blocked = (g?.prs || []).filter(pr => prReasons(pr).length).length;
-    const incomplete = g && (g.gh_unavailable || g.errors?.length || g.pr_limit_reached);
-    let label;
-    if (githubTasks.has(repo._status?.github_repo || repo.path)) label = 'GitHub checking…';
-    else if (blocked) label = blocked + ' PR' + (blocked === 1 ? '' : 's') + ' with blockers' + (incomplete ? ' · incomplete' : '');
-    else if (incomplete) label = 'GitHub incomplete';
-    else if (g?.has_github) label = 'No known PR blockers';
-    else if (repo._status && Object.hasOwn(repo._status, 'github_repo') && !repo._status.github_repo) label = 'No GitHub remote';
-    else label = 'GitHub not checked';
-    const workflow = workflowSignal(g);
-    if (workflow.label) label += ' · ' + workflow.label;
-    return {blocked, label, incomplete:!!incomplete, workflowFailures:workflow.failures, workflowState:workflow.state};
+    if(checkoutGithubSignals?.has(repo.path))return checkoutGithubSignals.get(repo.path);
+    const slug=githubSlugForRepo(repo), snapshot=githubSnapshotForRepo(repo), info=snapshot?.info;
+    const identified=typeof slug==='string' || !!(info?.has_github || info?.repo), checking=githubTasks.has(slug || repo.path) || !!snapshot?.checking;
+    const blocked=(info?.prs || []).filter(pr=>prReasons(pr).length).length;
+    const incomplete=!!snapshot?.incomplete, expired=!!snapshot && !githubSnapshotFresh(snapshot);
+    const localNoRemote=slug===null && !identified;
+    const noRemote=localNoRemote || (info && !info.has_github && !info.repo && !info.gh_unavailable);
+    const unchecked=!snapshot && !noRemote;
+    const workflow=workflowSignal(info);
+    const workflowUnconfirmed=!!(identified && (!snapshot || !workflow.label ||
+      !['passing','failing'].includes(workflow.state) || info?.workflows?.errors?.length ||
+      !(info?.workflows?.runs || []).length));
+    let label=blocked?blocked+' PR'+(blocked===1?'':'s')+' with blockers':
+      incomplete?'GitHub incomplete':checking?'GitHub checking…':unchecked?'GitHub not checked':
+      noRemote?'No GitHub remote':'No known PR blockers';
+    if(blocked && incomplete)label+=' · incomplete';
+    if(checking && (blocked || incomplete))label+=' · checking…';
+    if(workflow.label)label+=' · '+workflow.label;
+    else if(identified && snapshot)label+=' · Default-branch CI: unconfirmed (coverage missing)';
+    if(expired)label+=' · previous check (expired)';
+    const result={blocked,label,incomplete,unchecked,checking,expired,noRemote,localNoRemote,
+      workflowFailures:workflow.failures,workflowState:workflow.state,workflowUnconfirmed};
+    checkoutGithubSignals?.set(repo.path,result);
+    return result;
   }
 
   function boardNeedsAttention(repo) {
@@ -3119,6 +3354,8 @@
   function renderBoardInspector() {
     const repo = repos.find(r => r.path === boardSelectedPath);
     const el = document.getElementById('board-inspector');
+    const previousRows=new Map([...el.querySelectorAll('.board-checkout-list button')].map(row=>[row.dataset.checkoutPath,row]));
+    const focusedRow=el.contains(document.activeElement) && document.activeElement.matches('.board-checkout-list button')?document.activeElement:null;
     const selectionChanged=el.dataset.path!==repo?.path;
     if (repo) el.dataset.path=repo.path; else delete el.dataset.path;
     el.dataset.selected = String(!!repo);
@@ -3130,8 +3367,9 @@
     const localChanges = s.dirty?.is_clean === false && !s.error && !s.gone;
     const family = projectForPath(repo.path);
     const familyGh = boardFamilyGithub(family || {paths:[repo.path]});
+    const snapshot=githubSnapshotForRepo(repo),githubDate=githubSnapshotDate(snapshot);
     el.dataset.tone = repoAttentionTone(repo, familyGh);
-    const familyTone = familyGh.blocked || familyGh.workflowFailures ? 'blocked' : familyGh.incomplete ? 'unavailable' : familyGh.unchecked || familyGh.checking || familyGh.workflowUnconfirmed ? 'unknown' : 'clean';
+    const familyTone=githubBadgeTone(familyGh);
     const familyInfo = `<p class="board-family-gh attention-summary" data-tone="${familyTone}" data-blocked="${!!(familyGh.blocked || familyGh.workflowFailures)}"><strong>Project-wide GitHub</strong><br>${escapeHtml(familyGh.label)}</p>` +
       (familyGh.prs.length ? `<div class="board-pr-list">${familyGh.prs.slice(0,3).map(({pr}) => `<div class="board-pr-item"><a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} ${escapeHtml(pr.title)}</a><div class="board-pr-meta">${escapeHtml(prReasons(pr).join(' · '))}</div></div>`).join('')}</div>` : '') + familyGh.workflows.map(info => workflowLinks(info)).join('');
     el.innerHTML = `<div class="inspector-sprite" aria-hidden="true">${bonsaiGlyph(repo, {theme: bonsaiRepoTheme(repo), large: true, still: false})}</div><h3 id="board-inspector-title" tabindex="-1">${escapeHtml(family?.mainRepoPath===repo.path?family.name:repoName(repo.path))}</h3><p class="inspector-path" title="${escapeHtml(repo.path)}">${escapeHtml(short)}</p>` +
@@ -3140,7 +3378,8 @@
       `<p class="inspector-local attention-summary" data-tone="${localAttentionTone(repo)}"><strong>Local Git</strong><br>${escapeHtml(b.summary)}</p>` +
       `<p class="inspector-sync" data-tone="${s.sync?.has_upstream && (s.sync.ahead || s.sync.behind) && !s.error && !s.gone ? 'sync' : 'unknown'}">${escapeHtml(s.error || !s.dirty ? 'Sync state unavailable' : sync)}</p>` +
       `${familyInfo}` +
-      `<p>${repoCheckingLabel(repo)}${repo._github?.checked_at ? '<br>' + checkedTime(repo._github.checked_at, 'GitHub checked') : ''}</p>` +
+      (family?.identityWarning?`<p class="identity-warning" role="status">${escapeHtml(family.identityWarning)}</p>`:'') +
+      `<p>${repoCheckingLabel(repo)}${githubDate ? '<br>' + checkedTime(githubDate, githubSnapshotFresh(snapshot)?'GitHub checked':'Previous GitHub check') : ''}</p>` +
       `<div class="inspector-actions"><a id="board-open-details" class="btn" href="${href}">Open details</a>` +
       (localChanges ? `<a id="board-open-changes" class="btn btn-ghost" href="${href}?tab=changes">Changes</a>` : '') +
       `<a id="board-open-github" class="btn btn-ghost" href="${href}?tab=github">GitHub</a>` +
@@ -3149,6 +3388,8 @@
       `<a id="board-open-editor" class="btn btn-ghost" href="${editorHref(repo.path)}">Open in VS Code</a></div>` +
       (family?.worktreePaths.length ? `<button id="board-inspector-worktrees" type="button" class="btn btn-ghost" onclick="openBoardWorktrees()">Worktrees</button><div class="board-checkout-list" role="group" aria-label="Project checkouts">${boardCheckoutRows(family)}</div>` : '') +
       '<button class="btn btn-ghost inspector-close" aria-label="Close panel" onclick="clearBoardSelection()"><svg class="icon icon-sm" viewBox="0 0 16 16" aria-hidden="true"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>';
+    for(const row of el.querySelectorAll('.board-checkout-list button')){const previous=previousRows.get(row.dataset.checkoutPath);if(!previous)continue;syncBoardAttributes(previous,row);if(previous.innerHTML!==row.innerHTML)previous.innerHTML=row.innerHTML;row.replaceWith(previous);}
+    if(!selectionChanged && focusedRow?.isConnected)focusedRow.focus({preventScroll:true});
     if (selectionChanged) el.scrollTop=0;
   }
 
@@ -3170,20 +3411,26 @@
   }
 
   function boardPlotLocalState(project) {
-    const states=project.paths.map(path=>repoByPath.get(path)).filter(Boolean).map(boardState);
-    const order=['gone','error','attention-dirty','attention-sync','attention-stale','loading','healthy'];
-    return states.sort((a,b)=>order.indexOf(a.stage)-order.indexOf(b.stage))[0] || {stage:'loading'};
+    return boardProjectAggregate(project).localState;
   }
   function boardPlotDescription(project, targets) {
     const central=repoByPath.get(project.centralRepoPath), branch=central?._status?.branch || 'branch not checked';
     const role=central ? (project.mainRoleConfirmed?'Main checkout':'Checkout')+' on '+branch :
       project.identityState==='worktree-unresolved'?'Project identity unavailable':project.mainPath?'Main checkout not tracked':'Main checkout not identified';
     const n=project.worktreePaths.length, shown=targets.filter(t=>t.role==='worktree').length;
-    const tone=typeof boardPlotTone==='function'?boardPlotTone(project):
-      ({gone:'unavailable',error:'unavailable','attention-dirty':'changed','attention-sync':'sync','attention-stale':'stale',loading:'unknown',healthy:'clean'})[boardPlotLocalState(project).stage];
-    return project.name+'. '+role+'. '+n+' linked worktree'+(n===1?'':'s')+'; '+shown+' shown, '+(n-shown)+' hidden. Project state: '+tone+'.'+(n?' Use Worktrees to choose any checkout.':'');
+    const aggregate=boardProjectAggregate(project),tone=aggregate.tone;
+    return project.name+'. '+role+'. '+n+' linked worktree'+(n===1?'':'s')+'; '+shown+' shown, '+(n-shown)+' hidden. Project state: '+tone+(aggregate.localConflict?' (local conflict)':'')+'. Project-wide GitHub: '+aggregate.github.label+'.'+(project.identityWarning?' '+project.identityWarning:'')+(n?' Use Worktrees to choose any checkout.':'');
   }
-  function boardTileSvg(project, pose) {
+  const boardTileMarkup=new Map();
+  function boardTileSvg(project,pose) {
+    const signature=JSON.stringify([project,pose.x,pose.y,pose.depth,pose.number,pose.targets,
+      pose.targets.map(target=>{const r=repoByPath.get(target.path);return [target.path,r?._status,r?._checking,r?._boardQueued,boardMatches(r),r && bonsaiVitalsOf(r.path).key,r && boardGithub(r)];}),
+      project.paths.includes(boardSelectedPath)?boardSelectedPath:null,project.paths.includes(boardHoveredPath)?boardHoveredPath:null,boardProjectAggregate(project),organization.pins]);
+    const cached=boardTileMarkup.get(project.key);
+    if(cached?.signature===signature)return cached.html;
+    const html=buildBoardTileSvg(project,pose);boardTileMarkup.set(project.key,{signature,html});return html;
+  }
+  function buildBoardTileSvg(project, pose) {
     // Registry removal can arrive while a status batch still holds the layout.
     // Keep surviving members usable without inventing a main checkout target.
     if (!repoByPath.has(project.defaultPath)) {
@@ -3193,7 +3440,7 @@
         worktreePaths:project.worktreePaths.filter(path=>repoByPath.has(path))};
     }
     const repo=repoByPath.get(project.defaultPath), family=project.worktreePaths.length>0;
-    const attention=repoAttentionTone(repo), palette=BONSAI_FOLIAGE[project.themeIndex];
+    const attention=boardPlotTone(project), palette=BONSAI_FOLIAGE[project.themeIndex];
     const pinned=project.paths.some(path=>(organization.pins || []).includes(path));
     const topFill='<polygon class="tile-top" points="64,47 142,86 64,125 -14,86" fill="transparent" stroke="transparent" stroke-width="2"/>';
     const ring=!['clean','unknown'].includes(attention) ? `<ellipse class="status-ring" data-tone="${attention}" cx="64" cy="${family?98:87}" rx="${family?56:27}" ry="${family?26:12.5}" fill="none" stroke-width="1.6"${attention==='unavailable'?' stroke-dasharray="3 4"':''}/>` : '';
@@ -3201,7 +3448,7 @@
     const number=`<g class="plot-number" data-tone="${attention}"><circle cx="${family?99:100}" cy="${family?104:88}" r="7.5" fill="${palette.dark}"/><text x="${family?99:100}" y="${family?107.2:91.2}" text-anchor="middle" font-size="9" fill="white" fill-opacity=".92">${pose.number}</text></g>`;
     const pin=pinned ? `<path class="tile-pin" transform="translate(${family?23:94} ${family?99:100})" d="M6 0.6l1.5 3.3 3.6.4-2.7 2.4.8 3.5L6 8.4 2.8 10.2l.8-3.5L.9 4.3l3.6-.4z"/>` : '';
     const gh=boardFamilyGithub(project), multi=project.paths.length>1;
-    const familyBadge=family || multi ? `<g class="plot-marks" ${multi?`data-family-gh="${escapeHtml(project.key)}"`:`data-repo-gh="${escapeHtml(repo.path)}" data-workflow-ci="${!!gh.workflowFailures}"`} data-tone="${gh.blocked||gh.workflowFailures?'blocked':gh.incomplete?'unavailable':gh.unchecked||gh.checking?'unknown':'clean'}" transform="translate(110 18)"><circle r="8" fill="var(--surface2)" stroke="var(--signal)"/><text y="3.5" text-anchor="middle" font-size="11" fill="var(--signal)">${gh.workflowFailures?'CI':gh.blocked||'·'}</text><title>${escapeHtml(gh.label)}</title></g>` : '';
+    const familyBadge=family || multi ? `<g class="plot-marks" ${multi?`data-family-gh="${escapeHtml(project.key)}"`:`data-repo-gh="${escapeHtml(repo.path)}" data-workflow-ci="${!!gh.workflowFailures}"`} data-tone="${githubBadgeTone(gh)}" data-coverage="${gh.incomplete?'incomplete':gh.checking || gh.unchecked || gh.workflowUnconfirmed || gh.expired?'unconfirmed':'confirmed'}" transform="translate(110 18)"><circle r="8"${githubBadgeTone(gh)==='unknown'?' stroke-dasharray="2 2"':''} fill="var(--surface2)" stroke="var(--signal)"/><text y="3.5" text-anchor="middle" font-size="11" fill="var(--signal)">${gh.workflowFailures?'CI':gh.blocked || (gh.incomplete?'!':githubBadgeTone(gh)==='unknown'?'?':'·')}</text><title>Project-wide GitHub: ${escapeHtml(gh.label)}</title></g>` : '';
     const hidden=project.worktreePaths.length-pose.targets.filter(t=>t.role==='worktree').length;
     const more=hidden>0 ? `<text class="plot-more" x="110" y="41" text-anchor="middle" font-size="11" fill="var(--body)">+${hidden}</text>` : '';
     const members=pose.targets.map(target=>{
@@ -3219,7 +3466,7 @@
         (isDefault&&!family?pin+familyBadge+more:'')+badge+`</svg>`+
         (isDefault&&family?`<svg class="board-shared-marks" viewBox="0 0 128 148" role="presentation" aria-hidden="true">${pin+familyBadge+more}</svg>`:'')+`${boardLabel(member,state)}</button>`;
     }).join('');
-    return `<div class="tile ${boardPlotMatches(project)?'':'dimmed'}" id="board-plot-${encodeURIComponent(project.key)}" data-project="${escapeHtml(project.key)}" role="group" aria-label="${escapeHtml(project.name)}" data-path="${escapeHtml(project.defaultPath)}" data-stage="${boardPlotLocalState(project).stage}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${project.paths.includes(boardSelectedPath)}" aria-description="${escapeHtml(boardPlotDescription(project,pose.targets))}" style="left:${pose.x-64}px;top:${pose.y-86}px;z-index:${pose.depth};--i:${pose.number%26};">${members}</div>`;
+    return `<div class="tile ${boardPlotMatches(project)?'':'dimmed'}" id="board-plot-${encodeURIComponent(project.key)}" data-project="${escapeHtml(project.key)}" role="group" aria-label="${escapeHtml(project.name)}" data-path="${escapeHtml(project.defaultPath)}" data-stage="${boardPlotLocalState(project).stage}" data-tone="${attention}" data-col="${pose.col}" data-row="${pose.row}" data-selected="${project.paths.includes(boardSelectedPath)}" aria-description="${escapeHtml(boardPlotDescription(project,pose.targets))}" style="left:${pose.x-64}px;top:${pose.y-86}px;z-index:${pose.depth};--i:${pose.number%26};">${members}</div>`;
   }
 
   function boardMainPlaceholder(project,cx,gy) {
@@ -3239,7 +3486,7 @@
 
   function islandSummaryText(g) {
     const counts = {};
-    g.paths.forEach(path => { const r = repos.find(x => x.path === path); const tone = r ? repoAttentionTone(r) : 'unknown'; counts[tone] = (counts[tone] || 0) + 1; });
+    g.projectKeys.forEach(key=>{const project=boardProjectByKey.get(key) || boardCommittedProjects.get(key),tone=project?boardPlotTone(project):'unknown';counts[tone]=(counts[tone] || 0)+1;});
     const label = {blocked: 'blocked', unavailable: 'unreadable', changed: 'with uncommitted changes', sync: 'ahead or behind', stale: 'with stale branches', clean: 'calm', unknown: 'not yet checked'};
     return g.name + ': ' + g.projectKeys.length + (g.projectKeys.length === 1 ? ' project, ' : ' projects, ') + g.allPaths.length + (g.allPaths.length===1 ? ' checkout. ' : ' checkouts. ') + [...TONE_ORDER, 'unknown'].filter(k => counts[k]).map(k => counts[k] + ' ' + label[k]).join(', ') + '.';
   }
@@ -3250,10 +3497,10 @@
     if (islands.length < 2) { nav.innerHTML = ''; return; }
     nav.innerHTML = islands.map((g, i) => {
       const counts = {};
-      g.paths.forEach(path => { const r = repos.find(x => x.path === path); const tone = r ? repoAttentionTone(r) : 'unknown'; counts[tone] = (counts[tone] || 0) + 1; });
+      g.projectKeys.forEach(key=>{const project=boardProjectByKey.get(key) || boardCommittedProjects.get(key),tone=project?boardPlotTone(project):'unknown';counts[tone]=(counts[tone] || 0)+1;});
       const dots = TONE_ORDER.slice(0, 5).filter(k => counts[k]).map(k => `<span class="isle-dot" data-tone="${k}" title="${counts[k]} ${k}">${counts[k]}</span>`).join('') ||
-        (g.paths.every(path => { const r = repos.find(x => x.path === path); return r && repoAttentionTone(r) === 'clean'; }) ? '<span class="isle-dot" data-tone="clean" title="all calm">calm</span>' : '');
-      return `<button type="button" id="board-isle-${i}" class="isle" aria-current="${i + 1 === boardPage}" aria-label="${escapeHtml(g.name)}, page ${g.pageIndex+1} of ${g.pageCount}, ${g.projectKeys.length} projects of ${g.total}" onclick="boardGo(${i + 1})"><span class="isle-name">${escapeHtml(g.name)}${g.pageCount>1 ? ` ${g.pageIndex+1}/${g.pageCount}` : ''}</span><span class="isle-count">${g.paths.length}</span>${dots}</button>`;
+        (boardIslandCalm(g) ? '<span class="isle-dot" data-tone="clean" title="all calm">calm</span>' : '');
+      return `<button type="button" id="board-isle-${i}" class="isle" aria-current="${i + 1 === boardPage}" aria-label="${escapeHtml(g.name)}, page ${g.pageIndex+1} of ${g.pageCount}, ${g.projectKeys.length} projects of ${g.total}" onclick="boardGo(${i + 1})"><span class="isle-name">${escapeHtml(g.name)}${g.pageCount>1 ? ` ${g.pageIndex+1}/${g.pageCount}` : ''}</span><span class="isle-count">${g.projectKeys.length}</span>${dots}</button>`;
     }).join('');
   }
 
@@ -3267,7 +3514,8 @@
     document.getElementById('board-page-status').focus({preventScroll: true});
   }
 
-  function renderBoard() {
+  function renderBoard() { return dashboardUpdate(renderBoardView); }
+  function renderBoardView() {
     syncAmbient();
     const boardView = document.getElementById('board-view');
     document.getElementById('count-badge').textContent = repos.length + ' repo' + (repos.length === 1 ? '' : 's');
@@ -3292,6 +3540,7 @@
     if (!activeIsland.allPaths.includes(boardHoveredPath)) boardHoveredPath = null;
     if (!boardPanning) renderIsometricScene(boardNeighborhoods);
     renderBoardInspector();
+    document.getElementById('board-project-count').textContent=boardProjects.length+' project'+(boardProjects.length===1?'':'s')+' · '+repos.length+' checkout'+(repos.length===1?'':'s');
     const matches = repos.filter(boardMatches).length;
     const matchingProjects=boardProjects.filter(boardPlotMatches).length;
     document.getElementById('board-match-count').textContent = matchingProjects + ' of ' + boardProjects.length + ' matching projects · ' + matches + ' matching checkouts' + (document.getElementById('board-search').value ? ' · Enter to select' : '');
@@ -3566,7 +3815,7 @@
     el.innerHTML = '<div class="empty"><p><span class="spinner"></span> loading from GitHub…</p></div>';
     const info = await fetchGithub(repo, refresh);
     if (detailPath !== path || request !== githubRequest) return;
-    githubData = info;
+    githubData = githubSnapshotForRepo(repo)?.info || info;
     githubLoadedForPath = path;
     renderGithub();
   }
@@ -3590,10 +3839,22 @@
 
   function renderGithub() {
     const el = document.getElementById('tab-github');
-    const g = githubData;
+    const tracked=repoByPath.get(detailPath),repo=tracked || {path:detailPath},snapshot=githubSnapshotForRepo(repo);
+    // The no-route fallback supports direct legacy render callers, never an
+    // active checkout whose retained remote has changed or lacks coverage.
+    const g=snapshot?.info || (!detailPath?githubData:null);
+    if(!g){
+      document.getElementById('github-count').textContent='';
+      const signal=detailPath?boardGithub(repo):null;
+      el.innerHTML='<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button></div><p class="local-note">'+escapeHtml(signal?.label || 'GitHub not checked')+'</p>';
+      return;
+    }
     const total = g.prs.length + g.issues.length;
     document.getElementById('github-count').textContent = g.has_github && total ? `(${total})` : '';
-    const controls = `<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button>${checkedTime(g.checked_at, g.errors && g.errors.length ? 'GitHub check attempted' : 'GitHub checked')}</div>`;
+    const date=githubSnapshotDate(snapshot) || g.checked_at;
+    const prefix=snapshot && !githubSnapshotFresh(snapshot)?'Previous GitHub check':g.errors?.length?'GitHub check attempted':'GitHub checked';
+    const checking=detailPath && boardGithub(repo).checking;
+    const controls = `<div class="refresh-bar"><button class="btn btn-ghost" onclick="loadGithub(true)">Refresh GitHub</button>${checkedTime(date,prefix)}${checking?'<span role="status">Checking GitHub…</span>':''}</div>`;
     const warnings = (g.errors || []).map(error => `<p class="warning-note">${escapeHtml(error)}</p>`).join('');
     if (!g.has_github) {
       el.innerHTML = controls + warnings + renderWorkflows(g) + (g.gh_unavailable

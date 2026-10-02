@@ -335,7 +335,8 @@ def test_search_and_attention_dim_without_repositioning(page):
 def test_local_cleanliness_and_github_blockers_stay_separate(page):
     goto_board(page)
     page.evaluate('''() => {
-      repos[3]._github = {has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[],errors:[]};
+      repos[3]._status.github_repo='demo/local';rememberRepoMetadata(repos[3].path,repos[3]._status);
+      acceptGithubSnapshot('demo/local',1,{has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[],errors:[]});
       renderBoard();
     }''')
     tile = page.locator('.board-select').nth(3)

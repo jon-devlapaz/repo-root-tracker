@@ -246,7 +246,8 @@ def test_different_github_repositories_in_one_family_count_separately(page):
     check_github(page, github_payload(), family=True)
     page.evaluate('''() => {
       repos[1]._status.github_repo = 'demo/another';
-      repos[1]._github = {...repos[1]._github, repo:'demo/another'};
+      rememberRepoMetadata(repos[1].path,repos[1]._status);
+      acceptGithubSnapshot('demo/another',1,{...githubBySlug.get('demo/shared').info,repo:'demo/another'});
       render();
     }''')
     assert page.title() == '(2) repo-root-tracker'

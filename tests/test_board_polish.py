@@ -83,7 +83,7 @@ def test_search_selects_match_on_other_page_without_reordering(page):
 
 def test_board_origin_change_discards_old_github_signals(page):
     goto_board(page)
-    page.evaluate("repos[0]._github = {repo:'old/project',has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[]};")
+    page.evaluate("repos[0]._status.github_repo='old/project';rememberRepoMetadata(repos[0].path,repos[0]._status);acceptGithubSnapshot('old/project',1,{repo:'old/project',has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[]});")
 
     def status(route):
         data = status_for(unquote(route.request.url.split('path=', 1)[1]))

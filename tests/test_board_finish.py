@@ -12,8 +12,8 @@ def family_fixture(page):
         r._github={has_github:true,repo:'demo/shared',prs:[{number:10,title:'Fix checks',url:'https://github.com/demo/shared/pull/10',ci:{state:'fail',failing:3},mergeable:'CONFLICTING'}],issues:[]};
       }
       repos[1]._status.is_worktree=true;
-      repos.forEach(r=>rememberRepoMetadata(r.path,r._status)); rebuildProjectModel();
-      renderBoard();
+      const info=repos[0]._github;repos.forEach(r=>rememberRepoMetadata(r.path,r._status));rebuildProjectModel();
+      acceptGithubSnapshot('demo/shared',1,info);renderBoard();
     }''')
 
 
@@ -50,7 +50,7 @@ def test_unchecked_and_incomplete_are_not_all_clear(page):
     family_fixture(page)
     page.evaluate('''() => {
       repos[0]._github={has_github:true,repo:'demo/shared',prs:[],issues:[],errors:['Pull requests unavailable']};
-      repos[1]._github=repos[0]._github;
+      acceptGithubSnapshot('demo/shared',2,repos[0]._github);
       selectBoardRepo(repos[1].path);
     }''')
     assert 'GitHub incomplete' in page.locator('#board-inspector').inner_text()

@@ -119,7 +119,7 @@ def test_sapling_geometry_is_stable_when_bounded_vitals_are_fixed(page):
     before = geometry(page)
     page.evaluate('''() => {
       const r=repos[1];r._status.dirty={is_clean:false,modified:5};r._status.sync.ahead=3;
-      r._status.stale_branches=[{name:'not-live'}];r._github={has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}]};
+      r._status.stale_branches=[{name:'not-live'}];r._status.github_repo='demo/oak';rememberRepoMetadata(r.path,r._status);acceptGithubSnapshot('demo/oak',1,{has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[]});
       selectBoardRepo(r.path);renderBoard();
     }''')
     assert geometry(page) == before

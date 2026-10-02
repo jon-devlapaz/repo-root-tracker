@@ -12,7 +12,7 @@ from test_board_finish import family_fixture
 ])
 def test_attention_tone_matches_list_plot_and_inspector(page, state, tone):
     page.evaluate("""state => {
-      const r=repos[0];r._status={branch:'main',dirty:{is_clean:true},sync:{has_upstream:true,ahead:0,behind:0},github_repo:'qa/demo'};delete r._github;
+      const r=repos[0];r._status={branch:'main',dirty:{is_clean:true},sync:{has_upstream:true,ahead:0,behind:0},github_repo:'qa/demo'};delete r._github;githubBySlug.clear();githubIdentityByPath.clear();
       if(state==='dirty')r._status.dirty={is_clean:false,modified:2,untracked:1};
       if(state==='conflict')r._status.dirty={is_clean:false,kinds:{conflicted:1},modified:1};
       if(state==='sync')r._status.sync={has_upstream:true,ahead:2,behind:1};
@@ -22,7 +22,7 @@ def test_attention_tone_matches_list_plot_and_inspector(page, state, tone):
       if(state==='stale')r._status.stale_branches=[{name:'old'}];
       if(state==='github-blocked')r._github={has_github:true,repo:'qa/demo',prs:[{number:1,title:'Failing CI',url:'https://github.com/qa/demo/pull/1',ci:{state:'fail',failing:1}}]};
       if(state==='github-incomplete')r._github={has_github:true,repo:'qa/demo',prs:[],errors:['Could not check PRs']};
-      render();
+      if(r._github)acceptGithubSnapshot('qa/demo',1,r._github);render();
     }""", state)
     card = page.locator('#card-0')
     assert card.get_attribute('data-tone') == tone

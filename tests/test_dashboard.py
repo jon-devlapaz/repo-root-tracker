@@ -436,8 +436,8 @@ def test_return_checks_stale_cached_github_and_backs_off_after_failure(page):
       organization.githubEnabled = true;
       repos.forEach(r => { r._checkedAt = new Date().toISOString(); });
       repos[0]._status.github_repo = 'demo/project';
-      repos[0]._github = {has_github:true,prs:[],issues:[],checked_at:new Date(Date.now() - 120000).toISOString()};
-      repos[0]._githubCheckedAt = new Date().toISOString();
+      rememberRepoMetadata(repos[0].path,repos[0]._status);
+      acceptGithubSnapshot('demo/project',1,{has_github:true,prs:[],issues:[],checked_at:new Date(Date.now() - 120000).toISOString()});
       const original = window.fetch;
       const requests = [];
       window.fetch = async url => { requests.push(url); throw new Error('offline'); };

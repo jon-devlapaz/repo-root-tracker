@@ -275,13 +275,17 @@ The bed is a single canvas (`#board-ground`) inserted under the SVG terrain, pai
 `skyAt(hour)` interpolates night, dawn, day and dusk stops into a tint, an amount, a light height and direction. The tint mixes into the gravel; the light moves cast shadows. `#board-sky` is a 16px crisp disc (opacity .6-.7) with a 1px ring at 28%, no halo; moon in pale sage, dawn/dusk peach, day gold.
 
 ### Replay
-A Replay toggle (`#board-replay-toggle`, text button with brush underline when pressed) reveals a Play/Pause button, a 30-day scrubber (`#board-replay-range`, 1px track, 14px matcha thumb, up to 300px wide) and a day readout ("Today", or weekday and date, plus up to three repos touched with commit counts). Tiles touched that day show a matcha glow pool (`--glow`: 1 on the day, .55, .3, .15 on the following days; opacity .35 to 1) and untouched tiles recede to 42% opacity. Playing steps one day per 420ms, scrubbing pauses; if activity cannot load the toggle closes with an error toast. The glow pool is hidden under forced colors.
+A Replay toggle (`#board-replay-toggle`, text button with brush underline when pressed) reveals a Play/Pause button, a 30-day scrubber (`#board-replay-range`, 1px track, 14px matcha thumb, up to 300px wide) and a day readout ("Today", or weekday and date, active projects, active checkouts, and up to three explicitly labelled checkout commit counts). Each plot uses the maximum activity over all its checkouts, including hidden worktrees; visible members have their own small pools. Checkout histories overlap, so their counts are never added and called unique project commits. The matcha pool fades through 1, .55, .3 and .15, with opacity .35 to 1; untouched plots recede to 42% opacity. Playing steps one day per 420ms, scrubbing pauses; if activity cannot load the toggle closes with an error toast. Pools are hidden under forced colors.
 
 ### Inspector and detail actions
 The board inspector (272px) and detail header offer ghost actions Copy path (clipboard, "Path copied" toast, manual-copy fallback message) and Open in VS Code (a `vscode://file` link). Palette verbs mirror them.
 
 ### Board behaviour
 Tiles fade in staggered 70ms, hover or focus lights a pale pool under the pot, a selected tile leaves the rest receded (50% opacity, 0.7px blur, 0.4 saturation) and one faint ensō sits behind the stage (7.5%).
+
+Each project owns one plot, with a full main bonsai and up to three small worktree saplings. Left and right saplings stay fixed. The front slot prefers selection, then focus, then a matching hidden worktree, then the normal third worktree. A selected checkout always remains rendered and pressed. Alt+Left/Right cycles all tracked project members without changing selection; if the requested member stays hidden, focus moves to its 44px inspector checkout row. Enter/Space selects it. This approved exception preserves the three-sapling limit and the selection invariant together.
+
+Ring and disc tone include every tracked checkout, in this order: blocked, unavailable, changed, sync, stale, unknown, clean. Checkout weather stays local. The shared circle reports project-wide GitHub: gold dot for confirmed coverage, a number for PR blockers, CI for failing workflows, ? for unconfirmed coverage, and ! for incomplete checks. Its equivalent text is in the plot description. The separate +N counts hidden worktrees. All calm requires settled local health across the whole Workspace and fresh, complete, confirmed GitHub checks for its identified sources.
 
 ### Brush underline (the one drawn ornament)
 A 2.5px tapered, slightly rotated (-0.7deg) stroke in the current color with masked ends, on active toggles, tabs, filters and ghost-button hover.

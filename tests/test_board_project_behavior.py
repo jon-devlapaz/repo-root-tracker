@@ -1,4 +1,4 @@
-"""P1.4 checkout access. P1.5 owns tone, snapshot, replay and ground tests."""
+"""Project checkout access, tone, replay, ground, counts and accessibility."""
 from urllib.parse import quote, unquote
 
 import pytest
@@ -227,10 +227,10 @@ def test_attention_filter_uses_project_github_and_checkout_local_problems(page):
     assert page.locator('.tile:not(.dimmed)').count() == 1
     assert member(page, WORKTREES[-1]).get_attribute('data-matched') == 'true'
     assert member(page, MAIN).get_attribute('data-matched') == 'false'
-    page.evaluate("repos[8]._status.dirty={is_clean:false,modified:2};repos[0]._github={has_github:true,repo:'oak/main',prs:[{number:1,ci:{state:'fail',failing:1}}]};renderBoard()")
+    page.evaluate("repos[8]._status.dirty={is_clean:false,modified:2};repos[0]._status.github_repo='oak/main';rememberRepoMetadata(repos[0].path,repos[0]._status);acceptGithubSnapshot('oak/main',1,{has_github:true,repo:'oak/main',prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[]});renderBoard()")
     assert page.locator('.board-member[data-matched="true"]').count() == 4
     assert '9 matching checkouts' in page.locator('#board-match-count').inner_text()
-    page.evaluate("delete repos[0]._github;renderBoard()")
+    page.evaluate("repos[0]._status.github_repo=null;rememberRepoMetadata(repos[0].path,repos[0]._status);renderBoard()")
     assert page.locator('.tile:not(.dimmed)').count() == 0
 
 
@@ -427,3 +427,184 @@ def test_removal_during_held_refresh_keeps_surviving_checkout_controls(page):
             route.fulfill(json=status)
         page.wait_for_timeout(20)
     assert page.locator('.board-sapling').count() == 3
+
+
+@pytest.mark.parametrize('state,tone', [
+    ('conflict', 'blocked'), ('error', 'unavailable'), ('dirty', 'changed'),
+    ('sync', 'sync'), ('stale', 'stale'), ('unknown', 'unknown'), ('clean', 'clean'),
+])
+def test_plot_tone_and_shared_badge_include_hidden_members(page, state, tone):
+    project_board(page, 8, projects=26)
+    page.evaluate('''({state,path})=>{
+      const r=repoByPath.get(path);
+      if(state==='conflict')r._status.dirty={is_clean:false,kinds:{conflicted:1}};
+      if(state==='error')r._status={error:true};
+      if(state==='dirty')r._status.dirty={is_clean:false,modified:2};
+      if(state==='sync')r._status.sync={has_upstream:true,ahead:2,behind:0};
+      if(state==='stale')r._status.stale_branches=[{name:'old'}];
+      if(state==='unknown')r._status={branch:'unknown'};
+      renderBoard();
+    }''', {'state': state, 'path': WORKTREES[-1]})
+    tile = page.locator('.tile[data-path="/projects/oak"]')
+    assert tile.get_attribute('data-tone') == tone
+    assert tile.locator('.plot-number').get_attribute('data-tone') == tone
+    if tone not in ['clean', 'unknown']:
+        assert tile.locator('.status-ring').get_attribute('data-tone') == tone
+        assert page.locator('#board-isle-0 .isle-dot[data-tone="' + tone + '"]').text_content() == '1'
+    assert member(page, WORKTREES[-1]).count() == 0
+    assert 'Project state: ' + tone in tile.get_attribute('aria-description')
+    if state == 'conflict':
+        assert 'local conflict' in tile.get_attribute('aria-description')
+    assert member(page, MAIN).get_attribute('data-stage') == 'healthy'
+
+
+def test_known_severity_beats_unknown_and_conflict_beats_unavailable(page):
+    project_board(page, 8)
+    page.evaluate("repos[1]._status={error:true};repos[2]._status={};repos[8]._status.dirty={is_clean:false,kinds:{conflicted:1}};renderBoard()")
+    assert page.evaluate('boardPlotTone(boardProjects[0])') == 'blocked'
+    page.evaluate("repos[8]._status.dirty={is_clean:true};renderBoard()")
+    assert page.evaluate('boardPlotTone(boardProjects[0])') == 'unavailable'
+    page.evaluate("repos[1]._status={dirty:{is_clean:false,modified:1}};renderBoard()")
+    assert page.evaluate('boardPlotTone(boardProjects[0])') == 'changed'
+
+
+def test_project_and_checkout_counts_have_distinct_units(page):
+    project_board(page, 3, projects=26)
+    assert page.locator('#board-project-count').inner_text() == '26 projects · 104 checkouts'
+    assert page.locator('#count-badge').inner_text() == '104 repos'
+    assert page.locator('#board-isle-0 .isle-count').inner_text() == '25'
+    page.get_by_role('searchbox', name='Search the island').fill('feature/00')
+    assert 'matching projects' in page.locator('#board-match-count').inner_text()
+    assert 'matching checkouts' in page.locator('#board-match-count').inner_text()
+
+
+def test_calm_title_checks_the_whole_workspace_not_only_its_page(page):
+    project_board(page, 3, projects=26)
+    assert page.evaluate('boardIslandCalm(boardScene.islands[0])')
+    page.evaluate("repoByPath.get('/projects/p25-w2')._status.dirty={is_clean:false,kinds:{conflicted:1}};renderBoard()")
+    assert not page.evaluate('boardIslandCalm(boardScene.islands[0])')
+    assert 'all calm' not in page.locator('#board-terrain').text_content()
+    assert page.locator('#board-isle-1 .isle-dot[data-tone="blocked"]').text_content() == '1'
+    page.evaluate("repoByPath.get('/projects/p25-w2')._status.dirty={is_clean:true};renderBoard()")
+    assert page.locator('.board-bloom').count() == 1
+    page.locator('#board-next').click()
+    assert page.locator('.board-bloom').count() == 0
+    assert page.evaluate('boardIslandCalm(boardScene.islands[0])')
+
+
+def test_replay_uses_family_max_and_individual_member_glow(page):
+    project_board(page, 8)
+    before = page.evaluate('boardScene.targets.map(t=>t.path)')
+    page.evaluate('''()=>{boardReplay.open=true;boardReplay.data={repos:{
+      '/projects/oak-w07':{[replayKey(0)]:5},'/projects/oak-w00':{[replayKey(2)]:2}}};applyReplay()}''')
+    assert page.locator('.tile').get_attribute('data-glow') == '1'
+    assert member(page, MAIN).get_attribute('data-glow') is None
+    assert member(page, WORKTREES[0]).get_attribute('data-glow') == '0.3'
+    assert member(page, WORKTREES[0]).locator('.member-replay-pool').evaluate('el=>parseFloat(getComputedStyle(el).opacity)') > 0
+    assert page.locator('.plot-more').get_attribute('data-glow') == '1'
+    assert page.evaluate('boardScene.targets.map(t=>t.path)') == before
+    assert '1 active project · 1 active checkout' in page.locator('#board-replay-day').inner_text()
+    page.evaluate('boardReplay.open=false;applyReplay()')
+    assert page.locator('.tile[data-glow],.board-member[data-glow],.plot-more[data-glow]').count() == 0
+
+
+def test_replay_does_not_sum_overlapping_checkout_histories_as_unique_commits(page):
+    project_board(page, 8)
+    page.evaluate('''()=>{boardReplay.open=true;boardReplay.data={repos:{
+      '/projects/oak':{[replayKey(0)]:5},'/projects/oak-w07':{[replayKey(0)]:5}}};applyReplay()}''')
+    activity = page.evaluate('replayProjectActivity(boardProjects[0],0)')
+    assert activity['maxCheckoutCommits'] == 5
+    assert activity['activePaths'] == [MAIN, WORKTREES[-1]]
+    label = page.locator('#board-replay-day').inner_text()
+    assert '1 active project · 2 active checkouts' in label
+    assert 'checkout commit counts:' in label and '10 commits' not in label
+    assert page.locator('#board-replay-range').get_attribute('aria-valuetext') == label
+    page.evaluate('renderBoard()')
+    assert page.locator('.tile').get_attribute('data-glow') == '1'
+
+
+def test_ground_cache_tracks_saplings_without_repainting_on_recheck(page):
+    from test_ground import settled_draws
+    project_board(page, 8)
+    before = settled_draws(page)
+    original = page.evaluate('groundCache.sig')
+    records = page.evaluate('groundCache.records')
+    assert len(records) == 1 and len(records[0]['members']) == 4
+    assert records[0]['clearRx'] > 36 and records[0]['clearRy'] > 17.5
+    assert [m['scale'] for m in records[0]['members']] == [1, .4, .4, .4]
+    assert page.evaluate('groundCache.shadows') == 4
+    page.evaluate('repos[1]._boardQueued=true;renderBoard();repos[1]._boardQueued=false;renderBoard()')
+    assert settled_draws(page) == before
+    assert page.evaluate('groundCache.sig') == original
+    page.evaluate('path=>selectBoardRepo(path)', WORKTREES[-1])
+    page.wait_for_function('sig=>groundCache.sig!==sig && groundCache.pendingSig===""', arg=original)
+    promoted = page.evaluate('groundCache.sig')
+    assert page.evaluate('groundCache.records[0].members[3].path') == WORKTREES[-1]
+    page.evaluate("repos[7]._status.dirty={is_clean:false,modified:1};renderBoard()")
+    page.wait_for_function('sig=>groundCache.sig!==sig && groundCache.pendingSig===""', arg=promoted)
+    assert page.evaluate('groundCache.records[0].disturbed')
+
+
+def test_untracked_main_casts_only_a_pot_shadow(page):
+    from test_ground import settled_draws
+    project_board(page)
+    page.evaluate('path=>{repos=repos.filter(r=>r.path!==path);rebuildProjectModel();renderBoard()}', MAIN)
+    settled_draws(page)
+    records = page.evaluate('groundCache.records[0].members')
+    assert len(records) == 4
+    placeholder = records[0]
+    assert placeholder['role'] == 'placeholder' and placeholder['path'] is None
+    assert placeholder['potOnly'] and placeholder['canopyHeight'] == 0
+    assert all(m['scale'] == .4 for m in records[1:])
+    assert page.evaluate('groundCache.shadows') == 4
+
+
+def test_identity_warning_is_visible_in_inspector_and_plot_description(page):
+    project_board(page)
+    page.evaluate("repos[1]._status.project_path=repos[1].path;rememberRepoMetadata(repos[1].path,repos[1]._status);renderBoard();selectBoardRepo('/projects/oak')")
+    assert 'Conflicting project identity. Refresh local Git.' in page.locator('.tile').get_attribute('aria-description')
+    assert page.locator('#board-inspector .identity-warning').inner_text() == 'Conflicting project identity. Refresh local Git.'
+
+
+@pytest.mark.parametrize('width', [390, 768])
+def test_touch_close_zoom_and_paging_controls_are_44px(page, width):
+    project_board(page, projects=26)
+    page.set_viewport_size({'width': width, 'height': 900})
+    page.evaluate('''()=>{boardReplay.open=true;boardReplay.data={repos:{}};syncReplayControls();applyReplay();selectBoardRepo('/projects/oak')}''')
+    controls = page.locator('#board-inspector .inspector-close,.board-camera-tools button')
+    assert controls.evaluate_all('els=>els.every(el=>el.getClientRects().length>0)')
+    assert controls.evaluate_all('els=>els.every(el=>{const r=el.getBoundingClientRect();return r.width>=44 && r.height>=44})')
+    assert page.evaluate('document.documentElement.scrollWidth<=innerWidth')
+
+
+def test_label_measurements_and_project_aggregates_are_reused(page):
+    project_board(page, 8)
+    page.get_by_role('button', name='Names', exact=True).click()
+    result = page.evaluate('''()=>{
+      const sizes=[...boardLabelMeasurements];
+      boardCamera.zoom=1.6;applyBoardCamera();
+      const sameSizes=sizes.every(([key,value])=>boardLabelMeasurements.get(key)===value);
+      return dashboardUpdate(()=>({sameSizes,sameAggregate:boardProjectAggregate(boardProjects[0])===boardProjectAggregate(boardProjects[0])}));
+    }''')
+    assert result == {'sameSizes': True, 'sameAggregate': True}
+
+
+def test_focused_overflow_inspector_row_survives_health_patches(page):
+    project_board(page, 8)
+    page.evaluate('path=>selectBoardRepo(path)', WORKTREES[-1])
+    member(page, MAIN).focus()
+    for _ in range(3):
+        page.keyboard.press('Alt+ArrowRight')
+    assert page.evaluate('document.activeElement.dataset.checkoutPath') == WORKTREES[2]
+    assert member(page, WORKTREES[2]).count() == 0
+    page.evaluate('''()=>{window.focusedCheckoutRow=document.activeElement;
+      repos[3]._status.dirty={is_clean:false,modified:2};renderBoard()}''')
+    assert page.evaluate('document.activeElement===focusedCheckoutRow')
+    assert 'Local changes' in page.evaluate('focusedCheckoutRow.innerText')
+    assert member(page, WORKTREES[-1]).get_attribute('aria-pressed') == 'true'
+    page.keyboard.press('Alt+ArrowRight')
+    assert page.evaluate('document.activeElement.dataset.checkoutPath') == WORKTREES[3]
+    page.keyboard.press('Enter')
+    assert member(page, WORKTREES[3]).get_attribute('aria-pressed') == 'true'
+    assert page.locator('.board-select[aria-pressed="true"]').count() == 1
+    assert page.evaluate('document.activeElement.id') == 'board-inspector-title'

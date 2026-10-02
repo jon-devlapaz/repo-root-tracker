@@ -43,10 +43,10 @@ def test_transparent_sprite_bounds_do_not_steal_rear_ground(page, zoom):
 def test_clean_selected_checkout_cannot_hide_sibling_github_coverage(page, coverage, label):
     family_fixture(page)
     page.evaluate('''coverage => {
-      repos[0]._github={has_github:true,repo:'demo/shared',prs:[],issues:[],errors:[]};
+      acceptGithubSnapshot('demo/shared',2,{has_github:true,repo:'demo/shared',prs:[],issues:[],errors:[]});
       repos[1]._status.github_repo='demo/other';
       delete repos[1]._github;
-      if(coverage==='incomplete')repos[1]._github={has_github:false,gh_unavailable:true,prs:[],issues:[],errors:['Unavailable']};
+      if(coverage==='incomplete')acceptGithubSnapshot('demo/other',1,{has_github:false,gh_unavailable:true,prs:[],issues:[],errors:['Unavailable']});
       if(coverage==='checking')githubTasks.set('demo/other',Promise.resolve());
       selectBoardRepo(repos[0].path);
     }''', coverage)
@@ -63,7 +63,7 @@ def test_project_badge_includes_blocker_outside_active_25_checkout_chunk(page):
     page.evaluate('''() => {
       repos=Array.from({length:26},(_,i)=>({path:'/family/r'+i,_status:{project_id:'family',project_path:'/family/r0',is_worktree:i>0,dirty:{is_clean:true},github_repo:'demo/r'+i},
         _github:{has_github:true,repo:'demo/r'+i,prs:i===25?[{number:10,title:'Outside chunk',url:'https://github.com/demo/r25/pull/10',ci:{state:'fail',failing:1}}]:[],issues:[],errors:[]}}));
-      rebuildProjectModel();repos.forEach(r=>rememberRepoMetadata(r.path,r._status));
+      rebuildProjectModel();repos.forEach(r=>{const info=r._github;rememberRepoMetadata(r.path,r._status);acceptGithubSnapshot(r._status.github_repo,1,info);});
       rebuildProjectModel();renderBoard();selectBoardRepo(repos[0].path);
     }''')
     assert page.locator('.tile').count() == 1
