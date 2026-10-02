@@ -2883,7 +2883,7 @@
       boardScene.targets.filter(t=>activePaths.includes(t.path)).map(t=>repoByPath.get(t.path)?._status?.branch).join()].join('|');
     if(layer.dataset.zsig===zsig){
       const dx=boardCamera.x-Number(layer.dataset.cx),dy=boardCamera.y-Number(layer.dataset.cy);
-      if(!dx && !dy)return;
+      if(!dx && !dy){layer.style.transform='';return;}
       layer.style.transform=`translate(${dx}px,${dy}px)`;
       clearTimeout(boardNamesSettle);
       boardNamesSettle=setTimeout(()=>{delete layer.dataset.zsig;layoutBoardNames();},180);
@@ -3119,8 +3119,9 @@
         if(n++>=BOARD_PATCH_BATCH)break;
         boardPendingTiles.delete(id);patchBoardTile(id,html);
       }
+      cacheBoardMemberHits();applyReplay();
       if(boardPendingTiles.size)scheduleBoardTileDrain();
-      else {cacheBoardMemberHits();layoutBoardNames();}
+      else layoutBoardNames();
     });
   }
   function renderIsometricScene(groups) {
@@ -3153,9 +3154,15 @@
       // A refresh can change every visible tile at once. Patch the first batch now (small updates stay immediate and
       // deterministic) and the rest over the next frames, always from the latest markup, so no single task is long.
       const changed=[...tileMarkup].filter(([id,html])=>boardRenderedMarkup.get(id)!==html);
+      // Whatever the user is pointing at (selected, focused, hovered, or a tile that was just promoted) must be on
+      // screen before this function returns: callers focus and measure it right away. Only unrelated health updates wait.
+      const interacting=[boardSelectedPath,boardFocusedPath,boardHoveredPath].filter(Boolean).map(path=>'id="board-tile-'+encodeURIComponent(path)+'"');
+      const urgent=changed.filter(([,html])=>interacting.some(marker=>html.includes(marker)));
+      const rest=changed.filter(entry=>!urgent.includes(entry));
       boardPendingTiles.clear();
-      changed.slice(0,BOARD_PATCH_BATCH).forEach(([id,html])=>patchBoardTile(id,html));
-      changed.slice(BOARD_PATCH_BATCH).forEach(([id,html])=>boardPendingTiles.set(id,html));
+      urgent.forEach(([id,html])=>patchBoardTile(id,html));
+      rest.slice(0,Math.max(0,BOARD_PATCH_BATCH-urgent.length)).forEach(([id,html])=>patchBoardTile(id,html));
+      rest.slice(Math.max(0,BOARD_PATCH_BATCH-urgent.length)).forEach(([id,html])=>boardPendingTiles.set(id,html));
       if(boardPendingTiles.size)scheduleBoardTileDrain();
       for(const id of [...boardRenderedMarkup.keys()])if(!tileMarkup.has(id))boardRenderedMarkup.delete(id);
     }

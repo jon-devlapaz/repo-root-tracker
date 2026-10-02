@@ -5,7 +5,9 @@
   const originals=new Map();
   const names=['render','renderBoard','renderBoardView','rebuildProjectModel','boardProjectAggregate','renderIsometricScene',
     'applyBoardCamera','layoutBoardNames','cacheBoardMemberHits','applyReplay','boardGroundFor','groundChunk','finishBoardGround',
-    'requestLocalStatus','applyLocalStatus','finishLocalStatus','rememberRepoMetadata'];
+    'requestLocalStatus','applyLocalStatus','finishLocalStatus','rememberRepoMetadata',
+    // deferred work: layoutBoardNames only queues; these are the real label placement and the batched tile patches
+    'runLayoutBoardNames','patchBoardTile'];
   for(const name of names){
     const original=window[name];originals.set(name,original);
     window[name]=function(...args){
