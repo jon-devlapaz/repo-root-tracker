@@ -2562,11 +2562,11 @@
       const project=plot.project;
       if (repoByPath.has(project.centralRepoPath)) plot.targets.push({path:project.centralRepoPath,projectKey:project.key,
         role:project.mainRoleConfirmed?'main':'standalone',slot:'main',x:plot.x,y:plot.y,scale:1,drawOrder:drawOrder++});
-      const slots=[['left',-42,7],['right',42,7],['front',0,30]];
+      const slots=[['left',-44,8],['right',44,8],['front',0,36]];
       boardPresentedWorktrees(project).forEach((path,index) => {
         if (!repoByPath.has(path)) return;
         const [slot,x,y]=slots[index];
-        plot.targets.push({path,projectKey:project.key,role:'worktree',slot,x:plot.x+x,y:plot.y+y,scale:.4,drawOrder:drawOrder++});
+        plot.targets.push({path,projectKey:project.key,role:'worktree',slot,x:plot.x+x,y:plot.y+y,scale:.55,drawOrder:drawOrder++});
       });
     }
     return {empty:false,width,height:g.y+g.height+18,islands:[g],plots,targets:plots.flatMap(plot=>plot.targets)};
