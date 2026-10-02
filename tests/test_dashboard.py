@@ -37,7 +37,7 @@ def page():
                 })
 
         page.route("**/api/repos/status?*", status)
-        page.goto("http://dashboard.test/")
+        page.goto("http://dashboard.test/#/list")
         page.wait_for_function("repos.length === 4 && repos.every(r => r._status)")
         yield page
         assert errors == []

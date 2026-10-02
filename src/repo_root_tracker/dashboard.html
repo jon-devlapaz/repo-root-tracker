@@ -428,9 +428,9 @@
   @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
 
   /* ---- The garden (board) ---- */
-  #board-view { --board-muted: var(--muted); max-width: 1180px; display: flex; flex-direction: column; }
+  #board-view { --board-muted: var(--muted); max-width: min(1840px, 100%); display: flex; flex-direction: column; }
   #board-view > * { flex: none; }
-  .board-head { order: 1; } .board-tools { order: 2; }
+  .board-head { order: 1; } .board-tools { order: 2; } .board-islands-tools { order: 3; }
   .board-workspace { order: 5; } .archipelago { order: 4; } .board-legend { order: 6; } #board-view > .local-note { order: 7; } #board-empty { order: 8; }
   .board-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-3); margin: 14px 0 8px; }
   .view-toggle { position: relative; }
@@ -441,6 +441,21 @@
     -webkit-mask-image: linear-gradient(90deg, transparent, #000 14%, #000 78%, transparent); mask-image: linear-gradient(90deg, transparent, #000 14%, #000 78%, transparent);
   }
   #board-island { pointer-events: none; }
+  .board-islands-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
+  .board-islands-tools [hidden] { display: none; }
+  .board-islands-tools .local-note { flex: 1 1 260px; margin: 0; font-size: 12px; max-width: none; }
+  #board-view .board-head { margin: 2px 0 0; }
+  #board-view .board-tools { margin: 0; }
+  @media (min-width: 851px) { .board-stagecol { padding-top: 42px; } }
+  #board-island-empty { padding: 18px 0 4px; color: var(--muted); }
+  #board-island-empty[hidden] { display: none; }
+  #board-island-dialog, #board-island-delete-dialog { width: min(560px, calc(100vw - 32px)); max-height: 85dvh; overflow: auto; }
+  #board-island-dialog label[for] { display: block; margin-top: 18px; }
+  #board-island-search { width: 100%; min-height: 40px; background: transparent; border: none; border-bottom: 1px solid var(--control-border); color: var(--text); font-family: var(--display); font-size: 18px; }
+  .island-picker { display: grid; gap: 2px; max-height: 40dvh; overflow: auto; margin-top: 8px; }
+  #board-island-dialog .island-picker label[for] { display: flex; margin-top: 0; align-items: center; gap: 12px; min-height: 44px; padding: 4px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .island-picker input { width: 20px; height: 20px; flex: none; }
+  .island-picker small { display: block; color: var(--text-dim, var(--muted)); }
   .board-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 28px; margin: 0 0 4px; }
   .board-tools input[type="search"] { flex: 1; min-width: 200px; min-height: 40px; padding: var(--space-2) 2px; background: transparent; border: none; border-bottom: 1px solid var(--control-border); border-radius: 0; color: var(--text); font-family: var(--display); font-size: 18px; }
   .board-tools input[type="search"]:focus { border-bottom-color: var(--accent); box-shadow: 0 1px 0 var(--accent); }
@@ -453,15 +468,15 @@
   .board-legend [data-tone="unavailable"]::before { background: none; border: 1.5px dashed var(--signal); }
   .board-legend .legend-dry::before { background: #71876a; border-radius: 50%; width: 11px; height: 5px; }
   .board-legend [data-tone="unknown"]::before { background: none; border: 1px solid var(--signal); }
-  .board-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 272px; gap: 40px; align-items: start; margin-top: 0; }
+  .board-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; margin-top: 0; }
   #board-stage {
-    position: relative; display: block; height: clamp(360px, 65vh, 620px); overflow: hidden; touch-action: none;
+    position: relative; display: block; height: clamp(460px, calc(100dvh - 300px), 1300px); overflow: hidden; touch-action: none;
     -webkit-mask-image: radial-gradient(ellipse 88% 86% at 50% 50%, #000 62%, transparent 100%);
     mask-image: radial-gradient(ellipse 88% 86% at 50% 50%, #000 62%, transparent 100%);
   }
   /* one ensō behind the garden: the largest empty thing on the page */
   #board-stage::before {
-    content: ''; position: absolute; left: 50%; top: 48%; width: min(92%, 640px); aspect-ratio: 1; transform: translate(-50%, -50%);
+    content: ''; position: absolute; left: 50%; top: 48%; width: min(92%, 920px); aspect-ratio: 1; transform: translate(-50%, -50%);
     background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cfilter id='r' x='-10%' y='-10%' width='120%' height='120%'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.05' numOctaves='3' seed='4'/%3E%3CfeDisplacementMap in='SourceGraphic' scale='9'/%3E%3C/filter%3E%3Cg filter='url(%23r)'%3E%3Cpath d='M362.0 56.7L367.1 59.2L372.1 61.9L377.1 64.8L382.0 67.7L386.8 70.8L391.5 74.0L396.1 77.4L400.7 80.9L405.1 84.5L409.5 88.2L413.7 92.1L417.9 96.1L421.9 100.1L425.8 104.3L429.6 108.7L433.3 113.1L436.8 117.6L440.2 122.2L443.5 127.0L446.6 131.8L449.6 136.7L452.4 141.7L455.1 146.7L457.7 151.9L460.1 157.1L462.3 162.3L464.4 167.7L466.3 173.0L468.1 178.5L469.7 183.9L471.2 189.4L472.5 195.0L473.6 200.5L474.6 206.1L475.4 211.7L476.0 217.3L476.5 223.0L476.9 228.6L477.1 234.2L477.2 239.8L477.1 245.4L476.9 251.0L476.5 256.6L476.1 262.1L475.5 267.7L474.7 273.2L473.9 278.7L472.9 284.1L471.7 289.5L470.5 294.9L469.0 300.2L467.5 305.5L465.8 310.7L464.1 315.9L462.2 321.0L460.2 326.1L458.1 331.1L455.8 336.1L453.5 341.0L451.1 345.8L448.5 350.6L445.9 355.3L443.1 360.0L440.3 364.6L437.3 369.1L434.2 373.5L431.0 377.8L427.7 382.1L424.3 386.2L420.8 390.3L417.3 394.3L413.6 398.3L409.9 402.2L406.2 406.0L402.3 409.7L398.4 413.4L394.4 416.9L390.4 420.4L386.2 423.8L382.0 427.1L377.6 430.3L373.2 433.3L368.7 436.1L364.1 438.9L359.4 441.5L354.7 444.0L349.9 446.4L345.0 448.7L340.1 450.8L335.2 452.8L330.1 454.7L325.1 456.4L320.0 458.0L314.8 459.4L309.6 460.7L304.4 461.8L299.2 462.8L293.9 463.4L288.6 464.0L283.3 464.4L278.0 464.7L272.7 464.8L267.4 464.8L262.1 464.7L256.8 464.5L251.6 464.2L246.3 463.7L241.1 463.2L235.9 462.5L230.7 461.7L225.6 460.8L220.5 459.8L215.4 458.6L210.4 457.1L205.4 455.5L200.5 453.7L195.7 451.8L190.9 449.9L186.2 447.7L181.5 445.5L176.9 443.2L172.4 440.7L168.0 438.2L163.6 435.5L159.3 432.8L155.1 429.9L150.9 427.0L146.9 423.9L142.9 420.8L139.1 417.4L135.5 413.9L131.8 410.4L128.3 406.9L124.8 403.3L121.4 399.6L118.1 396.0L114.8 392.3L111.5 388.5L108.3 384.7L105.2 380.9L102.1 377.1L99.0 373.2L96.0 369.3L93.1 365.3L90.4 361.2L87.8 356.9L85.3 352.6L83.0 348.3L80.7 343.9L78.5 339.4L76.4 335.0L74.4 330.4L72.5 325.9L70.7 321.2L69.1 316.6L67.5 311.9L66.0 307.1L64.6 302.4L63.3 297.6L62.2 292.7L61.2 287.8L60.5 282.9L60.0 278.0L59.5 273.0L59.1 268.0L58.8 263.1L58.6 258.1L58.5 253.1L58.4 248.1L58.5 243.1L58.6 238.1L58.8 233.1L59.1 228.1L59.6 223.1L60.1 218.1L60.8 213.1L61.6 208.1L62.8 203.2L64.1 198.3L65.5 193.4L67.1 188.6L68.8 183.9L70.6 179.2L72.6 174.5L74.7 169.9L77.0 165.3L79.3 160.9L81.8 156.5L84.4 152.1L87.1 147.9L90.0 143.7L92.9 139.6L96.0 135.6L99.4 131.8L102.8 128.1L106.3 124.4L109.9 120.9L113.5 117.4L117.2 114.1L121.0 110.7L124.8 107.5L128.6 104.3L132.6 101.2L136.5 98.2L140.5 95.2L144.6 92.3L148.8 89.5L153.0 86.8L157.2 84.2L161.6 81.9L166.1 79.7L170.6 77.5L175.2 75.5L179.8 73.6L184.4 71.7L189.1 70.0L193.8 68.4L198.6 66.9L203.4 65.5L208.2 64.1L209.4 69.0L204.7 70.4L200.1 71.8L195.5 73.4L190.9 75.1L186.4 76.9L181.9 78.7L177.5 80.7L173.1 82.8L168.8 85.0L164.5 87.2L160.3 89.6L156.1 91.9L151.9 94.4L147.7 96.9L143.6 99.5L139.6 102.3L135.7 105.2L131.9 108.2L128.2 111.4L124.6 114.6L121.1 118.0L117.7 121.5L114.5 125.1L111.3 128.9L108.3 132.7L105.5 136.6L102.7 140.6L99.9 144.5L97.2 148.5L94.6 152.6L92.1 156.8L89.7 161.0L87.5 165.3L85.4 169.6L83.4 174.0L81.5 178.5L79.8 182.9L78.2 187.5L76.7 192.1L75.4 196.7L74.1 201.3L73.1 206.0L72.1 210.7L71.1 215.3L70.2 220.0L69.4 224.7L68.8 229.5L68.4 234.2L68.1 239.0L68.0 243.8L68.0 248.5L68.2 253.3L68.6 258.0L69.2 262.7L69.9 267.4L70.8 272.0L71.8 276.6L73.0 281.2L74.3 285.7L75.5 290.2L76.7 294.7L78.1 299.1L79.5 303.5L81.1 307.8L82.7 312.2L84.4 316.4L86.3 320.6L88.2 324.8L90.2 328.9L92.3 333.0L94.4 337.0L96.7 341.0L99.0 344.9L101.4 348.8L103.9 352.6L106.3 356.4L108.8 360.2L111.3 364.0L114.0 367.7L116.7 371.4L119.6 374.9L122.5 378.4L125.6 381.8L128.8 385.1L132.0 388.3L135.4 391.4L138.8 394.4L142.4 397.3L146.0 400.1L149.7 402.8L153.4 405.4L157.2 408.1L160.9 410.7L164.8 413.2L168.6 415.7L172.6 418.1L176.6 420.3L180.7 422.5L184.8 424.6L189.0 426.6L193.2 428.5L197.5 430.2L201.8 431.9L206.2 433.4L210.6 434.9L215.1 436.2L219.6 437.4L224.2 438.6L228.7 439.7L233.3 440.7L238.0 441.5L242.6 442.2L247.3 442.8L252.0 443.1L256.7 443.3L261.5 443.3L266.2 443.2L270.9 442.9L275.6 442.4L280.3 441.8L285.0 441.0L289.6 440.1L294.2 439.0L298.8 437.9L303.3 436.7L307.9 435.4L312.4 434.0L316.8 432.4L321.2 430.7L325.5 428.9L329.8 427.0L334.1 425.0L338.3 422.8L342.4 420.6L346.4 418.2L350.4 415.8L354.3 413.2L358.2 410.5L362.0 407.8L365.7 405.0L369.4 402.1L373.0 399.2L376.5 396.1L380.0 393.0L383.3 389.8L386.6 386.4L389.8 383.0L392.8 379.5L395.8 376.0L398.7 372.3L401.5 368.6L404.1 364.8L406.7 360.9L409.2 357.0L411.6 353.1L413.9 349.1L416.2 345.1L418.4 341.0L420.6 336.9L422.6 332.7L424.5 328.5L426.4 324.3L428.2 320.0L429.8 315.7L431.4 311.3L432.9 306.9L434.2 302.5L435.5 298.0L436.7 293.5L437.7 288.9L438.7 284.4L439.6 279.8L440.4 275.2L441.0 270.5L441.6 265.9L442.0 261.2L442.3 256.5L442.5 251.8L442.6 247.1L442.5 242.4L442.3 237.6L441.9 232.9L441.5 228.2L440.9 223.5L440.1 218.8L439.3 214.2L438.3 209.5L437.2 204.9L435.9 200.3L434.6 195.8L433.1 191.3L431.5 186.8L429.7 182.4L427.8 178.0L425.8 173.7L423.7 169.4L421.4 165.2L419.0 161.1L416.5 157.1L413.9 153.1L411.2 149.2L408.3 145.4L405.3 141.7L402.3 138.1L399.1 134.6L395.8 131.1L392.5 127.8L389.0 124.6L385.5 121.5L381.8 118.5L378.1 115.6L374.3 112.8L370.5 110.1L366.5 107.6L362.5 105.1L358.5 102.8L354.4 100.6L350.2 98.5L346.0 96.5L341.8 94.7Z' fill='%23e6e4d9'/%3E%3Cpath d='M55.8 212.0A205 205 0 0 1 240.1 51.6' stroke-width='2.2' stroke-linecap='round' fill='none' stroke='%23e6e4d9'/%3E%3Cpath d='M82.2 174.5A192 192 0 0 1 251.7 64.0' stroke-width='1.6' stroke-linecap='round' fill='none' stroke='%23e6e4d9'/%3E%3Cpath d='M68.3 322.1A199 199 0 0 1 176.5 73.6' stroke-width='1.2' stroke-linecap='round' fill='none' stroke='%23e6e4d9'/%3E%3C/g%3E%3C/svg%3E") center / contain no-repeat;
     opacity: .075; pointer-events: none;
   }
@@ -512,7 +527,6 @@
   #board-caption { min-height: 38px; padding: 12px 2px; color: var(--body); font-size: 12px; letter-spacing: .02em; overflow-wrap: anywhere; }
   #board-zoom-level { color: var(--muted); font-size: 12px; min-width: 38px; text-align: center; }
   .board-stagecol { position: relative; min-width: 0; }
-  @media (min-width: 851px) { .board-stagecol { padding-top: 42px; } }
   .board-camera-tools { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin: 0 0 6px -12px; }
   @media (min-width: 851px) { .board-camera-tools { position: absolute; left: -12px; top: 0; right: 0; z-index: 30; margin: 0; } }
   .board-camera-tools .chev { margin: 0 8px 1px 0; width: 5px; height: 5px; }
@@ -756,7 +770,7 @@
     <h1>repo-root-tracker</h1>
   </div>
   <span class="badge" id="count-badge">— repos</span>
-  <span role="group" aria-label="View"><button id="view-list" class="btn btn-ghost view-toggle" onclick="location.hash='#/'" aria-pressed="true">List</button> <button id="view-board" class="btn btn-ghost view-toggle" onclick="location.hash='#/board'" aria-pressed="false">Board</button></span>
+  <span role="group" aria-label="View"><button id="view-board" class="btn btn-ghost view-toggle" onclick="location.hash='#/board'" aria-pressed="true">Board</button> <button id="view-list" class="btn btn-ghost view-toggle" onclick="location.hash='#/list'" aria-pressed="false">List</button></span>
   <span class="kbd-hint"><kbd>⌘K</kbd> jump to repo</span>
 </header>
 
@@ -824,6 +838,35 @@
   </form>
 </dialog>
 
+<dialog id="board-island-dialog" aria-labelledby="board-island-dialog-title">
+  <form onsubmit="saveBoardIsland(event)">
+    <h2 id="board-island-dialog-title">New island</h2>
+    <label for="board-island-name">Island name</label>
+    <input id="board-island-name" required maxlength="60" autocomplete="off">
+    <div id="board-island-destination-row" hidden><label for="board-island-destination">Add projects to</label><select id="board-island-destination" onchange="islandDestinationChanged()"></select></div>
+    <label for="board-island-search">Find a project</label>
+    <input id="board-island-search" type="search" placeholder="Search by name or path…" autocomplete="off" oninput="renderBoardIslandPicker()" onkeydown="boardIslandSearchKey(event)">
+    <p id="board-island-count" role="status"></p>
+    <div id="board-island-picker" class="island-picker" role="group" aria-label="Projects on this island"></div>
+    <p id="board-island-error" role="alert"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('board-island-dialog').close()">Cancel</button>
+      <button id="board-island-save" class="btn" type="submit">Save island</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="board-island-delete-dialog" aria-labelledby="board-island-delete-title">
+  <form method="dialog" onsubmit="confirmDeleteBoardIsland(event)">
+    <h2 id="board-island-delete-title">Delete island</h2>
+    <p id="board-island-delete-body"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('board-island-delete-dialog').close()">Keep island</button>
+      <button id="board-island-delete-confirm" class="btn btn-ghost btn-danger" type="submit">Delete island</button>
+    </div>
+  </form>
+</dialog>
+
 <main id="board-view" style="display:none" aria-label="Repository board">
   <div class="board-head">
     <div><h2>Repo island</h2><p id="board-brief" class="garden-brief"></p></div>
@@ -834,10 +877,20 @@
     <label title="Known PR blockers, failing default-branch CI, local conflicts, or unavailable repos."><input id="board-attention" type="checkbox" onchange="renderBoard()"> Needs attention</label>
     <span id="board-project-count"></span><span id="board-match-count" role="status"></span>
   </div>
+  <div class="board-islands-tools" role="group" aria-label="Custom islands">
+    <button id="board-island-create" class="btn btn-ghost" onclick="openBoardIslandDialog('create')">New island</button>
+    <button id="board-island-projects" class="btn btn-ghost" onclick="openBoardIslandDialog('edit')">Choose projects</button>
+    <button id="board-island-rename" class="btn btn-ghost" onclick="openBoardIslandDialog('edit', true)">Rename island</button>
+    <button id="board-island-delete" class="btn btn-ghost btn-danger" onclick="deleteBoardIsland()">Delete island</button>
+    <button id="board-organization-export" class="btn btn-ghost" onclick="exportOrganization()">Export organization</button>
+    <button id="board-organization-restore" class="btn btn-ghost" onclick="restoreUnsavedOrganization()" hidden>Restore unsaved organization</button>
+    <button id="board-organization-export-unsaved" class="btn btn-ghost" onclick="exportUnsavedOrganization()" hidden>Export unsaved organization</button>
+    <p id="board-organization-note" class="local-note" role="status"></p>
+  </div>
   <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
-  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
+  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-empty" hidden><p>Nothing is planted on this island yet.</p><button class="btn btn-ghost" onclick="openBoardIslandDialog('edit')">Choose projects</button></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
     <p>No repos tracked yet. Add a repository to grow the island.</p>
     <p><a id="board-empty-add" href="#/">Go to the list to add a repo</a></p>
@@ -995,6 +1048,7 @@
     if (!data.assignments || typeof data.assignments !== 'object' || Array.isArray(data.assignments) ||
         !Object.values(data.assignments).every(id => typeof id === 'string'))
       throw new Error('Assignments must be an object of string collection ids.');
+    // "" is the reserved Workspace assignment value; collection ids stay nonempty.
     if (!['collection', 'folder', 'project', 'none'].includes(data.grouping)) throw new Error('Invalid grouping.');
     if (!['name', 'recent'].includes(data.sort)) throw new Error('Invalid sort.');
     return data;
@@ -1294,16 +1348,22 @@
   function selectMatching() { matchingEntries.forEach(({r}) => selectedRepos.add(r.path)); render(); }
   function clearSelection() { selectedRepos.clear(); render(); }
   function moveSelected() {
+    ensureProjectRegistry();
     const id = document.getElementById('bulk-collection').value;
     if (!id || !selectedRepos.size) return;
     if (id !== 'unsorted' && !organization.collections.some(c => c.id === id)) return;
+    const projects = new Map();
     selectedRepos.forEach(path => {
-      if (id === 'unsorted') delete organization.assignments[path];
-      else organization.assignments[path] = id;
+      const project = projectForPath(path);
+      if (project) projects.set(project.key, project);
     });
+    if (!projects.size) return;
+    const snapshot = organizationSnapshot();
+    projects.forEach(project => setProjectCollection(snapshot, project, id === 'unsorted' ? null : id));
+    organization = snapshot;
     toast('Moved ' + selectedRepos.size + ' repos', 'success');
     selectedRepos.clear();
-    persistOrganization();
+    return persistOrganization();
   }
 
   function renderBulk() {
@@ -1349,6 +1409,7 @@
       organizationLoaded ? 'Organization loaded from this dashboard server.' : 'Loading organization from this dashboard server.';
     document.getElementById('local-note').textContent = messages.filter(Boolean).join(' ') ||
       status + ' Removing a repo here never deletes its files.';
+    document.getElementById('board-organization-note').textContent = document.getElementById('local-note').textContent;
     document.getElementById('organization-recovery').hidden = !organizationBackups.length;
     const select = document.getElementById('organization-recovery-copy');
     const selected = select.value;
@@ -1509,9 +1570,108 @@
   }
 
   function assignCollection(i, id) {
-    if (id) organization.assignments[repos[i].path] = id;
-    else delete organization.assignments[repos[i].path];
-    persistOrganization();
+    ensureProjectRegistry();
+    const project = projectForPath(repos[i]?.path);
+    if (!project || (id && !organization.collections.some(c => c.id === id))) return;
+    const snapshot = organizationSnapshot();
+    setProjectCollection(snapshot, project, id || null);
+    organization = snapshot;
+    return persistOrganization();
+  }
+
+  // These helpers edit a supplied snapshot. Only deliberate callers persist it.
+  function organizationSnapshot(source = organization) { return JSON.parse(JSON.stringify(source)); }
+
+  function projectAssignmentKey(project) {
+    return project.projectId ? 'project:git:' + encodeURIComponent(project.projectId)
+      : 'project:path:' + encodeURIComponent(project.defaultPath);
+  }
+
+  function projectAssignmentAliases(project) {
+    return [...new Set([...project.paths, project.mainPath, project.mainRepoPath].filter(Boolean))];
+  }
+
+  // Keep warnings separate from identity and health; callers can show them in either view.
+  function projectCollectionResolution(project, snapshot = organization) {
+    const assignments = snapshot.assignments, key = projectAssignmentKey(project);
+    const collectionOrder = new Map(snapshot.collections.map((c, i) => [c.id, i]));
+    const mainPath = project.mainPath || project.mainRepoPath || project.centralRepoPath;
+    const knownAliases = projectAssignmentAliases(project).filter(path => Object.hasOwn(assignments, path) &&
+      (assignments[path] === '' || collectionOrder.has(assignments[path])));
+    const conflictingAliases = new Set(knownAliases.map(path => assignments[path])).size > 1 ? knownAliases : [];
+    let collectionId = null, rawValue, source = 'workspace', warning = '';
+    if (Object.hasOwn(assignments, key)) {
+      source = 'canonical'; rawValue = assignments[key];
+      if (collectionOrder.has(rawValue)) collectionId = rawValue;
+      else if (rawValue !== '') warning = 'Unknown collection “' + rawValue + '”. This project is in Workspace.';
+    } else if (mainPath && Object.hasOwn(assignments, mainPath) &&
+        (assignments[mainPath] === '' || collectionOrder.has(assignments[mainPath]))) {
+      source = 'main'; rawValue = assignments[mainPath]; collectionId = rawValue || null;
+    } else {
+      const members = project.paths.filter(path => path !== mainPath && Object.hasOwn(assignments, path) && collectionOrder.has(assignments[path]));
+      members.sort((a, b) => collectionOrder.get(assignments[a]) - collectionOrder.get(assignments[b]) || exactPathOrder(a, b));
+      if (members.length) { source = 'member'; rawValue = assignments[members[0]]; collectionId = rawValue; }
+    }
+    if (conflictingAliases.length) {
+      const name = snapshot.collections.find(c => c.id === collectionId)?.name || 'Workspace';
+      warning += (warning ? ' ' : '') + 'Conflicting checkout assignments. Using ' + name + ' for the whole project.';
+    }
+    return {collectionId, source, rawValue, warning, conflictingAliases};
+  }
+
+  function projectCollectionId(project, snapshot = organization) {
+    return project ? projectCollectionResolution(project, snapshot).collectionId : null;
+  }
+
+  function setProjectCollection(snapshot, project, collectionId) {
+    if (collectionId !== null && !snapshot.collections.some(c => c.id === collectionId))
+      throw new Error('This collection was removed elsewhere. Nothing was changed.');
+    snapshot.assignments[projectAssignmentKey(project)] = collectionId === null ? '' : collectionId;
+    for (const path of projectAssignmentAliases(project)) {
+      if (collectionId === null) delete snapshot.assignments[path];
+      else snapshot.assignments[path] = collectionId;
+    }
+    return snapshot;
+  }
+
+  function collectionNameForSnapshot(snapshot, name, exceptId = null) {
+    name = name.trim();
+    if (!name || snapshot.collections.some(c => c.id !== exceptId && c.name.trim().toLowerCase() === name.toLowerCase()))
+      throw new Error('Choose a nonempty, unique collection name.');
+    if (name.length > 60) throw new Error('Collection names must be 60 characters or fewer.');
+    return name;
+  }
+
+  function createOrganizationCollection(snapshot, name, id = organizationCopyId()) {
+    name = collectionNameForSnapshot(snapshot, name);
+    if (typeof id !== 'string' || !id.trim() || snapshot.collections.some(c => c.id === id))
+      throw new Error('Choose a nonempty, unique collection id.');
+    const collection = {id, name};
+    snapshot.collections.push(collection);
+    return collection;
+  }
+
+  function renameOrganizationCollection(snapshot, id, name) {
+    const collection = snapshot.collections.find(c => c.id === id);
+    if (!collection) throw new Error('This collection was removed elsewhere. Your entered name has been kept; cancel or create a new collection.');
+    collection.name = collectionNameForSnapshot(snapshot, name, id);
+    return collection;
+  }
+
+  function deleteOrganizationCollection(snapshot, id, projects = boardProjects) {
+    if (!snapshot.collections.some(c => c.id === id))
+      throw new Error('This collection was removed elsewhere. Nothing was deleted.');
+    // Resolve before removal: a surviving alias must not resurrect another placement.
+    const affected = projects.filter(project => projectCollectionId(project, snapshot) === id);
+    snapshot.collections = snapshot.collections.filter(c => c.id !== id);
+    for (const [key, assignedId] of Object.entries(snapshot.assignments)) {
+      if (assignedId !== id) continue;
+      if (key.startsWith('project:git:') || key.startsWith('project:path:')) snapshot.assignments[key] = '';
+      else delete snapshot.assignments[key];
+    }
+    affected.forEach(project => setProjectCollection(snapshot, project, null));
+    if (snapshot.collapsed) snapshot.collapsed = snapshot.collapsed.filter(key => key !== 'collection:' + id);
+    return affected;
   }
 
   function toggleCollection(key) {
@@ -1539,34 +1699,216 @@
   async function saveCollection(event) {
     event.preventDefault();
     const name = document.getElementById('collection-name').value.trim();
-    const collection = organization.collections.find(c => c.id === editingCollectionId);
-    if (editingCollectionId !== null && !collection) {
-      document.getElementById('collection-error').textContent = 'This collection was removed elsewhere. Your entered name has been kept; cancel or create a new collection.';
+    const snapshot = organizationSnapshot();
+    try {
+      if (editingCollectionId === null) createOrganizationCollection(snapshot, name);
+      else renameOrganizationCollection(snapshot, editingCollectionId, name);
+    } catch (error) {
+      document.getElementById('collection-error').textContent = error.message;
       return;
     }
-    if (!name || organization.collections.some(c => c.id !== editingCollectionId && c.name.toLowerCase() === name.toLowerCase())) {
-      document.getElementById('collection-error').textContent = 'Choose a nonempty, unique collection name.';
-      return;
-    }
-    if (editingCollectionId === null) organization.collections.push({id: organizationCopyId(), name});
-    else collection.name = name;
+    organization = snapshot;
     document.getElementById('collection-dialog').close();
     if (await persistOrganization()) toast('Collection saved. Use Organize repos to move several repos at once.', 'success');
     else if (organizationWarning) toast('Collection updated in this browser. Reload to retry saving.');
+  }
+
+  /* Board island picker: draft intent is keyed by project key, remembered with its paths and identity. */
+  let islandDraft = null;
+  function boardIslandCollectionId() {
+    return boardIslands(boardNeighborhoods)[boardPage-1]?.collectionId ?? null;
+  }
+  function renderBoardIslandControls() {
+    const id=boardIslandCollectionId(), custom=id!==null;
+    for (const key of ['rename','delete']) document.getElementById('board-island-'+key).hidden=!custom;
+    document.getElementById('board-island-projects').disabled=!boardProjects.length && !custom;
+    const backups=organizationBackups.length>0;
+    document.getElementById('board-organization-restore').hidden=!backups;
+    document.getElementById('board-organization-export-unsaved').hidden=!backups;
+  }
+  function islandMembers(id) { return new Set(boardProjects.filter(p=>projectCollectionId(p)===id).map(p=>p.key)); }
+  // Re-seed the draft for a destination island (null = a new one).
+  function seedIslandDraft(id) {
+    const collection=id===null ? null : organization.collections.find(c=>c.id===id);
+    const members=id===null ? new Set() : islandMembers(id);
+    if (id===null) { const sel=projectForPath(boardSelectedPath); if (sel) members.add(sel.key); }
+    islandDraft.collectionId=id; islandDraft.checked=new Set(members);
+    islandDraft.original=new Set(id===null ? [] : members);
+    islandDraft.createdId=null;
+    document.getElementById('board-island-name').value=collection ? collection.name : '';
+    document.getElementById('board-island-dialog-title').textContent=id===null ? 'New island' : 'Island projects';
+  }
+  function openBoardIslandDialog(mode, focusName=false) {
+    ensureProjectRegistry();
+    const current=boardIslandCollectionId();
+    // From a custom island this edits it; from Workspace the destination picks an island or a new one.
+    let id=mode==='edit' ? current : null;
+    if (id!==null && !organization.collections.some(c=>c.id===id)) { toast('This island was removed elsewhere. Nothing was changed.','error'); return; }
+    islandDraft={mode,collectionId:null,checked:new Set(),original:new Set(),createdId:null,
+      known:new Map(boardProjects.map(p=>[p.key,{paths:p.paths.slice(),projectId:p.projectId||null}])),
+      opener:document.activeElement,saving:false};
+    const select=document.getElementById('board-island-destination');
+    const choose=current===null && organization.collections.length>0;
+    select.innerHTML='<option value="">New island</option>'+organization.collections.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+    document.getElementById('board-island-destination-row').hidden=!choose;
+    seedIslandDraft(id);
+    select.value=id ?? '';
+    document.getElementById('board-island-search').value='';
+    document.getElementById('board-island-error').textContent='';
+    document.getElementById('board-island-save').disabled=false;
+    renderBoardIslandPicker();
+    const dialog=document.getElementById('board-island-dialog');
+    dialog.addEventListener('close',()=>{ const o=islandDraft?.opener; islandDraft=null; if (!dialog.returnValue && o?.isConnected && !o.hidden) o.focus(); },{once:true});
+    dialog.returnValue='';
+    dialog.showModal();
+    (focusName || id===null ? document.getElementById('board-island-name') : document.getElementById('board-island-search')).focus();
+  }
+  function islandDestinationChanged() {
+    if (!islandDraft) return;
+    const value=document.getElementById('board-island-destination').value;
+    seedIslandDraft(value===''?null:value);
+    document.getElementById('board-island-error').textContent='';
+    renderBoardIslandPicker();
+  }
+  function renderBoardIslandPicker() {
+    if (!islandDraft) return;
+    const q=document.getElementById('board-island-search').value.trim().toLowerCase();
+    const names=new Map(organization.collections.map(c=>[c.id,c.name]));
+    const rows=boardProjects.filter(p=>!q || (p.name+' '+p.paths.join(' ')).toLowerCase().includes(q)).map(p=>{
+      const current=projectCollectionId(p), where=current!==null && names.has(current) ? names.get(current) : 'Workspace';
+      const id='board-island-pick-'+encodeURIComponent(p.key);
+      return `<label for="${escapeHtml(id)}"><input type="checkbox" id="${escapeHtml(id)}" data-key="${escapeHtml(p.key)}" ${islandDraft.checked.has(p.key)?'checked':''} onchange="toggleBoardIslandProject(this)"><span>${escapeHtml(p.name)}<small>${escapeHtml(shortHome(p.defaultPath))} · now on ${escapeHtml(where)}</small></span></label>`;
+    });
+    document.getElementById('board-island-picker').innerHTML=rows.join('') || '<p class="local-note">No matching projects.</p>';
+    updateBoardIslandCount();
+  }
+  function updateBoardIslandCount() {
+    const n=islandDraft.checked.size;
+    document.getElementById('board-island-count').textContent=n+' project'+(n===1?'':'s')+' selected';
+  }
+  function toggleBoardIslandProject(input) {
+    if (!islandDraft) return;
+    if (input.checked) islandDraft.checked.add(input.dataset.key); else islandDraft.checked.delete(input.dataset.key);
+    updateBoardIslandCount();
+  }
+  function boardIslandSearchKey(event) {
+    // Enter narrows to the first match; saving always needs the Save button.
+    if (event.key!=='Enter') return;
+    event.preventDefault();
+    document.querySelector('#board-island-picker input')?.focus();
+  }
+  // Only deliberate changes are applied. Each remembered key must resolve to exactly one live
+  // project, and no live project may receive opposite intents.
+  function reconcileIslandIntents() {
+    const intents=new Map(), problems=[];
+    for (const key of new Set([...islandDraft.checked,...islandDraft.original])) {
+      const want=islandDraft.checked.has(key);
+      if (want===islandDraft.original.has(key)) continue;
+      const known=islandDraft.known.get(key);
+      const direct=boardProjectByKey.get(key);
+      const resolved=new Set(direct ? [direct] : (known?.paths||[]).map(path=>projectForPath(path)).filter(Boolean));
+      if (!resolved.size) { if (want) problems.push('a project you ticked is no longer tracked'); continue; }
+      if (resolved.size>1) { problems.push('a project split into several while this dialog was open'); continue; }
+      const project=[...resolved][0];
+      if (known?.projectId && project.projectId && known.projectId!==project.projectId) { problems.push(project.name+' changed identity while this dialog was open'); continue; }
+      if (intents.has(project) && intents.get(project)!==want) { problems.push(project.name+' merged with another project you changed differently'); continue; }
+      intents.set(project,want);
+    }
+    return {intents,problems};
+  }
+  async function saveBoardIsland(event) {
+    event.preventDefault();
+    if (!islandDraft || islandDraft.saving) return;
+    ensureProjectRegistry();
+    const {intents,problems}=reconcileIslandIntents();
+    const error=document.getElementById('board-island-error');
+    if (problems.length) { error.textContent='Nothing was saved: '+[...new Set(problems)].join('; ')+'. Review the list and save again.'; renderBoardIslandPicker(); return; }
+    const snapshot=organizationSnapshot(), name=document.getElementById('board-island-name').value;
+    let id=islandDraft.collectionId ?? islandDraft.createdId;
+    try {
+      if (id!==null && snapshot.collections.some(c=>c.id===id)) renameOrganizationCollection(snapshot,id,name);
+      else { id ??= islandDraft.createdId=organizationCopyId(); createOrganizationCollection(snapshot,name,id); }
+      for (const [project,on] of intents) {
+        if (on) setProjectCollection(snapshot,project,id);
+        else if (projectCollectionId(project,snapshot)===id) setProjectCollection(snapshot,project,null);
+      }
+    } catch (failure) { error.textContent=failure.message; return; }
+    // Stay on the saved island unless a selected project should be followed elsewhere.
+    const created=islandDraft.collectionId===null;
+    if (!projectForPath(boardSelectedPath)) boardSelectedPath=null;
+    if (!boardSelectedPath && (created || boardIslandCollectionId()===id)) boardActivePageKey=created ? 'collection:'+id+':0' : boardActivePageKey;
+    organization=snapshot; boardMembershipPending=true;
+    islandDraft.saving=true; document.getElementById('board-island-save').disabled=true;
+    const draft=islandDraft, dialog=document.getElementById('board-island-dialog');
+    const saved=await persistOrganization();
+    if (islandDraft!==draft) return;
+    draft.saving=false; document.getElementById('board-island-save').disabled=false;
+    if (saved) {
+      toast('Island saved.','success');
+      dialog.returnValue='saved'; dialog.close();
+      const o=draft.opener;
+      (o?.isConnected && !o.hidden ? o : document.getElementById('board-island-projects')).focus();
+    } else {
+      // Keep the draft so it can be reviewed and retried; the collection id is reused.
+      draft.collectionId=null; draft.createdId=draft.createdId ?? id;
+      if (organization.collections.some(c=>c.id===id) && draft.mode==='edit') draft.collectionId=id;
+      error.textContent=storageWarning || pendingStorageWarning ? 'Kept for this session; export before closing. Your choices are still here.' :
+        organizationWarning ? 'Saved in this browser only. Reload to retry saving. Your choices are still here.' : 'Could not save. Your choices are still here.';
+      reportBoardSave(false,'');
+    }
+  }
+  let deletingIslandId = null;
+  function deleteBoardIsland() {
+    const id=boardIslandCollectionId(), collection=organization.collections.find(c=>c.id===id);
+    if (id===null) return;
+    if (!collection) { toast('This island was removed elsewhere. Nothing was deleted.','error'); return; }
+    ensureProjectRegistry();
+    const n=boardProjects.filter(p=>projectCollectionId(p)===id).length;
+    deletingIslandId=id;
+    document.getElementById('board-island-delete-title').textContent='Delete “'+collection.name+'”?';
+    document.getElementById('board-island-delete-body').textContent=n
+      ? n+' project'+(n===1?'':'s')+' will move to Workspace. No files are deleted.' : 'This island is empty. No files are deleted.';
+    const dialog=document.getElementById('board-island-delete-dialog'), opener=document.activeElement;
+    dialog.returnValue='';
+    dialog.addEventListener('close',()=>{ if (!dialog.returnValue && opener?.isConnected && !opener.hidden) opener.focus(); },{once:true});
+    dialog.showModal();
+    document.getElementById('board-island-delete-confirm').focus();
+  }
+  async function confirmDeleteBoardIsland(event) {
+    event.preventDefault();
+    const id=deletingIslandId, dialog=document.getElementById('board-island-delete-dialog');
+    deletingIslandId=null;
+    dialog.returnValue='deleted'; dialog.close();
+    const collection=organization.collections.find(c=>c.id===id);
+    if (!collection) { toast('This island was removed elsewhere. Nothing was deleted.','error'); return; }
+    ensureProjectRegistry();
+    const snapshot=organizationSnapshot();
+    try { deleteOrganizationCollection(snapshot,id); }
+    catch (error) { toast(error.message,'error'); return; }
+    organization=snapshot; boardMembershipPending=true;
+    // The selected project, if it was on this island, is followed to Workspace; otherwise land on Workspace.
+    if (!projectForPath(boardSelectedPath)) boardActivePageKey='workspace:0';
+    const saved=await persistOrganization();
+    reportBoardSave(saved,'Island deleted. Its projects are on Workspace.');
+    document.getElementById('board-island-create').focus();
+  }
+  // One place for save outcomes: server-saved, browser-only, or session-only.
+  function reportBoardSave(saved, message) {
+    if (saved) toast(message,'success');
+    else if (storageWarning || pendingStorageWarning) toast('Kept for this session; export before closing.');
+    else if (organizationWarning) toast('Saved in this browser only. Reload to retry saving.');
   }
 
   function deleteCollection(id) {
     const collection = organization.collections.find(c => c.id === id);
     if (!collection) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
     if (!confirm('Delete collection “' + collection.name + '”? Its repos will move to Unsorted; no files will be deleted.')) return;
-    const index = organization.collections.findIndex(c => c.id === id);
-    if (index < 0) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
-    organization.collections.splice(index, 1);
-    for (const [path, assignedId] of Object.entries(organization.assignments)) {
-      if (assignedId === id) delete organization.assignments[path];
-    }
-    organization.collapsed = organization.collapsed.filter(k => k !== 'collection:' + id);
-    persistOrganization();
+    ensureProjectRegistry();
+    const snapshot = organizationSnapshot();
+    try { deleteOrganizationCollection(snapshot, id); }
+    catch (error) { toast(error.message, 'error'); return; }
+    organization = snapshot;
+    return persistOrganization();
   }
 
   function matchesFilter(r, filter) {
@@ -1609,7 +1951,8 @@
       } else if (organization.grouping === 'none') {
         add('all', 'Projects').entries.push(entry);
       } else {
-        const index = organization.collections.findIndex(c => c.id === organization.assignments[r.path]);
+        const collectionId = projectCollectionId(projectForPath(r.path));
+        const index = organization.collections.findIndex(c => c.id === collectionId);
         const c = organization.collections[index];
         add(c ? 'collection:' + c.id : 'unsorted', c ? c.name : 'Unsorted', c ? index : null).entries.push(entry);
       }
@@ -1678,6 +2021,16 @@
       } else githubIdentityByPath.set(path,slug);
     }
     if (identityChanged || !observed) rebuildProjectModel();
+  }
+
+  function seedRepoIdentities(listed) {
+    let changed = false;
+    for (const entry of listed) {
+      if (!usableIdentityString(entry?.path)) continue;
+      const identity = validatedRepoIdentity({project_id: entry.project_id, project_path: entry.project_path, is_worktree: entry.is_worktree});
+      if (identity && JSON.stringify(repoIdentities.get(entry.path)) !== JSON.stringify(identity)) { repoIdentities.set(entry.path, identity); changed = true; }
+    }
+    if (changed) { try { localStorage.setItem(PROJECT_IDENTITIES_KEY, JSON.stringify({version:1, entries:Object.fromEntries(repoIdentities)})); } catch { } }
   }
 
   function deriveBoardProjects(registry, identities = repoIdentities) {
@@ -1826,7 +2179,10 @@
   async function load() {
     const res = await fetch('/api/repos');
     if (!res.ok) throw new Error('Could not load tracked repositories');
-    repos = (await res.json()).map(r => ({...r, _status: null}));
+    const listed = await res.json();
+    repos = listed.map(({project_id, project_path, is_worktree, ...r}) => ({...r, _status: null}));
+    // The server groups worktrees up front; seed identities before the first paint so plots never regroup.
+    seedRepoIdentities(listed);
     rebuildProjectModel();
     // Cached/provisional plots paint before any status request settles.
     const initial = runLocalStatusBatch([...repos], 'list', true);
@@ -1923,7 +2279,9 @@
     const sync = s && s.sync;
     const syncLabel = sync && sync.has_upstream && (sync.ahead || sync.behind)
       ? `<span class="repo-label attention-pill" data-tone="sync" title="${sync.ahead} commits ahead, ${sync.behind} behind cached upstream refs. Last fetch in this checkout: ${s.last_fetch_at ? ageLabel(s.last_fetch_at) : 'unknown'}.">↑${sync.ahead} ↓${sync.behind}</span>` : '';
-    const collectionId = organization.assignments[r.path];
+    const project = projectForPath(r.path);
+    const assignment = project ? projectCollectionResolution(project) : {collectionId: null, warning: ''};
+    const collectionId = assignment.collectionId;
     const options = '<option value="">Unsorted</option>' + organization.collections.map(c =>
       `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
     const stale = s && s.stale_branches && s.stale_branches.length
@@ -1947,6 +2305,7 @@
         <div class="menu-panel">
           <label for="collection-${i}">Collection</label>
           <select class="collection-select" id="collection-${i}" onchange="assignCollection(${i}, this.value)">${options}</select>
+          ${assignment.warning ? `<p class="local-note">${escapeHtml(assignment.warning)}</p>` : ''}
           <button class="btn btn-ghost" onclick="validate(${i})">Re-check status</button>
           <button class="btn btn-ghost btn-danger" onclick="removeRepo(${i})">Remove from tracker</button>
         </div>
@@ -2031,7 +2390,7 @@
     }
     list.innerHTML = groups.map((g, n) => {
       const collapsed = groupCollapsed(g.key);
-      const pinnedAbove = g.index !== null ? entries.filter(({r}) => organization.pins.includes(r.path) && organization.assignments[r.path] === organization.collections[g.index].id).length : 0;
+      const pinnedAbove = g.index !== null ? entries.filter(({r}) => organization.pins.includes(r.path) && projectCollectionId(projectForPath(r.path)) === organization.collections[g.index].id).length : 0;
       const countLabel = pinnedAbove ? (g.entries.length + pinnedAbove) + ' · ' + pinnedAbove + ' pinned above' : g.entries.length;
       const key = escapeHtml(JSON.stringify(g.key));
       return `<section class="collection">
@@ -2105,9 +2464,9 @@
 
   /* ---------- board view ---------- */
   let boardActivePageKey = 'workspace:0';
-  let boardScrollY = 0, boardPage = 1, detailOrigin = '#/', lastHash = '', routeHasRun = false;
+  let boardScrollY = 0, boardPage = 1, detailOrigin = '#/board', lastHash = '', routeHasRun = false;
   let refreshingBoard = false, boardSelectedPath = null, boardFocusedPath = null;
-  let boardLayoutSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
+  let boardLayoutSignature = '', boardOrganizationSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
   let boardPreviousProjects = new Map();
   let boardCommittedProjects = new Map(), boardMembershipPending = false, boardPanning = false;
   const boardControllers = new Map();
@@ -2481,12 +2840,23 @@
   function boardGridToWorld(col, row) { return {x:(col-row)*BOARD_TTW/2, y:(col+row)*BOARD_TTH/2}; }
   function boardWorldToGrid(x, y) { return {col:(x/(BOARD_TTW/2)+y/(BOARD_TTH/2))/2, row:(y/(BOARD_TTH/2)-x/(BOARD_TTW/2))/2}; }
 
+  function organizationBoardSignature() { return JSON.stringify([organization.collections,organization.assignments]); }
+  // Workspace first, then custom islands in saved order; empty islands persist.
+  function deriveBoardNeighborhoods(projects, snapshot) {
+    const byCollection=new Map(snapshot.collections.map(c=>[c.id,[]])), workspace=[];
+    for (const project of projects) {
+      const id=projectCollectionId(project,snapshot);
+      if (id!==null && byCollection.has(id)) byCollection.get(id).push(project.key); else workspace.push(project.key);
+    }
+    return [{key:'workspace',name:'Workspace',projectKeys:workspace,custom:false},
+      ...snapshot.collections.map(c=>({key:'collection:'+c.id,name:c.name,collectionId:c.id,projectKeys:byCollection.get(c.id),custom:true}))];
+  }
   function commitBoardMembership() {
     if (!boardMembershipPending || localStatusBatches.size || boardPanning) return false;
     const focusedPath=document.activeElement?.closest?.('.board-select')?.dataset.path;
     boardPreviousProjects=boardCommittedProjects;
     boardCommittedProjects=new Map(boardProjects.map(project => [project.key,project]));
-    boardNeighborhoods=[{key:'workspace',name:'Workspace',projectKeys:boardProjects.map(project=>project.key)}];
+    boardNeighborhoods=deriveBoardNeighborhoods(boardProjects,organization); boardOrganizationSignature=organizationBoardSignature();
     boardMembershipPending=false; boardLayoutSignature=projectModelSignature;
     boardLayoutReady=initialLocalBatchSettled;
     // Selection is a checkout path; consolidation may move it onto another page.
@@ -2496,7 +2866,12 @@
     const pages=boardIslands(boardNeighborhoods);
     let index=project ? pages.findIndex(page=>page.projectKeys.includes(project.key)) : -1;
     if (index<0) index=pages.findIndex(page=>page.pageKey===boardActivePageKey);
-    if (index<0) index=Math.min(boardPage-1,pages.length-1);
+    if (index<0) {
+      // A vanished page falls back inside its own island, then to Workspace; never to a neighbouring island.
+      const cut=boardActivePageKey.lastIndexOf(':'), key=boardActivePageKey.slice(0,cut), wanted=+boardActivePageKey.slice(cut+1)||0;
+      const same=pages.filter(page=>page.key===key);
+      index=same.length ? pages.indexOf(same[Math.min(wanted,same.length-1)]) : pages.findIndex(page=>page.key==='workspace');
+    }
     boardPage=Math.max(1,index+1); boardActivePageKey=pages[boardPage-1]?.pageKey || 'workspace:0';
     return true;
   }
@@ -2852,7 +3227,7 @@
     const w=stage.clientWidth,h=stage.clientHeight;
     if (boardFitPending) {
       const narrow=matchMedia('(max-width:650px)').matches;
-      boardCamera.zoom=narrow?Math.max(.56,Math.min(1.5,(w*.96)/boardScene.width)):Math.max(.35,Math.min(1.5,(w*.86)/boardScene.width,(h*.86)/boardScene.height));
+      boardCamera.zoom=narrow?Math.max(.56,Math.min(1.5,(w*.96)/boardScene.width)):Math.max(.35,Math.min(2,(w*.9)/boardScene.width,(h*.92)/boardScene.height));
       boardCamera.x=narrow?Math.round((w-boardScene.width*boardCamera.zoom)/2):0;boardCamera.y=0;boardFitPending=false;
       // on a phone the stage is exactly as tall as the island needs: no empty bands above and below it
       const wanted=narrow?Math.min(480,Math.max(280,Math.round(boardScene.height*boardCamera.zoom+28))):0;
@@ -3600,8 +3975,9 @@
     // The shared model is current while this snapshot waits for its batch or pan to end.
     if (!boardNeighborhoods.length) {
       boardCommittedProjects=new Map(boardProjects.map(project=>[project.key,project]));
-      boardNeighborhoods=[{key:'workspace',name:'Workspace',projectKeys:boardProjects.map(project=>project.key)}];
+      boardNeighborhoods=deriveBoardNeighborhoods(boardProjects,organization); boardOrganizationSignature=organizationBoardSignature();
     }
+    if (boardOrganizationSignature!==organizationBoardSignature()) boardMembershipPending=true;
     commitBoardMembership();
     const islands = boardIslands(boardNeighborhoods);
     const pages = Math.max(1,islands.length);
@@ -3611,6 +3987,8 @@
     if (!activeIsland.allPaths.includes(boardSelectedPath) && !boardMembershipPending) boardSelectedPath = null;
     if (!activeIsland.allPaths.includes(boardHoveredPath)) boardHoveredPath = null;
     if (!boardPanning) renderIsometricScene(boardNeighborhoods);
+    renderBoardIslandControls();
+    document.getElementById('board-island-empty').hidden=!activeIsland.empty;
     renderBoardInspector();
     document.getElementById('board-project-count').textContent=boardProjects.length+' project'+(boardProjects.length===1?'':'s')+' · '+repos.length+' checkout'+(repos.length===1?'':'s');
     const matches = repos.filter(boardMatches).length;
@@ -3721,15 +4099,17 @@
   const expandedCommits = new Set();
   const expandedFiles = new Set();
 
-  function closeDetail() { location.hash = detailOrigin || '#/'; }
+  function closeDetail() { location.hash = detailOrigin || '#/board'; }
 
   async function route() {
     const firstRoute=!routeHasRun; routeHasRun=true;
+    // Board is home; the list lives at #/list.
+    if (!location.hash || location.hash==='#' || location.hash==='#/') history.replaceState(null,'','#/board');
     const h = location.hash;
     const prev = lastHash;
     lastHash = h;
     if (h.startsWith('#/repo/')) {
-      detailOrigin = (prev === '#/board') ? '#/board' : '#/';
+      detailOrigin = (prev === '#/list') ? '#/list' : '#/board';
       const [encoded, query = ''] = h.slice(7).split('?');
       const path = decodeURIComponent(encoded);
       await showDetail(path);
@@ -4302,7 +4682,7 @@
     if (!item) return;
     closePalette();
     if (item.command === 'board') { location.hash = '#/board'; return; }
-    if (item.command === 'list') { location.hash = '#/'; return; }
+    if (item.command === 'list') { location.hash = '#/list'; return; }
     if (item.command === 'copy') { copyRepoPath(detailPath || boardSelectedPath); return; }
     if (item.command === 'code') { location.href = editorHref(detailPath || boardSelectedPath); return; }
     location.hash = '#/repo/' + encodeURIComponent(item.path);

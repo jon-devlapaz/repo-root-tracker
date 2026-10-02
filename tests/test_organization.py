@@ -88,6 +88,38 @@ def test_get_missing_and_put_round_trip(api, config):
     assert list(config.glob("*.tmp")) == []
 
 
+def test_project_assignment_keys_and_workspace_markers_round_trip(api, config):
+    data = payload()
+    data["assignments"] = {
+        "project:git:%2Fwork%2Foak%2F.git": "work",
+        "project:path:%2Fwork%2Fstandalone": "",
+        "project:git:%2Fmissing%2F.git": "removed-island",
+        "/work/oak": "work", "/untracked-worktree": "work", "/legacy-workspace": "",
+    }
+    code, saved = request(api, data)
+    assert code == 200 and saved["version"] == 1 and saved["revision"] == 1
+    assert saved["assignments"] == data["assignments"]
+    assert request(api) == (200, saved)
+    assert org.read(config) == saved
+    disk = json.loads((config / "organization.json").read_text())
+    assert disk["assignments"] == data["assignments"]
+    # Export uses precisely the shared version-1 fields; import must keep every key/value.
+    exported = json.loads(json.dumps({k: saved[k] for k in org.FIELDS}))
+    assert exported["assignments"] == data["assignments"]
+    assert request(api, {**exported, "base_revision": 1})[1] == {**saved, "revision": 2}
+
+
+def test_empty_collection_id_is_invalid_but_empty_assignment_value_is_valid(api):
+    data = payload()
+    data["assignments"] = {"project:git:%2Frepo%2F.git": ""}
+    code, saved = request(api, data)
+    assert code == 200 and saved["assignments"] == data["assignments"]
+    invalid = {**data, "base_revision": 1, "collections": [{"id": "", "name": "Workspace"}]}
+    code, error = request(api, invalid)
+    assert code == 400 and "nonempty" in error["error"]
+    assert request(api) == (200, saved)
+
+
 def test_revision_increments_and_stale_write_does_not_replace(api):
     assert request(api, payload())[1]["revision"] == 1
     newer = payload(1)

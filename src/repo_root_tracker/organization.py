@@ -47,7 +47,9 @@ def validate(data: object, extra: str) -> dict:
     assignments = data["assignments"]
     if not isinstance(assignments, dict) or not all(isinstance(v, str) for v in assignments.values()):
         raise ValueError("assignments must be an object of string collection ids")
-    # Unknown paths and collection ids remain available for the offline fallback.
+    # Assignment keys include canonical project keys and legacy checkout paths.
+    # "" is reserved for an explicit Workspace assignment, never a collection id.
+    # Unknown keys and collection ids remain available for the offline fallback.
     if data["grouping"] not in ("collection", "folder", "project", "none"):
         raise ValueError("grouping must be collection, folder, project, or none")
     if data["sort"] not in ("name", "recent"):
