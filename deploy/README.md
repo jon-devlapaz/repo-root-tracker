@@ -1,5 +1,13 @@
 # Running on a Raspberry Pi behind a URL
 
+## Fastest route: one command (Tailscale Funnel)
+If the Pi is on your Tailscale network, `install-pi.sh` does everything below for you and publishes a public HTTPS URL (`https://<pi>.<tailnet>.ts.net/`) with no router changes or domain. It generates a strong password and prints it once.
+
+From the Mac: `git archive HEAD | gzip > rrt-source.tar.gz && tailscale file cp deploy/install-pi.sh rrt-source.tar.gz <pi>:`
+On the Pi: `tailscale file get . && bash install-pi.sh` (run it again with a fresh tarball to upgrade).
+
+The manual steps below are for a router port-forward with Caddy instead.
+
 The dashboard reads git repos on the machine it runs on. On the Pi that means **clones of your repos on the Pi**; they are refreshed by a timer (`git fetch`), so ahead/behind and GitHub state stay current. Local uncommitted changes on your Mac are not visible there.
 
 How it is protected: the Python server only listens on `127.0.0.1`. Caddy on the Pi terminates HTTPS and forwards to it. Every page and API call needs a password sign-in (scrypt hash, signed 7-day cookie, five wrong tries lock an address out for 15 minutes). Requests for any other host name are refused, and writes must come from the same site.
