@@ -2877,8 +2877,8 @@
     const layer=document.getElementById('board-name-overlay'),stage=document.getElementById('board-stage');
     if(!layer||!stage||!boardScene)return;
     const showAll=boardNamesVisible||boardCamera.zoom>=1.6;
-    const activePaths=[boardFocusedPath,boardSelectedPath,boardHoveredPath].filter(Boolean);
-    const zsig=[stage.clientWidth,stage.clientHeight,boardCamera.zoom,showAll,...activePaths,
+    const activePaths=[...new Set([boardFocusedPath,boardSelectedPath,boardHoveredPath].filter(Boolean))];
+    const zsig=[stage.clientWidth,stage.clientHeight,boardCamera.zoom,showAll,'sel:'+boardSelectedPath,...activePaths,
       boardScene.plots.map(p=>p.projectKey+p.project.name+p.x+p.y).join(),boardScene.targets.map(t=>t.path+t.slot+t.x+t.y).join(),
       boardScene.targets.filter(t=>activePaths.includes(t.path)).map(t=>repoByPath.get(t.path)?._status?.branch).join()].join('|');
     if(layer.dataset.zsig===zsig){
@@ -3201,9 +3201,12 @@
     };
     const caption=e=>{const button=e.target.closest('.board-select');if(!button)return;const path=button.dataset.path;updateBoardCaption(path);hoverTip(path,button);};
     stage.addEventListener('focusin',event=>{
-      const member=event.target.closest('.board-select');if(member)boardFocusedPath=member.dataset.path;
+      const member=event.target.closest('.board-select');
+      // Focus only needs a re-render when it asks for a checkout that is not drawn yet (a hidden overflow worktree).
+      const needsPresenting=!!member && !boardScene?.targets.some(target=>target.path===member.dataset.path);
+      if(member)boardFocusedPath=member.dataset.path;
       caption(event);layoutBoardNames();
-      queueMicrotask(refreshBoardPresentation);
+      if(needsPresenting)queueMicrotask(refreshBoardPresentation);
     });
 
     let hoverRaf=0;
