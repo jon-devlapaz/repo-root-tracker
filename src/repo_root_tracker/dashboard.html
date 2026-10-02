@@ -995,6 +995,7 @@
     if (!data.assignments || typeof data.assignments !== 'object' || Array.isArray(data.assignments) ||
         !Object.values(data.assignments).every(id => typeof id === 'string'))
       throw new Error('Assignments must be an object of string collection ids.');
+    // "" is the reserved Workspace assignment value; collection ids stay nonempty.
     if (!['collection', 'folder', 'project', 'none'].includes(data.grouping)) throw new Error('Invalid grouping.');
     if (!['name', 'recent'].includes(data.sort)) throw new Error('Invalid sort.');
     return data;
@@ -1294,16 +1295,22 @@
   function selectMatching() { matchingEntries.forEach(({r}) => selectedRepos.add(r.path)); render(); }
   function clearSelection() { selectedRepos.clear(); render(); }
   function moveSelected() {
+    ensureProjectRegistry();
     const id = document.getElementById('bulk-collection').value;
     if (!id || !selectedRepos.size) return;
     if (id !== 'unsorted' && !organization.collections.some(c => c.id === id)) return;
+    const projects = new Map();
     selectedRepos.forEach(path => {
-      if (id === 'unsorted') delete organization.assignments[path];
-      else organization.assignments[path] = id;
+      const project = projectForPath(path);
+      if (project) projects.set(project.key, project);
     });
+    if (!projects.size) return;
+    const snapshot = organizationSnapshot();
+    projects.forEach(project => setProjectCollection(snapshot, project, id === 'unsorted' ? null : id));
+    organization = snapshot;
     toast('Moved ' + selectedRepos.size + ' repos', 'success');
     selectedRepos.clear();
-    persistOrganization();
+    return persistOrganization();
   }
 
   function renderBulk() {
@@ -1509,9 +1516,108 @@
   }
 
   function assignCollection(i, id) {
-    if (id) organization.assignments[repos[i].path] = id;
-    else delete organization.assignments[repos[i].path];
-    persistOrganization();
+    ensureProjectRegistry();
+    const project = projectForPath(repos[i]?.path);
+    if (!project || (id && !organization.collections.some(c => c.id === id))) return;
+    const snapshot = organizationSnapshot();
+    setProjectCollection(snapshot, project, id || null);
+    organization = snapshot;
+    return persistOrganization();
+  }
+
+  // These helpers edit a supplied snapshot. Only deliberate callers persist it.
+  function organizationSnapshot(source = organization) { return JSON.parse(JSON.stringify(source)); }
+
+  function projectAssignmentKey(project) {
+    return project.projectId ? 'project:git:' + encodeURIComponent(project.projectId)
+      : 'project:path:' + encodeURIComponent(project.defaultPath);
+  }
+
+  function projectAssignmentAliases(project) {
+    return [...new Set([...project.paths, project.mainPath, project.mainRepoPath].filter(Boolean))];
+  }
+
+  // Keep warnings separate from identity and health; callers can show them in either view.
+  function projectCollectionResolution(project, snapshot = organization) {
+    const assignments = snapshot.assignments, key = projectAssignmentKey(project);
+    const collectionOrder = new Map(snapshot.collections.map((c, i) => [c.id, i]));
+    const mainPath = project.mainPath || project.mainRepoPath || project.centralRepoPath;
+    const knownAliases = projectAssignmentAliases(project).filter(path => Object.hasOwn(assignments, path) &&
+      (assignments[path] === '' || collectionOrder.has(assignments[path])));
+    const conflictingAliases = new Set(knownAliases.map(path => assignments[path])).size > 1 ? knownAliases : [];
+    let collectionId = null, rawValue, source = 'workspace', warning = '';
+    if (Object.hasOwn(assignments, key)) {
+      source = 'canonical'; rawValue = assignments[key];
+      if (collectionOrder.has(rawValue)) collectionId = rawValue;
+      else if (rawValue !== '') warning = 'Unknown collection “' + rawValue + '”. This project is in Workspace.';
+    } else if (mainPath && Object.hasOwn(assignments, mainPath) &&
+        (assignments[mainPath] === '' || collectionOrder.has(assignments[mainPath]))) {
+      source = 'main'; rawValue = assignments[mainPath]; collectionId = rawValue || null;
+    } else {
+      const members = project.paths.filter(path => path !== mainPath && Object.hasOwn(assignments, path) && collectionOrder.has(assignments[path]));
+      members.sort((a, b) => collectionOrder.get(assignments[a]) - collectionOrder.get(assignments[b]) || exactPathOrder(a, b));
+      if (members.length) { source = 'member'; rawValue = assignments[members[0]]; collectionId = rawValue; }
+    }
+    if (conflictingAliases.length) {
+      const name = snapshot.collections.find(c => c.id === collectionId)?.name || 'Workspace';
+      warning += (warning ? ' ' : '') + 'Conflicting checkout assignments. Using ' + name + ' for the whole project.';
+    }
+    return {collectionId, source, rawValue, warning, conflictingAliases};
+  }
+
+  function projectCollectionId(project, snapshot = organization) {
+    return project ? projectCollectionResolution(project, snapshot).collectionId : null;
+  }
+
+  function setProjectCollection(snapshot, project, collectionId) {
+    if (collectionId !== null && !snapshot.collections.some(c => c.id === collectionId))
+      throw new Error('This collection was removed elsewhere. Nothing was changed.');
+    snapshot.assignments[projectAssignmentKey(project)] = collectionId === null ? '' : collectionId;
+    for (const path of projectAssignmentAliases(project)) {
+      if (collectionId === null) delete snapshot.assignments[path];
+      else snapshot.assignments[path] = collectionId;
+    }
+    return snapshot;
+  }
+
+  function collectionNameForSnapshot(snapshot, name, exceptId = null) {
+    name = name.trim();
+    if (!name || snapshot.collections.some(c => c.id !== exceptId && c.name.trim().toLowerCase() === name.toLowerCase()))
+      throw new Error('Choose a nonempty, unique collection name.');
+    if (name.length > 60) throw new Error('Collection names must be 60 characters or fewer.');
+    return name;
+  }
+
+  function createOrganizationCollection(snapshot, name, id = organizationCopyId()) {
+    name = collectionNameForSnapshot(snapshot, name);
+    if (typeof id !== 'string' || !id.trim() || snapshot.collections.some(c => c.id === id))
+      throw new Error('Choose a nonempty, unique collection id.');
+    const collection = {id, name};
+    snapshot.collections.push(collection);
+    return collection;
+  }
+
+  function renameOrganizationCollection(snapshot, id, name) {
+    const collection = snapshot.collections.find(c => c.id === id);
+    if (!collection) throw new Error('This collection was removed elsewhere. Your entered name has been kept; cancel or create a new collection.');
+    collection.name = collectionNameForSnapshot(snapshot, name, id);
+    return collection;
+  }
+
+  function deleteOrganizationCollection(snapshot, id, projects = boardProjects) {
+    if (!snapshot.collections.some(c => c.id === id))
+      throw new Error('This collection was removed elsewhere. Nothing was deleted.');
+    // Resolve before removal: a surviving alias must not resurrect another placement.
+    const affected = projects.filter(project => projectCollectionId(project, snapshot) === id);
+    snapshot.collections = snapshot.collections.filter(c => c.id !== id);
+    for (const [key, assignedId] of Object.entries(snapshot.assignments)) {
+      if (assignedId !== id) continue;
+      if (key.startsWith('project:git:') || key.startsWith('project:path:')) snapshot.assignments[key] = '';
+      else delete snapshot.assignments[key];
+    }
+    affected.forEach(project => setProjectCollection(snapshot, project, null));
+    if (snapshot.collapsed) snapshot.collapsed = snapshot.collapsed.filter(key => key !== 'collection:' + id);
+    return affected;
   }
 
   function toggleCollection(key) {
@@ -1539,17 +1645,15 @@
   async function saveCollection(event) {
     event.preventDefault();
     const name = document.getElementById('collection-name').value.trim();
-    const collection = organization.collections.find(c => c.id === editingCollectionId);
-    if (editingCollectionId !== null && !collection) {
-      document.getElementById('collection-error').textContent = 'This collection was removed elsewhere. Your entered name has been kept; cancel or create a new collection.';
+    const snapshot = organizationSnapshot();
+    try {
+      if (editingCollectionId === null) createOrganizationCollection(snapshot, name);
+      else renameOrganizationCollection(snapshot, editingCollectionId, name);
+    } catch (error) {
+      document.getElementById('collection-error').textContent = error.message;
       return;
     }
-    if (!name || organization.collections.some(c => c.id !== editingCollectionId && c.name.toLowerCase() === name.toLowerCase())) {
-      document.getElementById('collection-error').textContent = 'Choose a nonempty, unique collection name.';
-      return;
-    }
-    if (editingCollectionId === null) organization.collections.push({id: organizationCopyId(), name});
-    else collection.name = name;
+    organization = snapshot;
     document.getElementById('collection-dialog').close();
     if (await persistOrganization()) toast('Collection saved. Use Organize repos to move several repos at once.', 'success');
     else if (organizationWarning) toast('Collection updated in this browser. Reload to retry saving.');
@@ -1559,14 +1663,12 @@
     const collection = organization.collections.find(c => c.id === id);
     if (!collection) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
     if (!confirm('Delete collection “' + collection.name + '”? Its repos will move to Unsorted; no files will be deleted.')) return;
-    const index = organization.collections.findIndex(c => c.id === id);
-    if (index < 0) { toast('This collection was removed elsewhere. Nothing was deleted.', 'error'); return; }
-    organization.collections.splice(index, 1);
-    for (const [path, assignedId] of Object.entries(organization.assignments)) {
-      if (assignedId === id) delete organization.assignments[path];
-    }
-    organization.collapsed = organization.collapsed.filter(k => k !== 'collection:' + id);
-    persistOrganization();
+    ensureProjectRegistry();
+    const snapshot = organizationSnapshot();
+    try { deleteOrganizationCollection(snapshot, id); }
+    catch (error) { toast(error.message, 'error'); return; }
+    organization = snapshot;
+    return persistOrganization();
   }
 
   function matchesFilter(r, filter) {
@@ -1609,7 +1711,8 @@
       } else if (organization.grouping === 'none') {
         add('all', 'Projects').entries.push(entry);
       } else {
-        const index = organization.collections.findIndex(c => c.id === organization.assignments[r.path]);
+        const collectionId = projectCollectionId(projectForPath(r.path));
+        const index = organization.collections.findIndex(c => c.id === collectionId);
         const c = organization.collections[index];
         add(c ? 'collection:' + c.id : 'unsorted', c ? c.name : 'Unsorted', c ? index : null).entries.push(entry);
       }
@@ -1923,7 +2026,9 @@
     const sync = s && s.sync;
     const syncLabel = sync && sync.has_upstream && (sync.ahead || sync.behind)
       ? `<span class="repo-label attention-pill" data-tone="sync" title="${sync.ahead} commits ahead, ${sync.behind} behind cached upstream refs. Last fetch in this checkout: ${s.last_fetch_at ? ageLabel(s.last_fetch_at) : 'unknown'}.">↑${sync.ahead} ↓${sync.behind}</span>` : '';
-    const collectionId = organization.assignments[r.path];
+    const project = projectForPath(r.path);
+    const assignment = project ? projectCollectionResolution(project) : {collectionId: null, warning: ''};
+    const collectionId = assignment.collectionId;
     const options = '<option value="">Unsorted</option>' + organization.collections.map(c =>
       `<option value="${escapeHtml(c.id)}" ${c.id === collectionId ? 'selected' : ''}>${escapeHtml(c.name)}</option>`).join('');
     const stale = s && s.stale_branches && s.stale_branches.length
@@ -1947,6 +2052,7 @@
         <div class="menu-panel">
           <label for="collection-${i}">Collection</label>
           <select class="collection-select" id="collection-${i}" onchange="assignCollection(${i}, this.value)">${options}</select>
+          ${assignment.warning ? `<p class="local-note">${escapeHtml(assignment.warning)}</p>` : ''}
           <button class="btn btn-ghost" onclick="validate(${i})">Re-check status</button>
           <button class="btn btn-ghost btn-danger" onclick="removeRepo(${i})">Remove from tracker</button>
         </div>
@@ -2031,7 +2137,7 @@
     }
     list.innerHTML = groups.map((g, n) => {
       const collapsed = groupCollapsed(g.key);
-      const pinnedAbove = g.index !== null ? entries.filter(({r}) => organization.pins.includes(r.path) && organization.assignments[r.path] === organization.collections[g.index].id).length : 0;
+      const pinnedAbove = g.index !== null ? entries.filter(({r}) => organization.pins.includes(r.path) && projectCollectionId(projectForPath(r.path)) === organization.collections[g.index].id).length : 0;
       const countLabel = pinnedAbove ? (g.entries.length + pinnedAbove) + ' · ' + pinnedAbove + ' pinned above' : g.entries.length;
       const key = escapeHtml(JSON.stringify(g.key));
       return `<section class="collection">
