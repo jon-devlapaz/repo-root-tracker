@@ -2519,14 +2519,14 @@
     const changed=boardScene.plots.some(plot=>boardPresentedWorktrees(plot.project).join('\n')!==plot.targets.filter(target=>target.role==='worktree').map(target=>target.path).join('\n'));
     if (changed) renderBoard(); else layoutBoardNames();
   }
-  function presentBoardMember(path) {
+  function presentBoardMember(path, render=true) {
     const project=projectForPath(path);
     if (!repoByPath.has(path) || !project) return false;
     if (project.worktreePaths.includes(path) && !boardPresentedWorktrees(project).includes(path)) boardFocusedPath=path;
-    if (!boardPanning) renderBoard();
+    if (render && !boardPanning) renderBoard();
     return true;
   }
-  function ensureBoardRepoVisible(path) {
+  function ensureBoardRepoVisible(path, render=true) {
     ensureProjectRegistry();
     const project=projectForPath(path);
     if (!project || !repoByPath.has(path)) return false;
@@ -2535,7 +2535,7 @@
     if (index<0) index=pages.findIndex(page=>page.allPaths.includes(path));
     if (index<0) index=pages.findIndex(page=>page.projectKeys.includes(project.key));
     if (index>=0) { boardPage=index+1; boardActivePageKey=pages[index].pageKey; }
-    presentBoardMember(path);
+    presentBoardMember(path, render);
     return true;
   }
   function makeBoardScene(neighborhoods) {
@@ -3343,7 +3343,8 @@
     ensureProjectRegistry();
     if (!repoByPath.has(path) || !projectForPath(path)) return;
     boardFocusedPath=null;
-    if (!ensureBoardRepoVisible(path)) return;
+    // Choose the page and set the selection first, then render once (the visibility step used to render on its own).
+    if (!ensureBoardRepoVisible(path,false)) return;
     boardSelectedPath=path;boardHoveredPath=null;
     renderBoard();revealBoardPlot(path);
     if (event?.detail===0 || matchMedia('(max-width:850px)').matches) document.getElementById('board-inspector-title')?.focus({preventScroll:true});
