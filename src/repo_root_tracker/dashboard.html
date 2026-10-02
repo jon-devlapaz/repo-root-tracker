@@ -3086,6 +3086,43 @@
   }
 
   const boardRenderedMarkup=new Map();
+  const BOARD_PATCH_BATCH=8, boardPendingTiles=new Map();
+  let boardTileDrainQueued=false;
+  function patchBoardTile(id,html) {
+    const template=document.createElement('template');template.innerHTML=html;const tile=template.content.firstElementChild;
+    const current=document.getElementById(tile.id);
+    if (!current) return;
+    syncBoardAttributes(current,tile);
+    const nextButtons=[...tile.querySelectorAll('.board-select')];
+    const nextIds=new Set(nextButtons.map(button=>button.id));
+    for (const button of current.querySelectorAll('.board-select')) if (!nextIds.has(button.id)) button.remove();
+    for (const [index,nextButton] of nextButtons.entries()) {
+      let button=document.getElementById(nextButton.id);
+      if (!button) { button=nextButton; current.append(button); }
+      else {
+        syncBoardAttributes(button,nextButton);
+        // Keep the native checkout button (and focus) alive across health patches.
+        if (button.innerHTML!==nextButton.innerHTML) button.innerHTML=nextButton.innerHTML;
+      }
+      // Maintain paint order after a front-slot promotion.
+      if (current.children[index]!==button) current.insertBefore(button,current.children[index] || null);
+    }
+    boardRenderedMarkup.set(id,html);
+  }
+  function scheduleBoardTileDrain() {
+    if(boardTileDrainQueued)return;
+    boardTileDrainQueued=true;
+    requestAnimationFrame(()=>{
+      boardTileDrainQueued=false;
+      let n=0;
+      for(const [id,html] of [...boardPendingTiles]){
+        if(n++>=BOARD_PATCH_BATCH)break;
+        boardPendingTiles.delete(id);patchBoardTile(id,html);
+      }
+      if(boardPendingTiles.size)scheduleBoardTileDrain();
+      else {cacheBoardMemberHits();layoutBoardNames();}
+    });
+  }
   function renderIsometricScene(groups) {
     const signature=JSON.stringify([boardActivePageKey,groups.map(g => [g.key,g.projectKeys.map(key => {const p=boardCommittedProjects.get(key);return [key,p.paths,p.centralRepoPath,p.worktreePaths];})])]);
     const entering=signature!==boardSceneSignature;
@@ -3106,34 +3143,22 @@
     if (boardScene.empty) { groundRequest++; clearTimeout(groundTimer); Object.assign(groundCache,{sig:'',pendingSig:'',structure:'',canvas:null,shadows:0}); }
     const ground=boardScene.empty ? null : boardGroundFor(boardScene.islands[0]);
     const markup=`<div id="board-sky" aria-hidden="true"></div><div id="board-world" style="width:${boardScene.width}px;height:${boardScene.height}px;">${boardScene.empty ? '' : `<svg id="board-terrain" width="${boardScene.width}" height="${boardScene.height}" role="presentation" aria-hidden="true">${terrain}</svg>`}${islands}</div><div id="board-name-overlay"></div><div id="board-hover-tip" hidden></div>`;
-    if(entering || !document.getElementById('board-world')){stage.innerHTML=markup;boardRenderedMarkup.clear();}
+    if(entering || !document.getElementById('board-world')){
+      stage.innerHTML=markup;boardRenderedMarkup.clear();boardPendingTiles.clear();
+      for(const [id,html] of tileMarkup)boardRenderedMarkup.set(id,html);
+    }
     else {
       const terrainNode=document.getElementById('board-terrain');
       if(terrainNode && terrainNode.innerHTML!==terrain)terrainNode.innerHTML=terrain;
-      for(const [id,html] of tileMarkup){
-        if(boardRenderedMarkup.get(id)===html)continue;
-        const template=document.createElement('template');template.innerHTML=html;const tile=template.content.firstElementChild;
-        const current=document.getElementById(tile.id);
-        if (!current) continue;
-        syncBoardAttributes(current,tile);
-        const nextButtons=[...tile.querySelectorAll('.board-select')];
-        const nextIds=new Set(nextButtons.map(button=>button.id));
-        for (const button of current.querySelectorAll('.board-select')) if (!nextIds.has(button.id)) button.remove();
-        for (const [index,nextButton] of nextButtons.entries()) {
-          let button=document.getElementById(nextButton.id);
-          if (!button) { button=nextButton; current.append(button); }
-          else {
-            syncBoardAttributes(button,nextButton);
-            // Keep the native checkout button (and focus) alive across health patches.
-            if (button.innerHTML!==nextButton.innerHTML) button.innerHTML=nextButton.innerHTML;
-          }
-          // Maintain paint order after a front-slot promotion.
-          if (current.children[index]!==button) current.insertBefore(button,current.children[index] || null);
-        }
-      }
+      // A refresh can change every visible tile at once. Patch the first batch now (small updates stay immediate and
+      // deterministic) and the rest over the next frames, always from the latest markup, so no single task is long.
+      const changed=[...tileMarkup].filter(([id,html])=>boardRenderedMarkup.get(id)!==html);
+      boardPendingTiles.clear();
+      changed.slice(0,BOARD_PATCH_BATCH).forEach(([id,html])=>patchBoardTile(id,html));
+      changed.slice(BOARD_PATCH_BATCH).forEach(([id,html])=>boardPendingTiles.set(id,html));
+      if(boardPendingTiles.size)scheduleBoardTileDrain();
+      for(const id of [...boardRenderedMarkup.keys()])if(!tileMarkup.has(id))boardRenderedMarkup.delete(id);
     }
-
-    for(const [id,html] of tileMarkup)boardRenderedMarkup.set(id,html);
     boardScene.islands.forEach(g => {
       const calm=boardIslandCalm(g),was=boardCalmState.get(g.key),membership=g.allProjectKeys.map(key=>key+':'+(boardProjectByKey.get(key)?.paths.join('|') || '')).join(';');
       const sameMembership=was?.membership===membership;
