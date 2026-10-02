@@ -431,7 +431,7 @@ def test_island_dialog_cancel_restores_focus_and_changes_nothing(workspace):
     assert page.evaluate("organization.collections.length") == 2
 
 
-def test_island_dialog_reports_project_identity_change_without_saving(workspace):
+def test_island_dialog_reports_a_project_that_disappeared_without_saving(workspace):
     page = workspace.open_page()
     page.goto("http://dashboard.test/#/board")
     settled(page)
@@ -439,12 +439,11 @@ def test_island_dialog_reports_project_identity_change_without_saving(workspace)
     page.locator("#board-island-name").fill("Focus")
     page.locator('#board-island-picker input[type=checkbox]').check()
     before = len(puts(workspace.fake))
-    page.evaluate("() => { islandDraft.known.get(boardProjects[0].key).projectId = '/elsewhere/.git'; }")
+    page.evaluate("() => { repos.splice(0); rebuildProjectModel(); }")
     page.locator("#board-island-save").click()
-    assert "changed identity" in page.locator("#board-island-error").inner_text()
+    assert "no longer tracked" in page.locator("#board-island-error").inner_text()
     assert page.locator("#board-island-dialog").evaluate("d => d.open")
     assert len(puts(workspace.fake)) == before
-
 
 
 def board(workspace, assignments=None):
@@ -471,6 +470,7 @@ def test_delete_island_confirms_then_moves_projects_to_workspace_in_one_put(work
     page = board(workspace, {PROJECT_KEY: "personal"})
     page.locator("#board-archipelago button").nth(2).click()
     page.evaluate("selectBoardRepo(boardProjects[0].defaultPath)")
+    assert page.evaluate("boardSelectedPath") == MAIN
     before = len(puts(workspace.fake))
     page.locator("#board-island-delete").click()
     assert "1 project will move to Workspace" in page.locator("#board-island-delete-body").inner_text()
@@ -486,7 +486,7 @@ def test_delete_island_confirms_then_moves_projects_to_workspace_in_one_put(work
     assert [c["id"] for c in saved["collections"]] == ["work"]
     assert saved["assignments"][PROJECT_KEY] == ""
     assert page.evaluate("boardActivePageKey") == "workspace:0"
-    assert page.evaluate("boardSelectedPath") == page.evaluate("boardProjects[0].defaultPath") or page.evaluate("boardSelectedPath") is None
+    assert page.evaluate("boardSelectedPath") == MAIN
 
 
 def test_rename_island_keeps_page_and_membership(workspace):
@@ -511,9 +511,9 @@ def test_failed_put_with_working_storage_says_saved_in_this_browser_only(workspa
     page.locator("#board-island-create").click()
     page.locator("#board-island-name").fill("Offline")
     page.locator("#board-island-save").click()
-    page.wait_for_function("!document.getElementById('board-island-dialog').open")
-    page.wait_for_function("document.body.textContent.includes('Saved in this browser only')")
-    assert "Kept for this session" not in toast_text(page)
+    page.wait_for_function("document.getElementById('board-island-error').textContent.includes('Saved in this browser only')")
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+    assert "Kept for this session" not in page.locator("#board-island-error").inner_text()
 
 
 def test_failed_put_and_failed_storage_says_kept_for_this_session(workspace):
@@ -523,5 +523,96 @@ def test_failed_put_and_failed_storage_says_kept_for_this_session(workspace):
     page.locator("#board-island-create").click()
     page.locator("#board-island-name").fill("Offline")
     page.locator("#board-island-save").click()
+    page.wait_for_function("document.getElementById('board-island-error').textContent.includes('Kept for this session; export before closing.')")
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+
+
+def open_edit(page, name="Personal"):
+    page.locator("#board-archipelago button", has_text=name).click()
+    page.locator("#board-island-projects").click()
+
+
+def test_save_only_applies_deliberate_changes(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    open_edit(page)
+    page.evaluate("() => { organization.assignments[boardProjects[0] && projectAssignmentKey(boardProjects[0])] = 'work'; boardMembershipPending = true; }")
+    page.locator("#board-island-save").click()
     page.wait_for_function("!document.getElementById('board-island-dialog').open")
-    page.wait_for_function("document.body.textContent.includes('Kept for this session; export before closing.')")
+    page.evaluate("() => organizationQueue")
+    assert puts(workspace.fake)[-1]["assignments"][PROJECT_KEY] == "work"
+
+
+def test_conflicting_merge_intents_are_rejected(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    open_edit(page)
+    before = len(puts(workspace.fake))
+    page.evaluate("""() => {
+      const key = boardProjects[0].key;
+      islandDraft.checked.delete(key);
+      islandDraft.known.set('ghost', {paths: [boardProjects[0].defaultPath], projectId: boardProjects[0].projectId});
+      islandDraft.checked.add('ghost');
+    }""")
+    page.locator("#board-island-save").click()
+    assert "merged with another project" in page.locator("#board-island-error").inner_text()
+    assert len(puts(workspace.fake)) == before
+
+
+def test_failed_save_keeps_draft_and_retry_creates_one_island(workspace):
+    page = board(workspace)
+    workspace.fake.fail_puts = 1
+    page.locator("#board-island-create").click()
+    page.locator("#board-island-name").fill("Retry")
+    page.locator('#board-island-picker input[type=checkbox]').check()
+    page.locator("#board-island-save").click()
+    page.wait_for_function("document.getElementById('board-island-error').textContent.includes('Your choices are still here')")
+    assert page.locator('#board-island-picker input[type=checkbox]').is_checked()
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    assert page.evaluate("organization.collections.filter(c => c.name === 'Retry').length") == 1
+
+
+def test_moving_selected_project_to_workspace_keeps_selection_and_follows_it(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    page.locator("#board-archipelago button", has_text="Personal").click()
+    page.evaluate("selectBoardRepo(boardProjects[0].defaultPath)")
+    page.locator("#board-island-projects").click()
+    page.locator('#board-island-picker input[type=checkbox]').uncheck()
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    assert page.evaluate("boardSelectedPath") == MAIN
+    assert page.evaluate("boardActivePageKey") == "workspace:0"
+
+
+def test_vanished_page_falls_back_inside_its_island(workspace):
+    page = board(workspace)
+    page.evaluate("() => { boardActivePageKey = 'collection:work:3'; boardSelectedPath = null; boardMembershipPending = true; commitBoardMembership(); }")
+    assert page.evaluate("boardActivePageKey") == "collection:work:0"
+
+
+def test_enter_in_search_does_not_submit(workspace):
+    page = board(workspace)
+    before = len(puts(workspace.fake))
+    page.locator("#board-island-create").click()
+    page.locator("#board-island-name").fill("Nope")
+    page.locator("#board-island-search").press("Enter")
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+    assert len(puts(workspace.fake)) == before
+
+
+def test_workspace_projects_can_move_to_an_existing_island(workspace):
+    page = board(workspace)
+    page.locator("#board-island-projects").click()
+    assert page.locator("#board-island-destination-row").is_visible()
+    page.locator("#board-island-destination").select_option("work")
+    page.locator('#board-island-picker input[type=checkbox]').check()
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    page.evaluate("() => organizationQueue")
+    assert puts(workspace.fake)[-1]["assignments"][PROJECT_KEY] == "work"
+
+
+def test_board_offers_export_and_recovery_actions(workspace):
+    page = board(workspace)
+    assert page.locator("#board-organization-export").is_visible()
+    assert page.locator("#board-organization-restore").is_hidden()
+    page.evaluate("() => { keepUnsavedOrganization(); renderBoard(); }")
