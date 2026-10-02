@@ -430,7 +430,7 @@
   /* ---- The garden (board) ---- */
   #board-view { --board-muted: var(--muted); max-width: 1180px; display: flex; flex-direction: column; }
   #board-view > * { flex: none; }
-  .board-head { order: 1; } .board-tools { order: 2; }
+  .board-head { order: 1; } .board-tools { order: 2; } .board-islands-tools { order: 3; }
   .board-workspace { order: 5; } .archipelago { order: 4; } .board-legend { order: 6; } #board-view > .local-note { order: 7; } #board-empty { order: 8; }
   .board-head { display: flex; align-items: flex-end; justify-content: space-between; gap: var(--space-3); margin: 14px 0 8px; }
   .view-toggle { position: relative; }
@@ -442,10 +442,13 @@
   }
   #board-island { pointer-events: none; }
   .board-islands-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
+  .board-islands-tools [hidden] { display: none; }
   .board-islands-tools .local-note { flex-basis: 100%; margin: 0; }
   #board-island-dialog { width: min(560px, calc(100vw - 32px)); max-height: 85dvh; overflow: auto; }
+  #board-island-dialog label[for] { display: block; margin-top: 18px; }
+  #board-island-search { width: 100%; min-height: 40px; background: transparent; border: none; border-bottom: 1px solid var(--control-border); color: var(--text); font-family: var(--display); font-size: 18px; }
   .island-picker { display: grid; gap: 2px; max-height: 40dvh; overflow: auto; margin-top: 8px; }
-  .island-picker label { display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 4px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  #board-island-dialog .island-picker label[for] { display: flex; margin-top: 0; align-items: center; gap: 12px; min-height: 44px; padding: 4px 8px; border-bottom: 1px solid var(--border); cursor: pointer; }
   .island-picker input { width: 20px; height: 20px; flex: none; }
   .island-picker small { display: block; color: var(--text-dim, var(--muted)); }
   .board-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 6px 28px; margin: 0 0 4px; }
@@ -837,7 +840,7 @@
     <label for="board-island-name">Island name</label>
     <input id="board-island-name" required maxlength="60" autocomplete="off">
     <label for="board-island-search">Find a project</label>
-    <input id="board-island-search" type="search" autocomplete="off" oninput="renderBoardIslandPicker()">
+    <input id="board-island-search" type="search" placeholder="Search by name or path…" autocomplete="off" oninput="renderBoardIslandPicker()">
     <p id="board-island-count" role="status"></p>
     <div id="board-island-picker" class="island-picker" role="group" aria-label="Projects on this island"></div>
     <p id="board-island-error" role="alert"></p>
