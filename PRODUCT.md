@@ -10,7 +10,7 @@ web
 A single developer on macOS who keeps many git repositories under local folders and runs the dashboard on localhost. They open it to answer "where do I stand across all my repos?": which are dirty, ahead/behind, or blocked by a PR, and which need attention first. Sessions are short and frequent.
 
 ## Product Purpose
-repo-root-tracker finds git repository roots and serves a local dashboard (Python server, single `dashboard.html`) that tracks many repos at once. It has three views: a searchable, groupable list, an isometric island board where each project is a plot, and a per-checkout detail view (commits, changes, branches, GitHub). The main checkout is a full bonsai and linked worktrees are small saplings in that plot. Success is seeing the state of every checkout at a glance and opening the right one without friction.
+repo-root-tracker finds git repository roots and serves a local dashboard (Python server, single `dashboard.html`) that tracks many repos at once. It has three views: an isometric island board where each project is a plot (the home page, `#/board`), a searchable, groupable list (`#/list`), and a per-checkout detail view (commits, changes, branches, GitHub). The main checkout is a full bonsai and linked worktrees are small saplings in that plot. Success is seeing the state of every checkout at a glance and opening the right one without friction.
 
 ## Positioning
 Local-first and read-only. Pins and collections are saved on the localhost dashboard server with a browser copy for offline use, and removing a repo from the dashboard never deletes its files. It shows local git state and optional GitHub signals in one spatial overview, which a terminal `git status` loop cannot do.
@@ -21,6 +21,7 @@ Localhost server on port 7842 via `serve.sh`. Data comes from `/api/repos` and r
 ## Capabilities and Constraints
 - Stack is fixed: a Python backend (`status.py`, `history.py`, `detail.py`, `github.py`, `server.py`) serving one self-contained `dashboard.html` (the display font fallback is embedded). No build step, no network at runtime.
 - Views: list, board, detail. Command palette for jumping to a repo. Collections, pins, bulk organize, search, and filters (changed, sync, attention, unavailable).
+- Islands: you create named islands and choose which projects live on each (Board controls: New island, Choose projects, Rename, Delete). Workspace is the default island; projects move between islands through one picker, and an island may be empty. Assignments are saved on the localhost server (`organization.json`) with a browser copy, and save outcomes are reported honestly (server-saved, browser-only, or session-only). Board is home and opens full width; `/api/repos` carries each repo's project identity so worktrees group into their project on first paint.
 - Board: one island per page with pagination, camera zoom and pan, fit-to-island, name toggle, search with match count, a "needs attention" filter, and an inspector for the selected plot.
 - Existing Playwright and pytest suites (16 files) assert on element IDs, classes, and ARIA behavior. The overhaul must keep them green. Assertions may change only where a visual change makes one obsolete, and each such change is reported to the user.
 - Semantic attention states already exist (changed, sync, blocked, unavailable) and must stay distinguishable.
