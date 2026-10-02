@@ -1,5 +1,11 @@
 # repo-root-tracker\n\nFind the git repository root by walking up the filesystem.
 
+## Dashboard
+
+`./serve.sh` opens the dashboard on port 7842. The Board (`#/board`) is the home page: one bonsai per project, worktrees as small saplings in their project's plot. The searchable list lives at `#/list`.
+
+On the Board you can create named islands and choose which projects live on each. Islands and assignments are saved in `~/.config/repo-root-tracker/organization.json` (override with `RRT_CONFIG_DIR`) with a browser copy for offline use. Removing a repo from the dashboard never deletes its files.
+
 ## Tests
 
 `python -m pytest tests/ -q` runs the deterministic backend and browser suites (no network, no GitHub account needed).
