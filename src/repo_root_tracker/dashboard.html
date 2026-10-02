@@ -2911,14 +2911,17 @@
       if(!size){size={w:label.offsetWidth,h:label.offsetHeight};boardLabelMeasurements.set(measureKey,size);}
       const {w,h}=size;
       const anchorX=item.x*boardCamera.zoom+boardCamera.x,anchorY=item.y*boardCamera.zoom+boardCamera.y;
+      const free=c=>!occupied.some(r=>c.x<r.x+r.w+4&&c.x+w+4>r.x&&c.y<r.y+r.h+4&&c.y+h+4>r.y);
+      // Almost every label fits straight above its tree: try that spot before building and sorting the full candidate grid.
+      const ideal={x:Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2)),y:Math.max(8,Math.min(stage.clientHeight-h-8,anchorY-h-4))};
+      let place=free(ideal)?ideal:null;
       const candidates=[];
-      for(let row=-6;row<=6;row++)for(let col=-3;col<=3;col++){
+      if(!place)for(let row=-6;row<=6;row++)for(let col=-3;col<=3;col++){
         const x=Math.max(8,Math.min(stage.clientWidth-w-8,anchorX-w/2+col*(w+6)));
         const y=Math.max(8,Math.min(stage.clientHeight-h-8,anchorY-h-4+row*(h+5)));
         candidates.push({x,y,cost:Math.hypot(x+w/2-anchorX,y+h-anchorY)});
       }
-      candidates.sort((a,b)=>a.cost-b.cost);
-      const place=candidates.find(c=>!occupied.some(r=>c.x<r.x+r.w+4&&c.x+w+4>r.x&&c.y<r.y+r.h+4&&c.y+h+4>r.y));
+      if(!place){candidates.sort((a,b)=>a.cost-b.cost);place=candidates.find(free);}
       if(!place){label.remove();continue;}
       const {x,y}=place;label.style.left=x+'px';label.style.top=y+'px';
       const line=document.createElementNS('http://www.w3.org/2000/svg','line');

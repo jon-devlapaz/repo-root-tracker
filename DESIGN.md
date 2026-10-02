@@ -319,3 +319,7 @@ An empty pot (84x62) above an 18px mincho line: the space is the subject.
 - Foliage, pot and wood palettes, the sky disc colors and the glow gradient stop colors are hard-coded in JS/CSS rather than custom properties.
 - The `#000` shadows and the `#050807d0` scrim stay off-scale; the 30px display clamp floor stays.
 - Two detector warnings remain untraced to a source line.
+
+## Known limitations
+
+- **Reference performance gate (opt-in, not in CI).** `RRT_REFERENCE_PERF=1 python -m pytest tests/test_board_performance.py` stress-tests 90 projects and 360 checkouts with Names on and a full refresh. On the development machine it does not yet pass: with deferred label placement and tile patching counted, promotion's median work is about 16-19 ms (limit 10) and the longest task is 58-85 ms (limit 50). Measurements swing about 30% between identical runs while other processes load the machine, so a clean verdict needs a quiet reference machine. Everyday use (tens of repos) is far below this load; the limits in the test file were deliberately not loosened.
