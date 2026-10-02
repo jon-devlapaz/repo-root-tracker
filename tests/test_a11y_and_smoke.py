@@ -31,7 +31,7 @@ def test_more_contrast_lifts_muted_text_and_borders(page):
     base = page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()")
     page.emulate_media(contrast='more')
     boosted = page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--muted').trim()")
-    assert boosted != base and boosted == '#c4d2ca'
+    assert boosted != base and boosted == '#c9c7be'
 
 
 def test_forced_colors_give_buttons_real_borders(page):
