@@ -156,3 +156,14 @@ def test_limiter_forgets_expired_addresses():
         limiter.failed(f"10.0.{n // 250}.{n % 250}", now=0)
     limiter.locked_for("1.2.3.4", now=auth.LOCKOUT_SECONDS + 5)
     assert len(limiter._fails) == 0
+
+
+def test_browser_login_post_is_not_mistaken_for_cross_site(run):
+    """Browsers send Origin: null when the page's referrer policy is no-referrer; ours must send real origins."""
+    request = run(remote=True)
+    page, _ = request("GET", "/login")
+    assert page.getheader("Referrer-Policy") == "same-origin"
+    response, _ = request("POST", "/login", body=urlencode({"password": PASSWORD}), headers={"Origin": f"https://{PUBLIC}"})
+    assert response.status == 303
+    # An opaque origin is still refused for writes.
+    assert request("POST", "/login", body="password=x", headers={"Origin": "null"})[0].status == 403
