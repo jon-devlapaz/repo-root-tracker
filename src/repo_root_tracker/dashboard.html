@@ -841,8 +841,9 @@
     <h2 id="board-island-dialog-title">New island</h2>
     <label for="board-island-name">Island name</label>
     <input id="board-island-name" required maxlength="60" autocomplete="off">
+    <div id="board-island-destination-row" hidden><label for="board-island-destination">Add projects to</label><select id="board-island-destination" onchange="islandDestinationChanged()"></select></div>
     <label for="board-island-search">Find a project</label>
-    <input id="board-island-search" type="search" placeholder="Search by name or path…" autocomplete="off" oninput="renderBoardIslandPicker()">
+    <input id="board-island-search" type="search" placeholder="Search by name or path…" autocomplete="off" oninput="renderBoardIslandPicker()" onkeydown="boardIslandSearchKey(event)">
     <p id="board-island-count" role="status"></p>
     <div id="board-island-picker" class="island-picker" role="group" aria-label="Projects on this island"></div>
     <p id="board-island-error" role="alert"></p>
@@ -879,6 +880,9 @@
     <button id="board-island-projects" class="btn btn-ghost" onclick="openBoardIslandDialog('edit')">Choose projects</button>
     <button id="board-island-rename" class="btn btn-ghost" onclick="openBoardIslandDialog('edit', true)">Rename island</button>
     <button id="board-island-delete" class="btn btn-ghost btn-danger" onclick="deleteBoardIsland()">Delete island</button>
+    <button id="board-organization-export" class="btn btn-ghost" onclick="exportOrganization()">Export organization</button>
+    <button id="board-organization-restore" class="btn btn-ghost" onclick="restoreUnsavedOrganization()" hidden>Restore unsaved organization</button>
+    <button id="board-organization-export-unsaved" class="btn btn-ghost" onclick="exportUnsavedOrganization()" hidden>Export unsaved organization</button>
     <p id="board-organization-note" class="local-note" role="status"></p>
   </div>
   <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
@@ -1716,30 +1720,53 @@
     const id=boardIslandCollectionId(), custom=id!==null;
     for (const key of ['rename','delete']) document.getElementById('board-island-'+key).hidden=!custom;
     document.getElementById('board-island-projects').disabled=!boardProjects.length && !custom;
+    const backups=organizationBackups.length>0;
+    document.getElementById('board-organization-restore').hidden=!backups;
+    document.getElementById('board-organization-export-unsaved').hidden=!backups;
+  }
+  function islandMembers(id) { return new Set(boardProjects.filter(p=>projectCollectionId(p)===id).map(p=>p.key)); }
+  // Re-seed the draft for a destination island (null = a new one).
+  function seedIslandDraft(id) {
+    const collection=id===null ? null : organization.collections.find(c=>c.id===id);
+    const members=id===null ? new Set() : islandMembers(id);
+    if (id===null) { const sel=projectForPath(boardSelectedPath); if (sel) members.add(sel.key); }
+    islandDraft.collectionId=id; islandDraft.checked=new Set(members);
+    islandDraft.original=new Set(id===null ? [] : members);
+    islandDraft.createdId=null;
+    document.getElementById('board-island-name').value=collection ? collection.name : '';
+    document.getElementById('board-island-dialog-title').textContent=id===null ? 'New island' : 'Island projects';
   }
   function openBoardIslandDialog(mode, focusName=false) {
     ensureProjectRegistry();
-    const id=mode==='edit' ? boardIslandCollectionId() : null;
-    if (mode==='edit' && id===null) {
-      // Workspace has no name to edit; picking projects here creates a new island.
-      mode='create';
-    }
-    const collection=id===null ? null : organization.collections.find(c=>c.id===id);
-    if (id!==null && !collection) { toast('This island was removed elsewhere. Nothing was changed.','error'); return; }
-    const members=new Set(id===null ? [] : boardProjects.filter(p=>projectCollectionId(p)===id).map(p=>p.key));
-    if (id===null) { const sel=projectForPath(boardSelectedPath); if (sel) members.add(sel.key); }
-    islandDraft={mode,collectionId:id,checked:members,known:new Map(boardProjects.map(p=>[p.key,{paths:p.paths.slice(),projectId:p.projectId||null}])),
-      original:new Set(id===null ? [] : members),opener:document.activeElement};
-    document.getElementById('board-island-dialog-title').textContent=id===null ? 'New island' : 'Island projects';
-    document.getElementById('board-island-name').value=collection ? collection.name : '';
+    const current=boardIslandCollectionId();
+    // From a custom island this edits it; from Workspace the destination picks an island or a new one.
+    let id=mode==='edit' ? current : null;
+    if (id!==null && !organization.collections.some(c=>c.id===id)) { toast('This island was removed elsewhere. Nothing was changed.','error'); return; }
+    islandDraft={mode,collectionId:null,checked:new Set(),original:new Set(),createdId:null,
+      known:new Map(boardProjects.map(p=>[p.key,{paths:p.paths.slice(),projectId:p.projectId||null}])),
+      opener:document.activeElement,saving:false};
+    const select=document.getElementById('board-island-destination');
+    const choose=current===null && organization.collections.length>0;
+    select.innerHTML='<option value="">New island</option>'+organization.collections.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name)}</option>`).join('');
+    document.getElementById('board-island-destination-row').hidden=!choose;
+    seedIslandDraft(id);
+    select.value=id ?? '';
     document.getElementById('board-island-search').value='';
     document.getElementById('board-island-error').textContent='';
+    document.getElementById('board-island-save').disabled=false;
     renderBoardIslandPicker();
     const dialog=document.getElementById('board-island-dialog');
-    dialog.addEventListener('close',()=>{ const o=islandDraft?.opener; islandDraft=null; if (o?.isConnected && !dialog.returnValue) o.focus(); },{once:true});
+    dialog.addEventListener('close',()=>{ const o=islandDraft?.opener; islandDraft=null; if (!dialog.returnValue && o?.isConnected && !o.hidden) o.focus(); },{once:true});
     dialog.returnValue='';
     dialog.showModal();
     (focusName || id===null ? document.getElementById('board-island-name') : document.getElementById('board-island-search')).focus();
+  }
+  function islandDestinationChanged() {
+    if (!islandDraft) return;
+    const value=document.getElementById('board-island-destination').value;
+    seedIslandDraft(value===''?null:value);
+    document.getElementById('board-island-error').textContent='';
+    renderBoardIslandPicker();
   }
   function renderBoardIslandPicker() {
     if (!islandDraft) return;
@@ -1751,56 +1778,82 @@
       return `<label for="${escapeHtml(id)}"><input type="checkbox" id="${escapeHtml(id)}" data-key="${escapeHtml(p.key)}" ${islandDraft.checked.has(p.key)?'checked':''} onchange="toggleBoardIslandProject(this)"><span>${escapeHtml(p.name)}<small>${escapeHtml(shortHome(p.defaultPath))} · now on ${escapeHtml(where)}</small></span></label>`;
     });
     document.getElementById('board-island-picker').innerHTML=rows.join('') || '<p class="local-note">No matching projects.</p>';
+    updateBoardIslandCount();
+  }
+  function updateBoardIslandCount() {
     const n=islandDraft.checked.size;
     document.getElementById('board-island-count').textContent=n+' project'+(n===1?'':'s')+' selected';
   }
   function toggleBoardIslandProject(input) {
     if (!islandDraft) return;
     if (input.checked) islandDraft.checked.add(input.dataset.key); else islandDraft.checked.delete(input.dataset.key);
-    const n=islandDraft.checked.size;
-    document.getElementById('board-island-count').textContent=n+' project'+(n===1?'':'s')+' selected';
+    updateBoardIslandCount();
   }
-  // Re-resolve a drafted project against the live model; null explains why it cannot be applied.
-  function reconcileIslandProject(key) {
-    const known=islandDraft.known.get(key);
-    let project=boardProjectByKey.get(key) || known?.paths.map(path=>projectForPath(path)).find(Boolean) || null;
-    if (!project) return {error:'a project you ticked is no longer tracked'};
-    if (known?.projectId && project.projectId && known.projectId!==project.projectId) return {error:project.name+' changed identity while this dialog was open'};
-    return {project};
+  function boardIslandSearchKey(event) {
+    // Enter narrows to the first match; saving always needs the Save button.
+    if (event.key!=='Enter') return;
+    event.preventDefault();
+    document.querySelector('#board-island-picker input')?.focus();
+  }
+  // Only deliberate changes are applied. Each remembered key must resolve to exactly one live
+  // project, and no live project may receive opposite intents.
+  function reconcileIslandIntents() {
+    const intents=new Map(), problems=[];
+    for (const key of new Set([...islandDraft.checked,...islandDraft.original])) {
+      const want=islandDraft.checked.has(key);
+      if (want===islandDraft.original.has(key)) continue;
+      const known=islandDraft.known.get(key);
+      const direct=boardProjectByKey.get(key);
+      const resolved=new Set(direct ? [direct] : (known?.paths||[]).map(path=>projectForPath(path)).filter(Boolean));
+      if (!resolved.size) { if (want) problems.push('a project you ticked is no longer tracked'); continue; }
+      if (resolved.size>1) { problems.push('a project split into several while this dialog was open'); continue; }
+      const project=[...resolved][0];
+      if (known?.projectId && project.projectId && known.projectId!==project.projectId) { problems.push(project.name+' changed identity while this dialog was open'); continue; }
+      if (intents.has(project) && intents.get(project)!==want) { problems.push(project.name+' merged with another project you changed differently'); continue; }
+      intents.set(project,want);
+    }
+    return {intents,problems};
   }
   async function saveBoardIsland(event) {
     event.preventDefault();
-    if (!islandDraft) return;
+    if (!islandDraft || islandDraft.saving) return;
     ensureProjectRegistry();
-    const snapshot=organizationSnapshot(), problems=[], apply=[];
-    for (const key of new Set([...islandDraft.checked,...islandDraft.original])) {
-      const result=reconcileIslandProject(key);
-      if (result.error) { if (islandDraft.checked.has(key)) { problems.push(result.error); islandDraft.checked.delete(key); } continue; }
-      apply.push([result.project,islandDraft.checked.has(key)]);
-    }
-    if (problems.length) {
-      document.getElementById('board-island-error').textContent='Nothing was saved: '+problems.join('; ')+'. Review the list and save again.';
-      renderBoardIslandPicker(); return;
-    }
-    const name=document.getElementById('board-island-name').value;
-    let id=islandDraft.collectionId;
+    const {intents,problems}=reconcileIslandIntents();
+    const error=document.getElementById('board-island-error');
+    if (problems.length) { error.textContent='Nothing was saved: '+[...new Set(problems)].join('; ')+'. Review the list and save again.'; renderBoardIslandPicker(); return; }
+    const snapshot=organizationSnapshot(), name=document.getElementById('board-island-name').value;
+    let id=islandDraft.collectionId ?? islandDraft.createdId;
     try {
-      if (id===null) id=createOrganizationCollection(snapshot,name).id;
-      else renameOrganizationCollection(snapshot,id,name);
-      for (const [project,on] of apply) {
+      if (id!==null && snapshot.collections.some(c=>c.id===id)) renameOrganizationCollection(snapshot,id,name);
+      else { id ??= islandDraft.createdId=organizationCopyId(); createOrganizationCollection(snapshot,name,id); }
+      for (const [project,on] of intents) {
         if (on) setProjectCollection(snapshot,project,id);
         else if (projectCollectionId(project,snapshot)===id) setProjectCollection(snapshot,project,null);
       }
-    } catch (error) { document.getElementById('board-island-error').textContent=error.message; return; }
-    organization=snapshot;
-    boardActivePageKey='collection:'+id+':0';
-    const selectedProject=projectForPath(boardSelectedPath);
-    if (selectedProject && !apply.some(([project,on])=>on && project===selectedProject)) boardSelectedPath=null;
-    const dialog=document.getElementById('board-island-dialog');
-    dialog.returnValue='saved'; dialog.close();
-    boardMembershipPending=true;
-    reportBoardSave(await persistOrganization(),'Island saved.');
-    document.getElementById('board-island-projects').focus();
+    } catch (failure) { error.textContent=failure.message; return; }
+    // Stay on the saved island unless a selected project should be followed elsewhere.
+    const created=islandDraft.collectionId===null;
+    if (!projectForPath(boardSelectedPath)) boardSelectedPath=null;
+    if (!boardSelectedPath && (created || boardIslandCollectionId()===id)) boardActivePageKey=created ? 'collection:'+id+':0' : boardActivePageKey;
+    organization=snapshot; boardMembershipPending=true;
+    islandDraft.saving=true; document.getElementById('board-island-save').disabled=true;
+    const draft=islandDraft, dialog=document.getElementById('board-island-dialog');
+    const saved=await persistOrganization();
+    if (islandDraft!==draft) return;
+    draft.saving=false; document.getElementById('board-island-save').disabled=false;
+    if (saved) {
+      toast('Island saved.','success');
+      dialog.returnValue='saved'; dialog.close();
+      const o=draft.opener;
+      (o?.isConnected && !o.hidden ? o : document.getElementById('board-island-projects')).focus();
+    } else {
+      // Keep the draft so it can be reviewed and retried; the collection id is reused.
+      draft.collectionId=null; draft.createdId=draft.createdId ?? id;
+      if (organization.collections.some(c=>c.id===id) && draft.mode==='edit') draft.collectionId=id;
+      error.textContent=storageWarning || pendingStorageWarning ? 'Kept for this session; export before closing. Your choices are still here.' :
+        organizationWarning ? 'Saved in this browser only. Reload to retry saving. Your choices are still here.' : 'Could not save. Your choices are still here.';
+      reportBoardSave(false,'');
+    }
   }
   let deletingIslandId = null;
   function deleteBoardIsland() {
@@ -2798,7 +2851,12 @@
     const pages=boardIslands(boardNeighborhoods);
     let index=project ? pages.findIndex(page=>page.projectKeys.includes(project.key)) : -1;
     if (index<0) index=pages.findIndex(page=>page.pageKey===boardActivePageKey);
-    if (index<0) index=Math.min(boardPage-1,pages.length-1);
+    if (index<0) {
+      // A vanished page falls back inside its own island, then to Workspace; never to a neighbouring island.
+      const cut=boardActivePageKey.lastIndexOf(':'), key=boardActivePageKey.slice(0,cut), wanted=+boardActivePageKey.slice(cut+1)||0;
+      const same=pages.filter(page=>page.key===key);
+      index=same.length ? pages.indexOf(same[Math.min(wanted,same.length-1)]) : pages.findIndex(page=>page.key==='workspace');
+    }
     boardPage=Math.max(1,index+1); boardActivePageKey=pages[boardPage-1]?.pageKey || 'workspace:0';
     return true;
   }
