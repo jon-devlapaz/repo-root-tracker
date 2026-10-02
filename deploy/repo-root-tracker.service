@@ -1,0 +1,23 @@
+[Unit]
+Description=repo-root-tracker dashboard
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=rrt
+Group=rrt
+WorkingDirectory=/opt/repo-root-tracker
+EnvironmentFile=/etc/repo-root-tracker.env
+ExecStart=/opt/repo-root-tracker/.venv/bin/python -m repo_root_tracker.server --port 7842
+Restart=on-failure
+RestartSec=3
+# The dashboard only reads git state; keep the rest of the system out of reach.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=/var/lib/rrt
+Environment=RRT_CONFIG_DIR=/var/lib/rrt/config
+
+[Install]
+WantedBy=multi-user.target
