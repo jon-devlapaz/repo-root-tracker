@@ -52,7 +52,7 @@ def test_unavailable_main_stale_pass_cannot_hide_sibling_fresh_failure(page, rev
     assert '1 PR with blockers' in page.locator('#board-inspector').inner_text()
     assert page.evaluate('gardenSummary().attention') == 2  # one source plus one unavailable checkout
     assert page.evaluate('repos.every(boardNeedsAttention)')
-    page.evaluate("location.hash='#/'")
+    page.evaluate("location.hash='#/list'")
     page.wait_for_selector('#list-view', state='visible')
     assert page.locator('.gh-signal').count() == 9
     assert page.locator('.gh-signal').evaluate_all("els=>els.every(el=>el.textContent.includes('1 failing workflow'))")

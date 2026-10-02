@@ -44,7 +44,7 @@ def page():
                 route.fulfill(json=status_for(path))
 
         page.route('**/api/repos/status?*', status)
-        page.goto('http://dashboard.test/')
+        page.goto('http://dashboard.test/#/list')
         page.wait_for_function('repos.length === 5 && repos.every(r => r._status)')
         yield page
         assert errors == []
@@ -92,7 +92,7 @@ def test_board_tile_count_and_order(page):
     assert page.locator('#board-view .tile').count() == len(PATHS)
     paths = page.locator('.board-select').evaluate_all('els => els.map(el => el.dataset.path)')
     assert paths == PATHS
-    page.evaluate("location.hash = '#/'")
+    page.evaluate("location.hash = '#/list'")
     page.locator('#repo-sort').select_option('recent')
     page.locator('#repo-grouping').select_option('folder')
     goto_board(page)

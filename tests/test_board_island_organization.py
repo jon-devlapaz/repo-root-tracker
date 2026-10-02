@@ -92,7 +92,7 @@ def workspace():
             context.route("**/api/repos/status?*", status)
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto("http://dashboard.test/")
+            page.goto("http://dashboard.test/#/list")
             settled(page)
             return page
 

@@ -42,7 +42,7 @@ def workspace():
                 "branch": "main", "dirty": {"is_clean": True}, "sync": {"has_upstream": False}}))
             page = context.new_page()
             page.on("pageerror", lambda error: errors.append(str(error)))
-            page.goto("http://dashboard.test/")
+            page.goto("http://dashboard.test/#/list")
             settled(page)
             return page
 
