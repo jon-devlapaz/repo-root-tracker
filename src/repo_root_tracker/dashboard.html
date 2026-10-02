@@ -443,7 +443,10 @@
   #board-island { pointer-events: none; }
   .board-islands-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
   .board-islands-tools [hidden] { display: none; }
-  .board-islands-tools .local-note { flex-basis: 100%; margin: 0; }
+  .board-islands-tools .local-note { flex: 1 1 260px; margin: 0; font-size: 12px; max-width: none; }
+  #board-view .board-head { margin: 2px 0 0; }
+  #board-view .board-tools { margin: 0; }
+  @media (min-width: 851px) { .board-stagecol { padding-top: 42px; } }
   #board-island-empty { padding: 18px 0 4px; color: var(--muted); }
   #board-island-empty[hidden] { display: none; }
   #board-island-dialog, #board-island-delete-dialog { width: min(560px, calc(100vw - 32px)); max-height: 85dvh; overflow: auto; }
@@ -467,7 +470,7 @@
   .board-legend [data-tone="unknown"]::before { background: none; border: 1px solid var(--signal); }
   .board-workspace { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start; margin-top: 0; }
   #board-stage {
-    position: relative; display: block; height: clamp(420px, calc(100dvh - 330px), 1100px); overflow: hidden; touch-action: none;
+    position: relative; display: block; height: clamp(460px, calc(100dvh - 300px), 1300px); overflow: hidden; touch-action: none;
     -webkit-mask-image: radial-gradient(ellipse 88% 86% at 50% 50%, #000 62%, transparent 100%);
     mask-image: radial-gradient(ellipse 88% 86% at 50% 50%, #000 62%, transparent 100%);
   }
@@ -524,7 +527,6 @@
   #board-caption { min-height: 38px; padding: 12px 2px; color: var(--body); font-size: 12px; letter-spacing: .02em; overflow-wrap: anywhere; }
   #board-zoom-level { color: var(--muted); font-size: 12px; min-width: 38px; text-align: center; }
   .board-stagecol { position: relative; min-width: 0; }
-  @media (min-width: 851px) { .board-stagecol { padding-top: 42px; } }
   .board-camera-tools { display: flex; align-items: center; gap: 2px; flex-wrap: wrap; margin: 0 0 6px -12px; }
   @media (min-width: 851px) { .board-camera-tools { position: absolute; left: -12px; top: 0; right: 0; z-index: 30; margin: 0; } }
   .board-camera-tools .chev { margin: 0 8px 1px 0; width: 5px; height: 5px; }
@@ -3212,7 +3214,7 @@
     const w=stage.clientWidth,h=stage.clientHeight;
     if (boardFitPending) {
       const narrow=matchMedia('(max-width:650px)').matches;
-      boardCamera.zoom=narrow?Math.max(.56,Math.min(1.5,(w*.96)/boardScene.width)):Math.max(.35,Math.min(1.5,(w*.86)/boardScene.width,(h*.86)/boardScene.height));
+      boardCamera.zoom=narrow?Math.max(.56,Math.min(1.5,(w*.96)/boardScene.width)):Math.max(.35,Math.min(2,(w*.9)/boardScene.width,(h*.92)/boardScene.height));
       boardCamera.x=narrow?Math.round((w-boardScene.width*boardCamera.zoom)/2):0;boardCamera.y=0;boardFitPending=false;
       // on a phone the stage is exactly as tall as the island needs: no empty bands above and below it
       const wanted=narrow?Math.min(480,Math.max(280,Math.round(boardScene.height*boardCamera.zoom+28))):0;
