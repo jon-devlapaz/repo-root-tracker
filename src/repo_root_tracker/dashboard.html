@@ -444,7 +444,9 @@
   .board-islands-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
   .board-islands-tools [hidden] { display: none; }
   .board-islands-tools .local-note { flex-basis: 100%; margin: 0; }
-  #board-island-dialog { width: min(560px, calc(100vw - 32px)); max-height: 85dvh; overflow: auto; }
+  #board-island-empty { padding: 18px 0 4px; color: var(--muted); }
+  #board-island-empty[hidden] { display: none; }
+  #board-island-dialog, #board-island-delete-dialog { width: min(560px, calc(100vw - 32px)); max-height: 85dvh; overflow: auto; }
   #board-island-dialog label[for] { display: block; margin-top: 18px; }
   #board-island-search { width: 100%; min-height: 40px; background: transparent; border: none; border-bottom: 1px solid var(--control-border); color: var(--text); font-family: var(--display); font-size: 18px; }
   .island-picker { display: grid; gap: 2px; max-height: 40dvh; overflow: auto; margin-top: 8px; }
@@ -851,6 +853,17 @@
   </form>
 </dialog>
 
+<dialog id="board-island-delete-dialog" aria-labelledby="board-island-delete-title">
+  <form method="dialog" onsubmit="confirmDeleteBoardIsland(event)">
+    <h2 id="board-island-delete-title">Delete island</h2>
+    <p id="board-island-delete-body"></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-ghost" onclick="document.getElementById('board-island-delete-dialog').close()">Keep island</button>
+      <button id="board-island-delete-confirm" class="btn btn-danger" type="submit">Delete island</button>
+    </div>
+  </form>
+</dialog>
+
 <main id="board-view" style="display:none" aria-label="Repository board">
   <div class="board-head">
     <div><h2>Repo island</h2><p id="board-brief" class="garden-brief"></p></div>
@@ -871,7 +884,7 @@
   <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
   <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
-  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
+  <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-empty" hidden><p>Nothing is planted on this island yet.</p><button class="btn btn-ghost" onclick="openBoardIslandDialog('edit')">Choose projects</button></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
     <p>No repos tracked yet. Add a repository to grow the island.</p>
     <p><a id="board-empty-add" href="#/">Go to the list to add a repo</a></p>
@@ -1786,16 +1799,49 @@
     const dialog=document.getElementById('board-island-dialog');
     dialog.returnValue='saved'; dialog.close();
     boardMembershipPending=true;
-    const saved=await persistOrganization();
-    if (saved) toast('Island saved.','success');
-    else if (organizationWarning) toast('Saved in this browser only. Reload to retry saving.');
+    reportBoardSave(await persistOrganization(),'Island saved.');
     document.getElementById('board-island-projects').focus();
   }
+  let deletingIslandId = null;
   function deleteBoardIsland() {
-    const id=boardIslandCollectionId();
+    const id=boardIslandCollectionId(), collection=organization.collections.find(c=>c.id===id);
     if (id===null) return;
-    boardMembershipPending=true;
-    return deleteCollection(id);
+    if (!collection) { toast('This island was removed elsewhere. Nothing was deleted.','error'); return; }
+    ensureProjectRegistry();
+    const n=boardProjects.filter(p=>projectCollectionId(p)===id).length;
+    deletingIslandId=id;
+    document.getElementById('board-island-delete-title').textContent='Delete “'+collection.name+'”?';
+    document.getElementById('board-island-delete-body').textContent=n
+      ? n+' project'+(n===1?'':'s')+' will move to Workspace. No files are deleted.' : 'This island is empty. No files are deleted.';
+    const dialog=document.getElementById('board-island-delete-dialog'), opener=document.activeElement;
+    dialog.returnValue='';
+    dialog.addEventListener('close',()=>{ if (!dialog.returnValue && opener?.isConnected && !opener.hidden) opener.focus(); },{once:true});
+    dialog.showModal();
+    document.getElementById('board-island-delete-confirm').focus();
+  }
+  async function confirmDeleteBoardIsland(event) {
+    event.preventDefault();
+    const id=deletingIslandId, dialog=document.getElementById('board-island-delete-dialog');
+    deletingIslandId=null;
+    dialog.returnValue='deleted'; dialog.close();
+    const collection=organization.collections.find(c=>c.id===id);
+    if (!collection) { toast('This island was removed elsewhere. Nothing was deleted.','error'); return; }
+    ensureProjectRegistry();
+    const snapshot=organizationSnapshot();
+    try { deleteOrganizationCollection(snapshot,id); }
+    catch (error) { toast(error.message,'error'); return; }
+    organization=snapshot; boardMembershipPending=true;
+    // The selected project, if it was on this island, is followed to Workspace; otherwise land on Workspace.
+    if (!projectForPath(boardSelectedPath)) boardActivePageKey='workspace:0';
+    const saved=await persistOrganization();
+    reportBoardSave(saved,'Island deleted. Its projects are on Workspace.');
+    document.getElementById('board-island-create').focus();
+  }
+  // One place for save outcomes: server-saved, browser-only, or session-only.
+  function reportBoardSave(saved, message) {
+    if (saved) toast(message,'success');
+    else if (storageWarning || pendingStorageWarning) toast('Kept for this session; export before closing.');
+    else if (organizationWarning) toast('Saved in this browser only. Reload to retry saving.');
   }
 
   function deleteCollection(id) {
@@ -3869,6 +3915,7 @@
     if (!activeIsland.allPaths.includes(boardHoveredPath)) boardHoveredPath = null;
     if (!boardPanning) renderIsometricScene(boardNeighborhoods);
     renderBoardIslandControls();
+    document.getElementById('board-island-empty').hidden=!activeIsland.empty;
     renderBoardInspector();
     document.getElementById('board-project-count').textContent=boardProjects.length+' project'+(boardProjects.length===1?'':'s')+' · '+repos.length+' checkout'+(repos.length===1?'':'s');
     const matches = repos.filter(boardMatches).length;

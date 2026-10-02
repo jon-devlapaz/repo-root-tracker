@@ -444,3 +444,84 @@ def test_island_dialog_reports_project_identity_change_without_saving(workspace)
     assert "changed identity" in page.locator("#board-island-error").inner_text()
     assert page.locator("#board-island-dialog").evaluate("d => d.open")
     assert len(puts(workspace.fake)) == before
+
+
+
+def board(workspace, assignments=None):
+    page = workspace.open_page(assignments)
+    page.goto("http://dashboard.test/#/board")
+    settled(page)
+    return page
+
+
+def test_empty_island_is_finite_and_offers_projects(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    page.locator("#board-archipelago button").nth(1).click()
+    assert page.locator("#board-island-empty").is_visible()
+    assert page.evaluate("boardScene.plots.length") == 0
+    assert page.evaluate("Number.isFinite(boardScene.width) && Number.isFinite(boardScene.height)")
+    page.locator("#board-island-empty button").click()
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+    page.keyboard.press("Escape")
+    page.locator("#board-archipelago button").nth(2).click()
+    assert page.locator("#board-island-empty").is_hidden()
+
+
+def test_delete_island_confirms_then_moves_projects_to_workspace_in_one_put(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    page.locator("#board-archipelago button").nth(2).click()
+    page.evaluate("selectBoardRepo(boardProjects[0].defaultPath)")
+    before = len(puts(workspace.fake))
+    page.locator("#board-island-delete").click()
+    assert "1 project will move to Workspace" in page.locator("#board-island-delete-body").inner_text()
+    page.keyboard.press("Escape")
+    assert page.evaluate("document.activeElement.id") == "board-island-delete"
+    assert len(puts(workspace.fake)) == before
+    page.locator("#board-island-delete").click()
+    page.locator("#board-island-delete-confirm").click()
+    page.wait_for_function("!document.getElementById('board-island-delete-dialog').open")
+    page.evaluate("() => organizationQueue")
+    assert len(puts(workspace.fake)) == before + 1
+    saved = puts(workspace.fake)[-1]
+    assert [c["id"] for c in saved["collections"]] == ["work"]
+    assert saved["assignments"][PROJECT_KEY] == ""
+    assert page.evaluate("boardActivePageKey") == "workspace:0"
+    assert page.evaluate("boardSelectedPath") == page.evaluate("boardProjects[0].defaultPath") or page.evaluate("boardSelectedPath") is None
+
+
+def test_rename_island_keeps_page_and_membership(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    page.locator("#board-archipelago button").nth(2).click()
+    page.locator("#board-island-rename").click()
+    page.locator("#board-island-name").fill("Home")
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    page.evaluate("() => organizationQueue")
+    assert page.evaluate("boardActivePageKey") == "collection:personal:0"
+    assert page.evaluate("boardNeighborhoods.map(n => [n.name, n.projectKeys.length])")[2] == ["Home", 1]
+
+
+def toast_text(page):
+    return page.evaluate("[...document.querySelectorAll('.toast, #toast, [role=status]')].map(e => e.textContent).join(' | ')")
+
+
+def test_failed_put_with_working_storage_says_saved_in_this_browser_only(workspace):
+    page = board(workspace)
+    workspace.fake.fail_puts = 5
+    page.locator("#board-island-create").click()
+    page.locator("#board-island-name").fill("Offline")
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    page.wait_for_function("document.body.textContent.includes('Saved in this browser only')")
+    assert "Kept for this session" not in toast_text(page)
+
+
+def test_failed_put_and_failed_storage_says_kept_for_this_session(workspace):
+    page = board(workspace)
+    workspace.fake.fail_puts = 5
+    page.evaluate("() => { Object.defineProperty(window, 'localStorage', {get() { throw new Error('blocked'); }}); }")
+    page.locator("#board-island-create").click()
+    page.locator("#board-island-name").fill("Offline")
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    page.wait_for_function("document.body.textContent.includes('Kept for this session; export before closing.')")
