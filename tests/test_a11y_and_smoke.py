@@ -3,10 +3,21 @@ import pytest
 from test_board import PATHS, click_plot, goto_board, page, selected_tile  # noqa: F401
 
 
-def test_embedded_mincho_fallback_loads_offline(page):
-    loaded = page.evaluate("""async () => { const faces = await document.fonts.load('16px "Shippori Mincho Embedded"'); return faces.length; }""")
-    assert loaded == 1
-    assert 'Shippori Mincho Embedded' in page.evaluate("getComputedStyle(document.documentElement).getPropertyValue('--display')")
+def test_embedded_socratink_fonts_load_offline(page):
+    for family in ('Instrument Serif Embedded', 'Inter Embedded'):
+        loaded = page.evaluate("""async family => (await document.fonts.load('16px "' + family + '"')).length""", family)
+        assert loaded == 1, family
+    root = "getComputedStyle(document.documentElement).getPropertyValue("
+    assert 'Instrument Serif Embedded' in page.evaluate(root + "'--display')")
+    assert 'Inter Embedded' in page.evaluate(root + "'--font')")
+
+
+def test_the_dashboard_uses_the_socratink_palette_and_type(page):
+    look = page.evaluate("""() => { const s = getComputedStyle(document.body), r = getComputedStyle(document.documentElement);
+      return {bg: s.backgroundColor, text: s.color, accent: r.getPropertyValue('--accent').trim(),
+              title: getComputedStyle(document.querySelector('.overview h2')).fontFamily}; }""")
+    assert look['bg'] == 'rgb(16, 15, 15)' and look['accent'] == '#3aa99f'
+    assert look['title'].startswith('"Instrument Serif"') or look['title'].startswith('Instrument Serif')
 
 
 def test_island_is_described_to_screen_readers(page):
