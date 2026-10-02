@@ -375,7 +375,7 @@ def test_export_import_and_restore_preserve_project_keys_and_workspace_markers(w
     settled(page)
     assert workspace.fake.state["assignments"] == assignments and placement(page) == [None]
     workspace.fake.fail_puts = 1
-    page.evaluate("() => { organization.assignments[UNTRACKED_KEY]=''; return persistOrganization(); }")
+    page.evaluate("key => { organization.assignments[key]=''; return persistOrganization(); }", UNTRACKED_KEY)
     workspace.fake.state["revision"] += 1
     page.reload()
     settled(page)
