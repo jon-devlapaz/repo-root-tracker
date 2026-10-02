@@ -224,7 +224,7 @@ def test_search_expands_matches_without_overwriting_collapsed_groups(page):
 def test_collection_feedback_and_pinned_membership(page):
     page.get_by_role('searchbox').fill('/tools/')
     create_collection(page, 'Tools')
-    assert 'Collection saved' in page.locator('#toast').inner_text()
+    playwright.expect(page.locator('#toast')).to_contain_text('Collection saved')
     page.locator('#card-1 summary').click()
     page.locator('#collection-1').select_option(label='Tools')
     page.locator('#card-1 .pin-button').click()
@@ -256,6 +256,7 @@ def test_git_metadata_nests_worktrees_and_project_grouping(page):
       repos[0]._status.project_id = repos[1]._status.project_id = '/actual/git/common';
       repos[0]._status.project_path = repos[1]._status.project_path = paths[0];
       repos[1]._status.is_worktree = true;
+      repos.forEach(r=>rememberRepoMetadata(r.path,r._status)); rebuildProjectModel();
       render();
     }""", PATHS)
     assert page.locator('.project-family .repo-card').count() == 2
@@ -435,8 +436,8 @@ def test_return_checks_stale_cached_github_and_backs_off_after_failure(page):
       organization.githubEnabled = true;
       repos.forEach(r => { r._checkedAt = new Date().toISOString(); });
       repos[0]._status.github_repo = 'demo/project';
-      repos[0]._github = {has_github:true,prs:[],issues:[],checked_at:new Date(Date.now() - 120000).toISOString()};
-      repos[0]._githubCheckedAt = new Date().toISOString();
+      rememberRepoMetadata(repos[0].path,repos[0]._status);
+      acceptGithubSnapshot('demo/project',1,{has_github:true,prs:[],issues:[],checked_at:new Date(Date.now() - 120000).toISOString()});
       const original = window.fetch;
       const requests = [];
       window.fetch = async url => { requests.push(url); throw new Error('offline'); };

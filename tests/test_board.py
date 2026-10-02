@@ -145,7 +145,19 @@ def test_board_focus_visible(page):
     goto_board(page)
     selected_tile(page).evaluate('el => el.focus({focusVisible:true})')
     assert selected_tile(page).evaluate("el => el.matches(':focus-visible')")
-    assert selected_tile(page).evaluate('el => getComputedStyle(el).outlineStyle') != 'none'
+    assert selected_tile(page).evaluate('el => el === document.activeElement')
+    assert selected_tile(page).get_attribute('aria-pressed') == 'false'
+    mark = selected_tile(page).locator('.plot-focus.member-focus')
+    appearance = mark.evaluate('''el => {
+      const style=getComputedStyle(el), rect=el.getBoundingClientRect();
+      return {opacity:style.opacity,stroke:style.stroke,width:style.strokeWidth,
+        vectorEffect:style.vectorEffect,visible:rect.width>0 && rect.height>0};
+    }''')
+    assert float(appearance['opacity']) > 0 and appearance['visible']
+    assert appearance['stroke'] not in ('none', 'transparent', 'rgba(0, 0, 0, 0)')
+    assert float(appearance['width'].replace('px', '')) >= 2
+    assert appearance['vectorEffect'] == 'non-scaling-stroke'
+    assert selected_tile(page).locator('.plot-flag').count() == 0
 
 
 def test_board_pin_marker(page):
@@ -214,16 +226,17 @@ def many_repos(page):
 
 def test_board_pager_layout(page):
     many_repos(page)
+    assert page.locator('.tile').count() == 25
     assert page.locator('.board-select').count() == 25
     assert page.locator('#board-next').is_visible()
-    assert 'Island 1 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Page 1 of 2' in page.locator('#board-page-status').inner_text()
 
 
 def test_board_pager_reset(page):
     many_repos(page)
     page.locator('#board-next').click()
     page.evaluate('repos = repos.slice(0,2); renderBoard();')
-    assert 'Island 1 of 1' in page.locator('#board-page-status').inner_text()
+    assert 'Page 1 of 1' in page.locator('#board-page-status').inner_text()
     assert page.locator('.board-select').count() == 2
 
 
@@ -235,11 +248,11 @@ def test_board_pager_persist(page):
     page.locator('#board-open-details').click()
     playwright.expect(page.locator('#back-btn')).to_be_visible()
     page.locator('#back-btn').click()
-    assert 'Island 2 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Page 2 of 2' in page.locator('#board-page-status').inner_text()
     page.wait_for_function("document.activeElement.id.startsWith('board-tile-')")
     page.locator('#board-refresh').click()
     page.wait_for_function('!refreshingBoard')
-    assert 'Island 2 of 2' in page.locator('#board-page-status').inner_text()
+    assert 'Page 2 of 2' in page.locator('#board-page-status').inner_text()
 
 
 def test_board_first_paint(page):
@@ -280,15 +293,18 @@ def test_board_worktree_labels(page):
         route.fulfill(json=data)
 
     page.route('**/api/repos/status?*', status)
-    page.evaluate('paths => { repos[0]._status.project_id = repos[1]._status.project_id = "/actual/git/common"; repos[0]._status.project_path = repos[1]._status.project_path = paths[0]; repos[1]._status.is_worktree = true; }', PATHS)
+    page.evaluate('paths => { repos[0]._status.project_id = repos[1]._status.project_id = "/actual/git/common"; repos[0]._status.project_path = repos[1]._status.project_path = paths[0]; repos[1]._status.is_worktree = true; repos.forEach(r=>rememberRepoMetadata(r.path,r._status)); rebuildProjectModel(); }', PATHS)
     goto_board(page)
     assert page.locator('.board-family').count() == 0
-    page.locator('#board-next').click()
-    assert page.locator('.board-family').count() == 1
-    assert page.locator('.board-family .board-select').count() == 2
-    names = page.locator('.board-family .tile-name').all_text_contents()
+    assert page.locator('.tile').count() == 4
+    assert page.locator('#board-pager').is_hidden()
+    project = page.locator('.tile[data-project="git:/actual/git/common"]')
+    assert project.locator('.board-select').count() == 2
+    assert project.locator('[id="board-tile-' + quote(PATHS[0], safe='') + '"]').count() == 1
+    assert project.locator('[id="board-tile-' + quote(PATHS[1], safe='') + '"]').count() == 1
+    names = project.locator('.tile-name').all_text_contents()
     assert names == ['dirty', 'feature']
-    assert 'Linked worktree' in page.locator('.board-family .board-label').nth(1).inner_text()
+    assert 'Linked worktree' in project.locator('.board-label').nth(1).inner_text()
 
 
 def test_scene_has_accessible_labels_without_card_nameplates(page):
@@ -319,7 +335,8 @@ def test_search_and_attention_dim_without_repositioning(page):
 def test_local_cleanliness_and_github_blockers_stay_separate(page):
     goto_board(page)
     page.evaluate('''() => {
-      repos[3]._github = {has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[],errors:[]};
+      repos[3]._status.github_repo='demo/local';rememberRepoMetadata(repos[3].path,repos[3]._status);
+      acceptGithubSnapshot('demo/local',1,{has_github:true,prs:[{number:1,ci:{state:'fail',failing:1}}],issues:[],errors:[]});
       renderBoard();
     }''')
     tile = page.locator('.board-select').nth(3)

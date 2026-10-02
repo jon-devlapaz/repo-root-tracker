@@ -10,7 +10,7 @@ web
 A single developer on macOS who keeps many git repositories under local folders and runs the dashboard on localhost. They open it to answer "where do I stand across all my repos?": which are dirty, ahead/behind, or blocked by a PR, and which need attention first. Sessions are short and frequent.
 
 ## Product Purpose
-repo-root-tracker finds git repository roots and serves a local dashboard (Python server, single `dashboard.html`) that tracks many repos at once. It has three views: a searchable, groupable list, an isometric island board where each repo is a plot, and a per-repo detail view (commits, changes, branches, GitHub). Success is seeing the state of every repo at a glance and opening the right one without friction.
+repo-root-tracker finds git repository roots and serves a local dashboard (Python server, single `dashboard.html`) that tracks many repos at once. It has three views: a searchable, groupable list, an isometric island board where each project is a plot, and a per-checkout detail view (commits, changes, branches, GitHub). The main checkout is a full bonsai and linked worktrees are small saplings in that plot. Success is seeing the state of every checkout at a glance and opening the right one without friction.
 
 ## Positioning
 Local-first and read-only. Pins and collections are saved on the localhost dashboard server with a browser copy for offline use, and removing a repo from the dashboard never deletes its files. It shows local git state and optional GitHub signals in one spatial overview, which a terminal `git status` loop cannot do.
@@ -25,8 +25,9 @@ Localhost server on port 7842 via `serve.sh`. Data comes from `/api/repos` and r
 - Existing Playwright and pytest suites (16 files) assert on element IDs, classes, and ARIA behavior. The overhaul must keep them green. Assertions may change only where a visual change makes one obsolete, and each such change is reported to the user.
 - Semantic attention states already exist (changed, sync, blocked, unavailable) and must stay distinguishable.
 - Vitals: the status API also reports commit count, first-commit date, 30-day activity and local branch names. A tree's trunk girth follows its age, its canopy fullness follows recent activity, and each live branch is a literal limb. Unknown history draws the plain tree.
-- Replay: `/api/activity?days=N` (local `git log`, cached 30s) gives per-repo daily commit counts; the board can replay the last 30 days, glowing the repos touched on each day.
-- Scale: islands paginate at 25 repos; an archipelago strip lists every island with its state counts; the board changes level of detail with zoom.
+- Replay: `/api/activity?days=N` (local `git log`, cached 30s) gives per-repo daily commit counts; the board can replay the last 30 days. Project activity includes hidden worktrees, visible members show their own activity, and the readout distinguishes active projects from active checkouts and checkout commit counts.
+- Scale: Workspace paginates at 25 projects, with at most three visible worktrees per plot. Counts distinguish projects and checkouts. GitHub, health, replay and ground include hidden worktrees.
+- Overflow navigation: left and right saplings stay fixed. The front slot prefers the selected checkout, then the focused checkout, then the first matching hidden worktree, then the normal third worktree. Alt+Left/Right visits every tracked checkout without changing selection. When a requested focus target stays hidden because the selected checkout owns the front slot, focus moves to its inspector checkout row. Enter/Space selects it. The selected checkout always stays rendered and pressed.
 - Ambient: tab title carries the count of repos needing action, the favicon is a live bonsai in the worst state's colour, and a one-line brief summarises the garden.
 - Actions are client-side only: copy a repo path, or open it through the `vscode://file` URL scheme. Neither touches a repository.
 - Ground lighting follows the viewer's local time (moon, dawn, day, dusk); it is decoration and never encodes git state.
