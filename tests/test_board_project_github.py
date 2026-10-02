@@ -320,3 +320,8 @@ def test_rechecking_clean_coverage_suppresses_calm_without_a_new_bloom(page, che
     page.evaluate('''()=>{githubTasks.clear();repos[0]._checking=false;repos[0]._boardQueued=false;renderBoard()}''')
     assert page.evaluate('boardIslandCalm(boardScene.islands[0])')
     assert page.locator('.board-bloom').count() == 0
+
+
+def test_accepting_a_missing_snapshot_is_a_safe_no_op(page):
+    result = page.evaluate("""() => ({undef: acceptGithubSnapshot('demo/x', 1, undefined), nul: acceptGithubSnapshot('demo/x', 2, null), stored: githubBySlug.has('demo/x')})""")
+    assert result == {'undef': False, 'nul': False, 'stored': False}

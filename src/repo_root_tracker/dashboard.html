@@ -1102,6 +1102,7 @@
     return true;
   }
   function acceptGithubSnapshot(slug,requestNumber,info,receivedAt=Date.now()) {
+    if(!info || typeof info!=='object')return false;   // a failed request can hand over nothing
     if(info.repo && info.repo!==slug)return false;
     return acceptGithubEntry(githubBySlug,slug,requestNumber,{...info,repo:slug},receivedAt);
   }
@@ -1660,7 +1661,11 @@
     if (Object.hasOwn(status, 'github_repo') && (status.github_repo === null || usableIdentityString(status.github_repo))) {
       const slug = status.github_repo;
       const repo=repoByPath.get(path);
-      if(repo)githubSlugForRepo(repo);else githubIdentityByPath.set(path,slug);
+      if(repo){
+        // remember the slug itself: a later local error or omission must not lose it
+        if(githubIdentityByPath.get(path)!==slug){githubIdentityByPath.set(path,slug);githubByPath.delete(path);delete repo._github;delete repo._githubCheckedAt;invalidateProjectAggregates();}
+        githubSlugForRepo(repo);
+      } else githubIdentityByPath.set(path,slug);
     }
     if (identityChanged || !observed) rebuildProjectModel();
   }
