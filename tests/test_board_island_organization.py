@@ -384,3 +384,63 @@ def test_export_import_and_restore_preserve_project_keys_and_workspace_markers(w
     settled(page)
     assert workspace.fake.state["assignments"] == {**assignments, UNTRACKED_KEY: ""}
     assert placement(page) == [None]
+
+
+# --- P2.3: Board islands -------------------------------------------------------------
+
+def test_neighborhoods_put_workspace_first_then_custom_islands_including_empty(workspace):
+    page = workspace.open_page({PROJECT_KEY: "personal"})
+    names = page.evaluate("deriveBoardNeighborhoods(boardProjects, organization).map(n => [n.key, n.name, n.projectKeys.length])")
+    assert names == [["workspace", "Workspace", 0], ["collection:work", "Work", 0], ["collection:personal", "Personal", 1]]
+
+
+def test_island_dialog_creates_island_with_selection_in_one_put(workspace):
+    page = workspace.open_page()
+    page.goto("http://dashboard.test/#/board")
+    settled(page)
+    before = len(puts(workspace.fake))
+    page.locator("#board-island-create").click()
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+    page.locator("#board-island-name").fill("Focus")
+    row = page.locator('#board-island-picker input[type=checkbox]')
+    assert row.count() == 1
+    assert row.bounding_box()["height"] >= 20
+    assert page.locator("#board-island-picker label").bounding_box()["height"] >= 44
+    row.check()
+    page.locator("#board-island-save").click()
+    page.wait_for_function("!document.getElementById('board-island-dialog').open")
+    page.evaluate("() => organizationQueue")
+    assert len(puts(workspace.fake)) == before + 1
+    saved = puts(workspace.fake)[-1]
+    focus = next(c["id"] for c in saved["collections"] if c["name"] == "Focus")
+    assert saved["assignments"][PROJECT_KEY] == focus
+    assert page.evaluate("boardActivePageKey") == "collection:" + focus + ":0"
+    assert page.locator("#board-island-delete").is_visible()
+
+
+def test_island_dialog_cancel_restores_focus_and_changes_nothing(workspace):
+    page = workspace.open_page()
+    page.goto("http://dashboard.test/#/board")
+    settled(page)
+    before = len(puts(workspace.fake))
+    page.locator("#board-island-create").focus()
+    page.keyboard.press("Enter")
+    page.keyboard.press("Escape")
+    assert page.evaluate("document.activeElement.id") == "board-island-create"
+    assert len(puts(workspace.fake)) == before
+    assert page.evaluate("organization.collections.length") == 2
+
+
+def test_island_dialog_reports_project_identity_change_without_saving(workspace):
+    page = workspace.open_page()
+    page.goto("http://dashboard.test/#/board")
+    settled(page)
+    page.locator("#board-island-create").click()
+    page.locator("#board-island-name").fill("Focus")
+    page.locator('#board-island-picker input[type=checkbox]').check()
+    before = len(puts(workspace.fake))
+    page.evaluate("() => { islandDraft.known.get(boardProjects[0].key).projectId = '/elsewhere/.git'; }")
+    page.locator("#board-island-save").click()
+    assert "changed identity" in page.locator("#board-island-error").inner_text()
+    assert page.locator("#board-island-dialog").evaluate("d => d.open")
+    assert len(puts(workspace.fake)) == before
