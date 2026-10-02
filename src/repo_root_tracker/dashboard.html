@@ -2861,18 +2861,36 @@
   const boardLabelMeasurements=new Map();
   document.fonts?.addEventListener('loadingdone',()=>{
     boardLabelMeasurements.clear();const layer=document.getElementById('board-name-overlay');
-    if(layer)delete layer.dataset.sig;layoutBoardNames();
+    if(layer){delete layer.dataset.sig;delete layer.dataset.zsig;}layoutBoardNames();
   });
+  // Label placement is the costliest per-action work, and one action (select, focus, render) used to trigger it
+  // several times. Requests made in the same task collapse into one run at the end of that task (a microtask, so
+  // nothing observes stale labels between tasks). A pure pan only shifts the existing labels; they are re-placed
+  // once the camera stops.
+  let boardNamesQueued=false,boardNamesSettle=0;
   function layoutBoardNames() {
+    if(boardNamesQueued)return;
+    boardNamesQueued=true;
+    queueMicrotask(()=>{boardNamesQueued=false;runLayoutBoardNames();});
+  }
+  function runLayoutBoardNames() {
     const layer=document.getElementById('board-name-overlay'),stage=document.getElementById('board-stage');
     if(!layer||!stage||!boardScene)return;
     const showAll=boardNamesVisible||boardCamera.zoom>=1.6;
     const activePaths=[boardFocusedPath,boardSelectedPath,boardHoveredPath].filter(Boolean);
-    const sig=[stage.clientWidth,stage.clientHeight,boardCamera.x,boardCamera.y,boardCamera.zoom,showAll,...activePaths,
+    const zsig=[stage.clientWidth,stage.clientHeight,boardCamera.zoom,showAll,...activePaths,
       boardScene.plots.map(p=>p.projectKey+p.project.name+p.x+p.y).join(),boardScene.targets.map(t=>t.path+t.slot+t.x+t.y).join(),
       boardScene.targets.filter(t=>activePaths.includes(t.path)).map(t=>repoByPath.get(t.path)?._status?.branch).join()].join('|');
-    if(layer.dataset.sig===sig)return;
-    layer.dataset.sig=sig;layer.replaceChildren();
+    if(layer.dataset.zsig===zsig){
+      const dx=boardCamera.x-Number(layer.dataset.cx),dy=boardCamera.y-Number(layer.dataset.cy);
+      if(!dx && !dy)return;
+      layer.style.transform=`translate(${dx}px,${dy}px)`;
+      clearTimeout(boardNamesSettle);
+      boardNamesSettle=setTimeout(()=>{delete layer.dataset.zsig;layoutBoardNames();},180);
+      return;
+    }
+    clearTimeout(boardNamesSettle);
+    layer.style.transform='';layer.dataset.zsig=zsig;layer.dataset.cx=boardCamera.x;layer.dataset.cy=boardCamera.y;layer.replaceChildren();
     const leaders=document.createElementNS('http://www.w3.org/2000/svg','svg');
     leaders.setAttribute('width',stage.clientWidth);leaders.setAttribute('height',stage.clientHeight);
     leaders.style.position='absolute';layer.append(leaders);
