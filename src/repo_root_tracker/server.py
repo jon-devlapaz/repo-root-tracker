@@ -8,6 +8,7 @@ import os
 import subprocess
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
@@ -17,7 +18,7 @@ from . import organization
 from .detail import get_commit_diff, get_repo_detail, get_working_diff
 from .github import get_github_info
 from .history import MAX_DAYS, get_activity
-from .status import GitNotAvailableError, get_repo_status
+from .status import GitNotAvailableError, get_repo_identity, get_repo_status
 
 CONFIG_DIR = Path(os.environ.get("RRT_CONFIG_DIR", Path.home() / ".config" / "repo-root-tracker"))
 REPOS_FILE = CONFIG_DIR / "repos.json"
@@ -44,6 +45,15 @@ def activity_for_all(days: int) -> dict:
     result = {"days": days, "repos": repos}
     _ACTIVITY_CACHE[days] = (now, result)
     return result
+
+
+def repos_with_identity(repos: list[dict]) -> list[dict]:
+    """Attach project identity so the dashboard can group worktrees on first paint."""
+    if not repos:
+        return repos
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        identities = list(pool.map(lambda repo: get_repo_identity(repo.get("path", "")), repos))
+    return [{**repo, **identity} for repo, identity in zip(repos, identities)]
 
 
 def load_repos() -> list[dict]:
@@ -102,7 +112,7 @@ class Handler(BaseHTTPRequestHandler):
             except organization.StorageError as e:
                 self._json(500, {"error": str(e)})
         elif path == "/api/repos":
-            self._json(200, load_repos())
+            self._json(200, repos_with_identity(load_repos()))
         elif path == "/api/repos/status":
             # ?path=<repo-root> — status signals for one repo
             repo_path = unquote(params.get("path", ""))

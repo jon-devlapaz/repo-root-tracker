@@ -2023,6 +2023,16 @@
     if (identityChanged || !observed) rebuildProjectModel();
   }
 
+  function seedRepoIdentities(listed) {
+    let changed = false;
+    for (const entry of listed) {
+      if (!usableIdentityString(entry?.path)) continue;
+      const identity = validatedRepoIdentity({project_id: entry.project_id, project_path: entry.project_path, is_worktree: entry.is_worktree});
+      if (identity && JSON.stringify(repoIdentities.get(entry.path)) !== JSON.stringify(identity)) { repoIdentities.set(entry.path, identity); changed = true; }
+    }
+    if (changed) { try { localStorage.setItem(PROJECT_IDENTITIES_KEY, JSON.stringify({version:1, entries:Object.fromEntries(repoIdentities)})); } catch { } }
+  }
+
   function deriveBoardProjects(registry, identities = repoIdentities) {
     const identityFor = path => (identities instanceof Map ? identities.get(path) : identities?.[path]) || {};
     const entries = registry.map((repo, index) => ({path:repo.path, index, identity:identityFor(repo.path),observed:metadataObservedPaths.has(repo.path) || !!(repo._status && !repo._status.error && !repo._status.gone)}));
@@ -2169,7 +2179,10 @@
   async function load() {
     const res = await fetch('/api/repos');
     if (!res.ok) throw new Error('Could not load tracked repositories');
-    repos = (await res.json()).map(r => ({...r, _status: null}));
+    const listed = await res.json();
+    repos = listed.map(({project_id, project_path, is_worktree, ...r}) => ({...r, _status: null}));
+    // The server groups worktrees up front; seed identities before the first paint so plots never regroup.
+    seedRepoIdentities(listed);
     rebuildProjectModel();
     // Cached/provisional plots paint before any status request settles.
     const initial = runLocalStatusBatch([...repos], 'list', true);

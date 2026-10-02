@@ -240,3 +240,18 @@ def test_github_refresh_is_explicit(live_server, tmp_path, monkeypatch):
     assert _get(url)[0] == 200
     assert _get(url + '&refresh=1')[0] == 200
     assert calls == [False, True]
+
+
+def test_repo_list_carries_project_identity_for_worktrees(tmp_path: Path) -> None:
+    main = tmp_path / "main"
+    wt = tmp_path / "wt"
+    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
+    subprocess.run(["git", "init", "-b", "main", str(main)], check=True, capture_output=True)
+    subprocess.run(["git", "-C", str(main), "commit", "--allow-empty", "-m", "x"], check=True, capture_output=True, env={**os.environ, **env})
+    subprocess.run(["git", "-C", str(main), "worktree", "add", "-b", "feat", str(wt)], check=True, capture_output=True)
+    listed = srv.repos_with_identity([{"path": str(main)}, {"path": str(wt)}, {"path": str(tmp_path / "gone")}])
+    by_path = {item["path"]: item for item in listed}
+    assert by_path[str(main)]["project_id"] == by_path[str(wt)]["project_id"]
+    assert by_path[str(main)]["is_worktree"] is False and by_path[str(wt)]["is_worktree"] is True
+    assert by_path[str(wt)]["project_path"] == str(main.resolve())
+    assert "project_id" not in by_path[str(tmp_path / "gone")]

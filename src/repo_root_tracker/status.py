@@ -116,6 +116,24 @@ def _relative(iso_date: str) -> str:
         return iso_date
 
 
+def get_repo_identity(path: str | Path) -> dict:
+    """Return project_id, project_path and is_worktree for *path*, or {} when unknown.
+
+    Two cheap local git calls, so the repo list can group worktrees into projects
+    before any full status check has finished.
+    """
+    try:
+        repo = Path(path).expanduser().resolve()
+        if not repo.is_dir():
+            return {}
+        common = Path(_run(repo, "rev-parse", "--path-format=absolute", "--git-common-dir")).resolve()
+        worktrees = _run(repo, "worktree", "list", "--porcelain", "-z").split("\0")
+        project_path = next((item[9:] for item in worktrees if item.startswith("worktree ")), str(repo))
+        return {"project_id": str(common), "project_path": project_path, "is_worktree": str(repo) != project_path}
+    except Exception:
+        return {}
+
+
 def get_repo_status(path: str | Path) -> RepoStatus:
     """Collect dashboard status signals for the repo at *path*.
 

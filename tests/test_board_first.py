@@ -55,3 +55,26 @@ def test_board_uses_the_wide_layout(open_at):
     box = page.locator("#board-stage").bounding_box()
     assert box["width"] > 900 and box["height"] > 520
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+
+
+def test_first_paint_groups_worktrees_before_any_status_arrives():
+    with playwright.sync_playwright() as p:
+        browser = p.chromium.launch()
+        context = browser.new_context(viewport={"width": 1440, "height": 900})
+        context.route("http://dashboard.test/", lambda route: route.fulfill(
+            content_type="text/html", body=DASHBOARD.read_text().replace("__HOME__", "/home/test", 1)))
+        context.route("**/api/organization", lambda route: route.fulfill(
+            json={"revision": 1, "pins": [], "collections": [], "assignments": {}, "collapsed": [],
+                  "grouping": "collection", "sort": "name", "githubEnabled": False}))
+        ident = {"project_id": "/p/main/.git", "project_path": "/p/main"}
+        context.route("**/api/repos", lambda route: route.fulfill(json=[
+            {"path": "/p/main", **ident, "is_worktree": False},
+            {"path": "/p/wt", **ident, "is_worktree": True}]))
+        # Statuses never answer: grouping must not depend on them.
+        context.route("**/api/repos/status?*", lambda route: None)
+        page = context.new_page()
+        page.goto("http://dashboard.test/#/board")
+        page.wait_for_function("boardProjects.length > 0")
+        assert page.evaluate("boardProjects.length") == 1
+        assert page.evaluate("boardProjects[0].paths.length") == 2
+        browser.close()
