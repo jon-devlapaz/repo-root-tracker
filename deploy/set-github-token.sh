@@ -6,7 +6,7 @@
 #   Mac:  printf '%s' "$TOKEN" | ssh <user>@<pi> 'bash -s' < deploy/set-github-token.sh
 #   Pi:   printf '%s' "$TOKEN" | bash set-github-token.sh
 set -euo pipefail
-IFS= read -r TOKEN
+IFS= read -r TOKEN || true  # tolerate input with no trailing newline
 [ -n "$TOKEN" ] || { echo "No token on stdin." >&2; exit 1; }
 case "$TOKEN" in github_pat_*) ;; *) echo "Refusing: not a fine-grained token (github_pat_...). Classic tokens carry far more power than a fetch needs." >&2; exit 1;; esac
 CRED=/var/lib/rrt/.git-credentials
