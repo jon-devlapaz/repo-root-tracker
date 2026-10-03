@@ -1835,6 +1835,7 @@
     const {intents,problems}=reconcileIslandIntents();
     const error=document.getElementById('board-island-error');
     if (problems.length) { error.textContent='Nothing was saved: '+[...new Set(problems)].join('; ')+'. Review the list and save again.'; renderBoardIslandPicker(); return; }
+    boardChoseIsland = true;
     const snapshot=organizationSnapshot(), name=document.getElementById('board-island-name').value;
     let id=islandDraft.collectionId ?? islandDraft.createdId;
     try {
@@ -2478,7 +2479,7 @@
   let boardActivePageKey = 'workspace:0';
   let boardScrollY = 0, boardPage = 1, detailOrigin = '#/board', lastHash = '', routeHasRun = false;
   let refreshingBoard = false, boardSelectedPath = null, boardFocusedPath = null;
-  let boardLayoutSignature = '', boardOrganizationSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
+  let boardChoseIsland = false, boardLayoutSignature = '', boardOrganizationSignature = '', boardNeighborhoods = [], boardLayoutReady = false;
   let boardPreviousProjects = new Map();
   let boardCommittedProjects = new Map(), boardMembershipPending = false, boardPanning = false;
   const boardControllers = new Map();
@@ -2883,6 +2884,11 @@
       const cut=boardActivePageKey.lastIndexOf(':'), key=boardActivePageKey.slice(0,cut), wanted=+boardActivePageKey.slice(cut+1)||0;
       const same=pages.filter(page=>page.key===key);
       index=same.length ? pages.indexOf(same[Math.min(wanted,same.length-1)]) : pages.findIndex(page=>page.key==='workspace');
+    }
+    // Home opens on something planted: until the viewer picks an island, skip an empty one.
+    if (!boardChoseIsland && !path && pages[index]?.empty) {
+      const planted=pages.findIndex(page=>!page.empty);
+      if (planted>=0) index=planted;
     }
     boardPage=Math.max(1,index+1); boardActivePageKey=pages[boardPage-1]?.pageKey || 'workspace:0';
     return true;
@@ -3935,6 +3941,7 @@
   }
   function boardGo(n) {
     boardPage = n;
+    boardChoseIsland = true;
     boardActivePageKey=boardIslands(boardNeighborhoods)[n-1]?.pageKey || 'workspace:0';
     boardHoveredPath = null;
     boardFocusedPath = null;
@@ -3965,6 +3972,7 @@
 
   function boardTurn(d) {
     boardPage += d;
+    boardChoseIsland = true;
     boardActivePageKey=boardIslands(boardNeighborhoods)[boardPage-1]?.pageKey || 'workspace:0';
     boardHoveredPath = null;
     boardFocusedPath = null;
