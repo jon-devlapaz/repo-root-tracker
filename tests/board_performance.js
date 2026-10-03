@@ -47,17 +47,20 @@
   // Exactly 120 warm-up animation frames; none enter the retained samples.
   for(let i=0;i<120;i++){actions[i===119?'promotion':['pan','zoom','replay'][i%3]](i);await frame();}
   await new Promise(resolve=>setTimeout(resolve,300));
-  while(groundCache.pendingSig)await frame();
+  while(groundCache.pendingSig || refreshingLocal || refreshingBoard)await frame();
   probe.components={};taskEntries.length=0;cameraPositions.clear();measuredPromotions=0;
   const started=performance.now();let refreshStart=null,refreshEnd=null,refreshPromise=null;
   const originalFetch=window.fetch;
-  let requests=0,active=0,peak=0;
+  let requests=0,active=0,peak=0,backgroundRequests=0,measuringRefresh=false;
   window.fetch=(url,...args)=>{
     if(!String(url).startsWith('/api/repos/status?'))return originalFetch(url,...args);
     const path=new URL(url,location.href).searchParams.get('path'),index=repos.findIndex(r=>r.path===path);
-    requests++;active++;peak=Math.max(peak,active);
+    // The regular 15-second poll remains active and contributes to timing.
+    // Count only the explicit board refresh in its 360-request contract.
+    const measured=measuringRefresh && refreshingBoard;
+    if(measured){requests++;active++;peak=Math.max(peak,active);}else backgroundRequests++;
     return new Promise(resolve=>setTimeout(()=>{
-      active--;const status=structuredClone(repoByPath.get(path)._status);
+      if(measured)active--;const status=structuredClone(repoByPath.get(path)._status);
       status.dirty={is_clean:index%7!==0,modified:index%7===0?2:0};
       status.activity_30d=index%18;status.first_commit_date='2020-01-01';
       resolve({ok:true,status:200,json:async()=>status});
@@ -76,8 +79,9 @@
       const count=category==='promotion'?30:300;
       for(let i=0;i<count;i++){
         if(category==='pan' && i===10){
-          refreshStart=performance.now();
-          refreshPromise=fetchBoardAll(false).then(()=>refreshEnd=performance.now());
+          while(refreshingLocal || refreshingBoard)await frame();
+          refreshStart=performance.now();measuringRefresh=true;
+          refreshPromise=fetchBoardAll(false).then(()=>{refreshEnd=performance.now();measuringRefresh=false;});
         }
         await sample(category,i);
       }
@@ -98,7 +102,7 @@
     const measuredTasks=taskEntries.filter(e=>e.start+e.duration>=started && e.start<performance.now());
     return {run,categories,components:probe.components,taskObserver:'PerformanceObserver longtask (reports tasks >=50ms)',
       longestObservedTaskMs:Math.max(0,...measuredTasks.map(e=>e.duration)),tasks:measuredTasks,
-      refresh:{requests,peak,ms:refreshEnd-refreshStart},plots:boardScene.plots.length,targets:boardScene.targets.length,
+      refresh:{requests,peak,backgroundRequests,ms:refreshEnd-refreshStart},plots:boardScene.plots.length,targets:boardScene.targets.length,
       measuredPromotions,panCameraPositions:cameraPositions.size,
       groundTotalWorkMs:groundCache.workMs,elapsed:performance.now()-started};
   }finally{
