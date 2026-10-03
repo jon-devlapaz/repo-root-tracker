@@ -6,6 +6,7 @@ This project uses Tink to manage Agent Skills under `.agents/skills/`.
 A repository is `git-golden` when all of the following are true:
 
 - It is checked out on `main` with a clean working tree.
+- `main` is the only branch, locally and on `origin`: no other local branches, no other remote branches, and no extra worktrees holding branches.
 - Local `main` is even with `origin/main`.
 - Open issues and pull requests are tracked separately; they do not make the checkout unclean.
 - The latest `CI` run on `main` succeeded.
