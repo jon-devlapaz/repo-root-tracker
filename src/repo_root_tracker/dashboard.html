@@ -2538,8 +2538,8 @@
   }
 
   /* A tapered brush stroke: filled polygon along a Catmull-Rom centerline. */
-  function bonsaiStroke(pts, w0, w1, rand, flare = 2.1) {
-    const c = bonsaiCurve(pts, 24), left = [], right = [];
+  function bonsaiStroke(pts, w0, w1, rand, flare = 2.1, samples = 24) {
+    const c = bonsaiCurve(pts, samples), left = [], right = [];
     c.forEach((p, i) => {
       const a = c[Math.max(0, i - 1)], b = c[Math.min(c.length - 1, i + 1)];
       const dx = b.x - a.x, dy = b.y - a.y, len = Math.hypot(dx, dy) || 1;
@@ -2671,7 +2671,7 @@
       }));
       const mx=(best.x+p.x)/2, my=Math.max(best.y,p.y)+2;
       const stroke=bonsaiStroke([[best.x,best.y],[mx,my],[p.x,p.y]],
-        (3.2+(1-best.t)*3)*vit.girth,1.1,rand,1.4);
+        (3.2+(1-best.t)*3)*vit.girth,1.1,rand,1.4,8);
       return {...stroke, start:[best.x,best.y], end:[p.x,p.y]};
     });
     // each live local branch is a literal branch: a short limb with buds, placed by its own rng
