@@ -443,6 +443,7 @@
   #board-island { pointer-events: none; }
   .board-islands-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin: 6px 0; }
   .board-islands-tools [hidden] { display: none; }
+  #signout { display: inline; } #signout[hidden] { display: none; }
   .board-islands-tools .local-note { flex: 1 1 260px; margin: 0; font-size: 12px; max-width: none; }
   #board-view .board-head { margin: 2px 0 0; }
   #board-view .board-tools { margin: 0; }
@@ -620,6 +621,10 @@
     .overview h2, .board-head h2 { font-size: 26px; }
     #list-brief, #board-brief { white-space: normal; min-height: 3.2em; }
     .board-workspace { order: 3; } .board-tools { order: 4; margin-top: 14px; }
+    /* the island comes first on a phone; island controls follow it in one swipeable row */
+    .board-islands-tools { order: 5; flex-wrap: nowrap; overflow-x: auto; gap: 4px; }
+    .board-islands-tools .btn { flex: none; }
+    .board-islands-tools .local-note[data-calm="1"] { display: none; }
     .board-legend { gap: 6px 18px; }
     #board-stage { height: clamp(300px, 46vh, 440px); }
     .board-tools input[type="search"], .toolbar input { font-size: 18px; flex-basis: 100%; }
@@ -770,9 +775,8 @@
     <h1>repo-root-tracker</h1>
   </div>
   <span class="badge" id="count-badge">— repos</span>
-  <span role="group" aria-label="View"><button id="view-board" class="btn btn-ghost view-toggle" onclick="location.hash='#/board'" aria-pressed="true">Board</button> <button id="view-list" class="btn btn-ghost view-toggle" onclick="location.hash='#/list'" aria-pressed="false">List</button></span>
+  <span role="group" aria-label="View"><button id="view-board" class="btn btn-ghost view-toggle" onclick="location.hash='#/board'" aria-pressed="true">Board</button> <button id="view-list" class="btn btn-ghost view-toggle" onclick="location.hash='#/list'" aria-pressed="false">List</button> <form id="signout" method="post" action="/logout" hidden><button class="btn btn-ghost" type="submit">Sign out</button></form></span>
   <span class="kbd-hint"><kbd>⌘K</kbd> jump to repo</span>
-  <form id="signout" method="post" action="/logout" hidden><button class="btn btn-ghost" type="submit">Sign out</button></form>
 </header>
 
 <main id="list-view">
@@ -1417,6 +1421,7 @@
     document.getElementById('local-note').textContent = messages.filter(Boolean).join(' ') ||
       status + ' Removing a repo here never deletes its files.';
     document.getElementById('board-organization-note').textContent = document.getElementById('local-note').textContent;
+    document.getElementById('board-organization-note').dataset.calm = messages.some(Boolean) ? '0' : '1';
     document.getElementById('organization-recovery').hidden = !organizationBackups.length;
     const select = document.getElementById('organization-recovery-copy');
     const selected = select.value;
