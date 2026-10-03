@@ -1,3 +1,11 @@
+# Review follow-up
+
+On 2026-10-03 the user approved the review recommendations with "proceed":
+attach stale branches to the pixel trunk at every growth size, soften foliage
+highlights, and improve mobile framing. Keep existing status meanings and growth
+thresholds. Reproduce the branch defect in board and inspector, then check desktop
+and mobile appearance and interactions. This is implementation approval only.
+
 # Current scope update: live merged-PR growth
 
 On 2026-10-03 the user approved the six-step live-integration plan with "proceed"

@@ -72,3 +72,51 @@ def test_browser_growth_state(tmp_path):
         assert not errors
         page.screenshot(path=str(tmp_path/'live-growth.png'))
         browser.close()
+
+
+@pytest.mark.parametrize('count', [0, 6, 21, None])
+def test_stale_branches_follow_pixel_tree(count):
+    from playwright.sync_api import sync_playwright
+    from bonsai_review import open_scene
+    with sync_playwright() as p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        open_scene(page)
+        page.evaluate('''count => {
+          const repo=repos.find(r=>pixelFamilyForPath(r.path));
+          for(const r of repos.filter(r=>pixelFamilyForPath(r.path)))
+            r._status.stale_branches=[{name:'old-one'},{name:'old-two'}];
+          acceptGithubSnapshot(githubSlugForRepo(repo),100,{has_github:true,prs:[],issues:[],
+            checked_at:new Date().toISOString(),merged_pr_count:count});
+          renderBoard();selectBoardRepo(repo.path);
+        }''', count)
+        for container in ['#board-world .board-main', '#board-world .board-sapling', '#board-inspector']:
+            geometry = page.locator(container).filter(has=page.locator('[data-pixel-family]')).first.evaluate('''root => {
+              const trunk=root.querySelector('use[href="#pixel-trunk"]').getBoundingClientRect();
+              const branches=root.querySelector('[data-marker="stale"]').getBoundingClientRect();
+              return {trunkTop:trunk.top,trunkBottom:trunk.bottom,top:branches.top,bottom:branches.bottom};
+            }''')
+            assert geometry['top'] >= geometry['trunkTop']
+            assert geometry['bottom'] <= geometry['trunkBottom']
+        browser.close()
+
+
+def test_mobile_fit_keeps_sparse_family_visible():
+    from playwright.sync_api import sync_playwright
+    import bonsai_review
+    data={path:status for path,status in bonsai_review.fixture_data().items() if '/willow' in path}
+    with sync_playwright() as p, patch.object(bonsai_review, 'fixture_data', return_value=data):
+        browser=p.chromium.launch()
+        page=browser.new_page(viewport={'width':390,'height':844})
+        bonsai_review.open_scene(page)
+        page.evaluate('fitBoardCamera()')
+        stage=page.locator('#board-stage').bounding_box()
+        for tree in page.locator('#board-world [data-pixel-family]').all():
+            bounds=tree.bounding_box()
+            assert bounds['x'] >= stage['x']
+            assert bounds['x']+bounds['width'] <= stage['x']+stage['width']
+        assert page.evaluate('boardCamera.zoom') > page.evaluate('(.96*document.getElementById("board-stage").clientWidth)/boardScene.width')
+        before=page.evaluate('({...boardCamera})')
+        page.evaluate('zoomBoardBy(1.25);fitBoardCamera()')
+        assert page.evaluate('({...boardCamera})') == before
+        browser.close()

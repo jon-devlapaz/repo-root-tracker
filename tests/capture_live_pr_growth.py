@@ -31,6 +31,8 @@ if __name__=='__main__':
         assert page.locator('#board-inspector [data-pixel-family]').count()==1
         assert all(r['count']==result['count'] for r in result['worktrees'])
         page.set_viewport_size({'width':390,'height':844})
+        page.screenshot(path=str(args.output/'mobile-inspector.png'),full_page=True)
+        page.evaluate('clearBoardSelection();fitBoardCamera()')
         page.screenshot(path=str(args.output/'mobile.png'),full_page=True)
         assert not errors,errors
         (args.output/'live-check.json').write_text(json.dumps(result,indent=2)+'\n')

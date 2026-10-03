@@ -6,6 +6,14 @@ function pixelGrowth(count) {
     count<=20 ? {stage:'growing',scale:.7,count,label:count+' merged PRs · growing'} :
     {stage:'mature',scale:1,count,label:count+' merged PRs · mature'};
 }
+function pixelGrowthTransform(count) {
+  return `translate(0 -8) scale(${pixelGrowth(count).scale}) translate(0 8)`;
+}
+function pixelStaleBranches(count, total, layoutScale) {
+  return `<g data-marker="stale" class="tree-fx" transform="scale(${layoutScale}) ${pixelGrowthTransform(count)}">
+    <path class="jin pixel-jin" d="M-4 -29h-5v-4h-4v-5h-3M-9 -33h-7"/>
+    ${total>1?'<path class="jin pixel-jin" d="M0 -43h6v-5h5v-4M6 -48v-7"/>':''}</g>`;
+}
 function pixelFamilyTree(palette, count=null) {
   const growth=pixelGrowth(count);
   const color = palette.mid === BONSAI_GOLD.mid ? 'gold' :
@@ -16,7 +24,7 @@ function pixelFamilyTree(palette, count=null) {
   return `<g data-pixel-family="moyogi" data-pixel-color="${color}" data-growth="${growth.stage}" data-merged-prs="${growth.count ?? 'unknown'}" style="image-rendering:pixelated">
     <title>${growth.label}.</title>
     <rect class="tree-bounds" x="-40" y="-85" width="80" height="110" fill="none"/>
-    <g data-growth-body transform="translate(0 -8) scale(${growth.scale}) translate(0 8)">
+    <g data-growth-body transform="${pixelGrowthTransform(count)}">
       <ellipse class="tree-hit" cx="0" cy="-52" rx="8" ry="32" fill="transparent"/>
       <use href="#pixel-trunk" x="-27" y="-70" width="54" height="66"/>${canopy}
     </g>

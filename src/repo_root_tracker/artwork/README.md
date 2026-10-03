@@ -24,3 +24,9 @@ while offline leaves history unknown. Changing remotes switches project identity
 The inspector displays the project total and original check time. Retained or
 expired totals are labeled last known. This field is independent of CI and PR
 blocker status and does not itself turn a checkout gold.
+
+The pixel family's stale branches and calm glint share the tree's growth transform.
+Stale branches use thin stepped paths anchored to this trunk. Foliage recoloring
+caps the brightest highlights in the embedding script; source PNGs remain intact.
+Run `tests/capture_pixel_weather.py --output DIR` with Playwright installed to
+compare all four growth states using the production glyph renderer.

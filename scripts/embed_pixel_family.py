@@ -5,7 +5,7 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 ART=ROOT/'src/repo_root_tracker/artwork'
 PAGE=ROOT/'src/repo_root_tracker/dashboard.html'
-COLORS={'gold':['5a3d05','d4a017','ffd966','fff6c9'],'teal':['0f2926','1f6b64','6fc2b7','c6ece6'],'mauve':['26171f','6e4d60','c19bb2','f0c9d8'],'indigo':['171a3a','50559a','a3a8dd','d6d9ff'],'olive':['25261a','6b7048','b8bd8a','e6e9c8']}
+COLORS={'gold':['5a3d05','d4a017','e5bc56','ead18b'],'teal':['0f2926','1f6b64','65aaa1','86bcb3'],'mauve':['26171f','6e4d60','b28ea4','c6a3b6'],'indigo':['171a3a','50559a','9399c4','adb3d8'],'olive':['25261a','6b7048','a7ad7c','bfc497']}
 
 def replace_block(source,start,end,content,anchor):
     block=start+'\n'+content+'\n'+end
