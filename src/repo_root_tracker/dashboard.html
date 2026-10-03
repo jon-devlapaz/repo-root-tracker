@@ -3047,8 +3047,8 @@
       const s=point(c,r),w=4+rng()*5;
       stones+=`<ellipse cx="${s.x}" cy="${s.y+2.5}" rx="${w+2}" ry="${w/2+1}" fill="#000" opacity=".35"/><path d="M${s.x-w} ${s.y+2}Q${s.x-w*.7} ${s.y-w*.95} ${s.x+w*.1} ${s.y-w}Q${s.x+w} ${s.y-w*.7} ${s.x+w} ${s.y+2}Z" fill="${p.stone}"/><path d="M${s.x-w*.7} ${s.y-w*.1}Q${s.x-w*.3} ${s.y-w*.85} ${s.x+w*.1} ${s.y-w*.9}" fill="none" stroke="#e6e4d9" stroke-opacity=".22" stroke-width="1"/>`;
     });
-    const caption=g.name+' · '+g.projectKeys.length+(g.projectKeys.length<g.total?'/'+g.total:'')+' projects';
-    const cap=Math.floor(g.width/9)-2;
+    const caption=g.name+' · '+g.projectKeys.length+(g.projectKeys.length<g.total?'/'+g.total:'')+(g.total===1?' project':' projects');
+    const cap=Math.floor(g.width/7)-2;
     const calm=boardIslandCalm(g);
     const name=caption.length>cap?caption.slice(0,cap-1)+'…':caption;
     return `<g data-island="${escapeHtml(g.key)}"><title>${escapeHtml(caption)}</title>`+

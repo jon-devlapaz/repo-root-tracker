@@ -93,3 +93,11 @@ def test_phone_shows_the_island_above_the_fold_with_sign_out_beside_the_view_but
     assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
     tools = page.locator(".board-islands-tools").bounding_box()
     assert tools["y"] > stage["y"], "island controls follow the island on a phone"
+
+
+def test_island_caption_is_not_truncated_on_a_phone(open_at):
+    page = open_at()
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.wait_for_selector("#board-stage", state="visible")
+    caption = page.locator("[data-island] text").first.text_content()
+    assert "…" not in caption and caption.endswith("projects")

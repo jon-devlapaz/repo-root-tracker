@@ -167,3 +167,9 @@ def test_browser_login_post_is_not_mistaken_for_cross_site(run):
     assert response.status == 303
     # An opaque origin is still refused for writes.
     assert request("POST", "/login", body="password=x", headers={"Origin": "null"})[0].status == 403
+
+
+def test_login_page_carries_the_embedded_brand_fonts(run):
+    request = run(remote=True)
+    _, body = request("GET", "/login")
+    assert b"@font-face" in body and b"Instrument Serif Embedded" in body

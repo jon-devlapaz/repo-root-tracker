@@ -42,13 +42,8 @@ else
   sudo sed -i "s|^RRT_PUBLIC_HOST=.*|RRT_PUBLIC_HOST=$HOST|" "$ENVFILE"
 fi
 
-say "Tracking this app's own repo as a starting point"
-if [ ! -d "$STATE/repos/repo-root-tracker/.git" ]; then
-  sudo -u rrt git init -q "$STATE/repos/repo-root-tracker"
-fi
-if [ ! -f "$STATE/config/repos.json" ]; then
-  printf '[{"path": "%s"}]\n' "$STATE/repos/repo-root-tracker" | sudo -u rrt tee "$STATE/config/repos.json" >/dev/null
-fi
+say "Preparing the repo list"
+[ -f "$STATE/config/repos.json" ] || echo '[]' | sudo -u rrt tee "$STATE/config/repos.json" >/dev/null
 
 say "Starting the services"
 sudo cp "$APP/deploy/repo-root-tracker.service" "$APP/deploy/rrt-fetch.service" "$APP/deploy/rrt-fetch.timer" /etc/systemd/system/
