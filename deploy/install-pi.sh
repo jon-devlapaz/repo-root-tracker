@@ -16,7 +16,7 @@ say() { printf '\n==> %s\n' "$*"; }
 
 say "Installing packages"
 sudo apt-get update -qq
-sudo apt-get install -y -qq git python3-venv openssl >/dev/null
+sudo apt-get install -y -qq git python3-venv openssl gh >/dev/null
 
 say "Creating the service user and unpacking the app"
 id rrt >/dev/null 2>&1 || sudo useradd --system --create-home --home-dir "$STATE" --shell /usr/sbin/nologin rrt
