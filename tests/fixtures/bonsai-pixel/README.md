@@ -1,37 +1,52 @@
-# Pixel tree trial
+# Pixel bonsai family
 
-The user chose B, pixel art, after comparing two illustrated directions. This
-trial puts one generated tree into the actual dashboard using synthetic data.
-It replaces the clean cedar sample only. Other states use the existing renderer.
+The user chose pixel art, then said to proceed with one complete tree family
+before extending the other seven shapes. This preview supplies an informal
+upright tree for the synthetic cedar checkout and its linked worktree.
+Production HTML and real repository data remain unchanged.
 
-Run `python tests/serve_bonsai_review.py --port 7857 --pixel-tree`, then open
-http://127.0.0.1:7857/#/board. Click cedar to inspect it.
+## Preview and checks
+
+Run `python tests/serve_bonsai_review.py --port 7859 --pixel-tree`, then open
+http://127.0.0.1:7859/?family=1#/board. The Pixel tree states button reopens
+the gallery. Close it and select cedar to see the board and inspector.
 
 Run `python tests/check_pixel_bonsai.py --output /tmp/pixel-bonsai-check`
-with Playwright and Chromium installed to repeat the desktop/mobile captures,
-selection check, and dirty-state fallback check.
+with Playwright and Chromium installed. It checks 300 combinations, clean to
+changed color transitions, retained history after an unavailable check, neutral
+unknown history, desktop/mobile selection, and list/detail rendering. It saves
+screenshots and machine-readable results.
 
-## Artwork
+## States
 
-`gold.png` was generated with OpenAI imagegen on 2026-10-03. The source output is
-`exec-eb417b7c-6b2a-49a3-b970-634b220b92ba.png`; the reference comparison is
-`exec-163fc406-8110-4420-ab9d-6fa48bb983ee.png`. Both originals remain in the
-chat's generated_images folder. The PNG is copied unchanged.
+- Five foliage colors: gold, teal, mauve, indigo, olive.
+- Four known age bands use the existing trunk-width factors.
+- Three activity bands use the existing foliage-density factors.
+- Zero through four extra limbs represent other live local branches, capped at four.
+- Unknown history uses neutral growth. Failed checks retain prior growth.
+- The gallery displays the same artwork at 48, 80 and 128 pixels wide.
 
-The prompt requested a transparent gold bonsai matching the right-hand B
-reference, with an S-curved trunk, separate asymmetric leaf clusters, square
-pixel highlights, brown bark, a charcoal bowl with feet, and olive moss. It
-excluded text, background, platform, particles, shadows outside the pot, and
-status icons. The intended display width was 96–128 pixels.
+The browser composes trunk, foliage and pot layers. A foliage-only SVG color
+filter maps grayscale shading into the existing project palettes. Bark and pot
+colors stay fixed. Additional limbs use small native paths and leaf sprites.
+Git warnings and weather keep their existing code and meanings.
 
-## Remaining work
+## Artwork and prompts
 
-This is an artwork trial, not the finished renderer. The single image cannot
-express eight forms, changing branch counts, age, or foliage density. The full
-set needs those variations and the project colors. At small mobile sizes the
-fine detail becomes texture; larger pixel clusters may read better.
+The built-in OpenAI imagegen tool generated `trunk.png`, `foliage.png`, and
+`pot.png` on 2026-10-03. These files were copied unchanged into this directory.
+`prompts.json` records the exact prompts and original output paths. `gold.png`
+is the preserved earlier whole-tree reference, generated in the same chat.
+The runtime colors and positions the layers; no offline image editing was used.
 
-The user chose the pixel direction, superseding the earlier SVG-only visual
-proposal for this trial. No final appearance approval or performance pass is
-claimed. Existing failed performance results still apply. Production HTML is
-unchanged, and no runtime library was added.
+## Limits
+
+This is one family in a synthetic preview. Seven other forms still need artwork
+and placement. The 48px tree retains its silhouette, but fine bark and branch
+changes are hard to distinguish at that size. It uses the same artwork at small
+sizes rather than a separately drawn miniature. The gallery exposes that limit.
+
+No production release, final appearance acceptance, full-suite pass for this
+revision, or performance pass is claimed. Existing failed performance results
+remain unresolved. The first-family user instruction authorizes this preview;
+it does not record release approval or change old SDLC receipts.

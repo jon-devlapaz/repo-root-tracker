@@ -57,5 +57,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--port',type=int,default=7856)
     parser.add_argument('--case',choices=['quiet','crowded','attention'],default='quiet')
-    parser.add_argument('--pixel-tree',action='store_true',help='Try pixel artwork on the clean cedar sample only')
+    parser.add_argument('--pixel-tree',action='store_true',help='Try the pixel family on cedar and its worktree')
     args=parser.parse_args();serve(args.port,args.case,args.pixel_tree)
