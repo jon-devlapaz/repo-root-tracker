@@ -324,3 +324,6 @@ An empty pot (84x62) above a 20px display line: the space is the subject.
 ## Known limitations
 
 - **Reference performance gate (opt-in, not in CI).** `RRT_REFERENCE_PERF=1 python -m pytest tests/test_board_performance.py` stress-tests 90 projects and 360 checkouts with Names on and a full refresh. On the development machine it did not pass when last recorded (median promotion work about 16-19 ms against a limit of 10; longest task 58-85 ms against 50). Measurements swing about 30% between identical runs, so a clean verdict needs a quiet reference machine. This was not re-measured for the restyle.
+
+## Golden canopies (2026-10-03)
+A clean checkout (git-golden) grows a gold canopy: `{dark:#5a3d05, mid:#d4a017, high:#ffd966, fleck:#fff6c9}` replaces the family foliage palette for that tree. Every other state keeps its family colour and shows its state through weather and the ring, so gold stays rare enough to mean something. This supersedes the earlier rule that foliage never encodes health. Tree geometry is still independent of git health; tests compare shape, not colour.

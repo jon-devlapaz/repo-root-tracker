@@ -71,10 +71,11 @@ def test_names_dense_scene_remain_readable_and_separate(page):
 
 
 def test_tree_variants_are_deterministic_and_independent_of_git_health(page):
+    # Shape and size only; a clean checkout is gold by design (see test_gold_canopy).
     goto_board(page)
     appearance = '''els => els.map(el => ({variant:el.dataset.treeVariant,scale:el.getAttribute('transform'),
       geometry:[...el.querySelectorAll('path,circle')].map(shape => ({type:shape.tagName,
-        attributes:['d','cx','cy','r','fill'].map(name=>shape.getAttribute(name))}))}))'''
+        attributes:['d','cx','cy','r'].map(name=>shape.getAttribute(name))}))}))'''
     before=page.locator('[data-tree-variant]').evaluate_all(appearance)
     assert len(before) == len(PATHS)
     page.evaluate('''() => { repos.forEach(r=>r._status.dirty={is_clean:true});renderBoard(); }''')

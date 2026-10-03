@@ -892,8 +892,8 @@
     <button id="board-organization-export-unsaved" class="btn btn-ghost" onclick="exportUnsavedOrganization()" hidden>Export unsaved organization</button>
     <p id="board-organization-note" class="local-note" role="status"></p>
   </div>
-  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold sparkle: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
-  <p class="local-note">Foliage color identifies a project family, not health. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
+  <div class="board-legend"><span data-tone="changed">Leaves fall: local changes</span><span data-tone="sync">Motes drift: ahead or behind cached refs</span><span data-tone="blocked">A seal: PR blockers, failing CI, or conflicts</span><span data-tone="unavailable">Dashed ring: unavailable</span><span data-tone="clean">Gold canopy: clean</span><span data-tone="stale">Lilac branches: stale</span><span data-tone="unknown" class="legend-nu">Wavy badge: no upstream</span><span data-tone="unknown">Circle: project-wide GitHub; gold · confirmed, number = PR blockers, CI = failing workflows, ? unconfirmed, ! incomplete</span><span data-tone="unknown">+N: hidden worktrees; use Worktrees</span><span class="legend-dry">Moss on the gravel: dormant for months</span><span data-tone="unknown">Faded: unchecked</span></div>
+  <p class="local-note">A gold canopy means a clean checkout (git-golden). Other trees keep their project family's colour. Each tree keeps its shape; only the weather around it changes. Drag to pan, hold ⌘ and scroll to zoom. Search dims other trees without moving them.</p>
   <nav class="archipelago" id="board-archipelago" aria-label="Islands" hidden></nav>
   <div class="board-workspace"><div class="board-stagecol"><div class="board-camera-tools"><button class="btn btn-ghost" aria-label="Zoom out" onclick="zoomBoardBy(0.8)">−</button><span id="board-zoom-level"></span><button class="btn btn-ghost" aria-label="Zoom in" onclick="zoomBoardBy(1.25)">+</button><button class="btn btn-ghost" onclick="fitBoardCamera()">Fit island</button><button id="board-names-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleBoardNames()">Names</button><button id="board-replay-toggle" class="btn btn-ghost" aria-pressed="false" onclick="toggleReplay()">Replay</button><span id="board-replay-controls" class="board-replay" hidden><button id="board-replay-play" class="btn btn-ghost" onclick="playReplay()">Play</button><input id="board-replay-range" type="range" min="0" max="30" value="30" aria-label="Replay: how many days ago" oninput="scrubReplay(+this.value)"><span id="board-replay-day" role="status"></span></span><span id="board-page-status" role="status" tabindex="-1">Page 1 of 1</span><span class="board-pager" id="board-pager" hidden><button id="board-prev" class="btn btn-ghost" aria-label="Previous page" onclick="boardTurn(-1)"><span class="chev chev-l" aria-hidden="true"></span>Prev</button><button id="board-next" class="btn btn-ghost" aria-label="Next page" onclick="boardTurn(1)">Next<span class="chev chev-r" aria-hidden="true"></span></button></span></div><div id="board-island-empty" hidden><p>Nothing is planted on this island yet.</p><button class="btn btn-ghost" onclick="openBoardIslandDialog('edit')">Choose projects</button></div><div id="board-island-wrap"></div><p id="board-caption">Hover or select a plot to identify its repository.</p></div><aside id="board-inspector" aria-label="Selected repository"><h3>Select a plot</h3><p>Inspect its branch, local changes, and GitHub signals without leaving the island.</p></aside></div>
   <div id="board-empty" hidden>
@@ -2499,6 +2499,9 @@
     {dark:'#171a3a', mid:'#50559a', high:'#a3a8dd', fleck:'#d6d9ff', gravel:'#1b1b1e', stone:'#403f46'},
     {dark:'#25261a', mid:'#6b7048', high:'#b8bd8a', fleck:'#e6e9c8', gravel:'#1d1d1a', stone:'#46453d'}
   ];
+  // A clean checkout is git-golden: its canopy is gold, whatever its family colour.
+  const BONSAI_GOLD = {dark:'#5a3d05', mid:'#d4a017', high:'#ffd966', fleck:'#fff6c9'};
+  const goldIfClean = (palette, tone) => tone === 'clean' ? {...palette, ...BONSAI_GOLD} : palette;
   const BONSAI_WOOD = {dark:'#1d1713', mid:'#3a2f27', light:'#b09a82', dead:'#ddd6c6'};
   const BONSAI_POTS = [
     {body:'#5b5a56', rim:'#85837c', glaze:'#74726c'},
@@ -2776,7 +2779,7 @@
   /* A small, still tree for lists, the inspector, and detail headers. */
   function bonsaiGlyph(repo, opts = {}) {
     const path = repo.path, github = opts.github || boardGithub(repo), facts = bonsaiFacts(repo, github);
-    const palette = BONSAI_FOLIAGE[opts.theme || 0], L = bonsaiLayout(path);
+    const palette = goldIfClean(BONSAI_FOLIAGE[opts.theme || 0], repoAttentionTone(repo, github)), L = bonsaiLayout(path);
     const faded = facts.stage === 'loading' || facts.stage === 'error';
     const body = facts.stage === 'gone'
       ? `<g class="island-empty">${bonsaiPot(L, palette, false)}<ellipse cx="0" cy="-8.4" rx="14" ry="4.8" fill="#141312"/><ellipse cx="4" cy="-9" rx="3.6" ry="2" fill="#56625b"/></g>`
@@ -3221,12 +3224,13 @@
   }
 
   function boardTreeSprite(repo, b, pose, cx, gy, opts = {}) {
-    const scale=opts.scale || 1, p=opts.palette || pose.island.theme;
+    const scale=opts.scale || 1, basePalette=opts.palette || pose.island.theme;
     const selected=boardSelectedPath===repo.path, L=bonsaiLayout(repo.path), bodyScale=scale*L.scale;
     const flag=selected ? `<g class="plot-flag" transform="translate(${cx+28*scale},${gy-84*scale}) scale(${scale})"><line x1="3.5" y1="-2" x2="3.5" y2="4" stroke="var(--accent)" stroke-width="1"/><polygon points="0,4 7,4 7,32 3.5,27 0,32" fill="var(--accent)"/></g>` : '';
     const outline=selected ? `<ellipse class="plot-outline" cx="${cx}" cy="${gy+scale}" rx="${27*scale}" ry="${12.5*scale}"/>` : '';
     const gone=b.stage==='gone' || !!repo._status?.gone, paused=b.stage==='error'||b.stage==='loading';
     const gh=boardGithub(repo), facts=bonsaiFacts(repo, opts.role==='worktree' || opts.sharedGithub ? {blocked:0,workflowFailures:0} : gh);
+    const p=goldIfClean(basePalette, opts.role==='worktree' || opts.sharedGithub ? localAttentionTone(repo) : repoAttentionTone(repo, gh));
     const frameScale=gone&&scale===1?1:bodyScale;
     const focus=`<rect class="plot-focus member-focus" x="${cx-40*frameScale}" y="${gy-(gone?17:85)*frameScale}" width="${80*frameScale}" height="${(gone?27:110)*frameScale}" rx="3"/>`;
     const body=gone ? `<ellipse class="tree-hit" cx="0" cy="-4" rx="22" ry="12" fill="transparent"/>${bonsaiPot(L,p,false)}<ellipse cx="0" cy="-8.4" rx="14" ry="4.8" fill="#141312"/><ellipse cx="4" cy="-9" rx="3.6" ry="2" fill="#56625b"/>` : bonsaiTree(repo.path,p,scale===1);
