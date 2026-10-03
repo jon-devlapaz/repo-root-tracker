@@ -1,0 +1,7 @@
+{
+  "item": "reference-performance",
+  "result": "failed",
+  "evidence": "Current candidate e24b561: headed desktop/mobile reference tests both failed. Desktop longest task 54ms exceeds 50ms; mobile promotion median 15.9ms exceeds 10ms. Cold paints 274.7\u2013337.9ms. Raw reference metadata and measurements: 04-test/output/live-pr-growth/performance.txt. No thresholds changed.",
+  "candidate": "2b9cfeb04bce0f8d80eaa8f09ed225de82398f6a6503c755068005e121700c9c",
+  "time_ns": 1791052687906749000
+}

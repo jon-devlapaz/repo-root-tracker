@@ -1,0 +1,7 @@
+{
+  "item": "specimens",
+  "result": "passed",
+  "evidence": "Paired baseline/specimens.png and candidate-final/specimens.png inspected at detail, board and sapling scales; eight styles retained. See 04-test/output/review.md.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791014906598038000
+}

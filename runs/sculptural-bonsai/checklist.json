@@ -1,0 +1,86 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "specimens",
+      "description": "Build and inspect baseline/candidate SVG specimens at actual board and sapling sizes before broad board changes.",
+      "verify": "Retain reproducible fixture inputs and paired screenshots for upright, leaning, sparse and cascading forms; inspect all eight styles. Record reviewer observations of taper, connected canopy masses, open gaps, restrained shading and matte pots. Sparse must remain sparse. Do not substitute the generated study."
+    },
+    {
+      "id": "shape-identity",
+      "description": "Preserve path-seeded style, history growth and tree shape across health-only changes.",
+      "verify": "Add meaningful renderer tests under tests/ for same path and history with changed local/GitHub health, last-known form after errors, and distinct sparse/cascading results. Retain passing output from the full suite; compare baseline/candidate visually. The proposed tests/test_bonsai_design_review.py does not exist at planning time; create tests before citing a command as proof."
+    },
+    {
+      "id": "labels-and-ownership",
+      "description": "Make names and factual conditions readable without confusing project status with checkout status.",
+      "verify": "Exercise long and duplicate project names, long worktree names, a clean main with dirty worktree, unchecked/current/unavailable GitHub and blockers. Verify full-name reveal by keyboard and touch, explicit condition ownership, and no collisions or clipping. Add rendered browser assertions for these behaviors and save screenshots. Demonstrate chosen name visibility and existing toggle. Report any plot-bound conflict before changing bounds."
+    },
+    {
+      "id": "composition-matrix",
+      "description": "Review quiet, crowded and attention-heavy boards at actual size.",
+      "verify": "Capture reproducible baseline/candidate cases at 390x844, 768x900 and 1440x900. Include a quiet 4-project board, 25 projects with three visible worktrees plus overflow, and mixed attention states. Inspect gold beside orange with each selected and unselected, long names, reduced motion and increased contrast. Save a coverage table and actual observations; reject hidden status, repeated generic silhouettes, collisions and sparse trees presented as warnings."
+    },
+    {
+      "id": "interaction-and-scope",
+      "description": "Keep stable plots, predictable inspector space and directly visible controls across the existing workflows.",
+      "verify": "Exercise refresh with unchanged identity/history, selection persistence, zoom/pan, search, keyboard focus, touch and overflow navigation. Inspect organization controls, list/detail shared trees and narrow views. Preserve bounds, status meanings, embedded fonts/licenses, runtime dependencies, backend and storage. Record any changed test expectation and its justified visual reason."
+    },
+    {
+      "id": "browser-regressions",
+      "description": "Run the existing focused regression tests with Playwright and Chromium available.",
+      "verify": "Run before and after implementation; retain output and investigate every skip. Missing browser coverage is unresolved, even if pytest exits zero.",
+      "check": {
+        "argv": [
+          "env",
+          "PYTHONPATH=src",
+          "python3",
+          "-m",
+          "pytest",
+          "tests/test_gold_canopy.py",
+          "tests/test_board_saplings.py",
+          "tests/test_a11y_and_smoke.py",
+          "tests/test_attention_colors.py",
+          "tests/test_vitals.py",
+          "tests/test_board_project_github.py",
+          "tests/test_board_review_regressions.py",
+          "-q",
+          "-ra"
+        ],
+        "timeout_seconds": 300
+      }
+    },
+    {
+      "id": "new-tests-and-full-suite",
+      "description": "Run new rendered behavior tests and the complete suite through SDLC verification.",
+      "verify": "Implement fixture/test additions under tests/, not runs/. Run PYTHONPATH=src python3 -m pytest tests/ -q -ra and confirm the new tests are collected and executed. Retain logs, counts and skip reasons; distinguish baseline failures from regressions. After approval, implementation commit and evidence-backed attestations, run python3 _system/scripts/sdlc.py verify sculptural-bonsai for the final bound verification receipt. Existing verification already runs tests/."
+    },
+    {
+      "id": "reference-performance",
+      "description": "Measure baseline and candidate with the existing headed performance procedure.",
+      "verify": "Run RRT_REFERENCE_PERF=1 PYTHONPATH=src python3 -m pytest tests/test_board_performance.py -q -s on the same quiet reference setup. Save machine/browser metadata and each run, keeping preexisting failures separate. Respect existing thresholds without relaxing them. Missing reference access, skips and failures remain unresolved rather than passed."
+    },
+    {
+      "id": "human-appearance",
+      "description": "Obtain the real owner\u2019s review of the actual rendered appearance before adoption.",
+      "verify": "Present paired specimens and the full composition matrix, chosen palette/name layout, test results and unresolved issues. Record the actual human review reference and response. An agent may inspect pixels but cannot supply human acceptance; the simulated Alex dialogue and \u201ci love it\u201d about the direction do not approve unseen output."
+    },
+    {
+      "id": "merged-pr-growth",
+      "description": "Connect the first pixel family to project-wide merged PR totals.",
+      "verify": "Check exact count parsing, cache ownership, failed refresh retention, identity reset, browser stages, colors and inspector. Retain a real GitHub capture.",
+      "check": {
+        "argv": [
+          "env",
+          "PYTHONPATH=src",
+          "python3",
+          "-m",
+          "pytest",
+          "tests/test_merged_pr_growth.py",
+          "-q"
+        ],
+        "timeout_seconds": 120
+      }
+    }
+  ]
+}

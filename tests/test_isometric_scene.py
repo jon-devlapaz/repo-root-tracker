@@ -120,7 +120,8 @@ def test_selected_plot_shows_name_without_toggle(page):
     assert page.locator('.plot-name').count() == 0
     click_plot(selected_tile(page))
     assert page.locator('.plot-name[data-selected="true"]').count() == 1
-    assert page.locator('.plot-name[data-selected="true"]').inner_text() == 'dirty'
+    assert page.locator('.plot-name[data-selected="true"] .plot-title').inner_text() == 'dirty'
+    assert page.locator('.plot-name[data-selected="true"] .plot-condition').inner_text() == 'Checkout local changes'
 
 
 def test_plot_names_do_not_overlap_and_use_screen_space(page):

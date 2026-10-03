@@ -1,0 +1,23 @@
+{
+  "repository": "jon-devlapaz/repo-root-tracker",
+  "count": 21,
+  "checkedAt": "2026-10-03T19:24:38.971790+00:00",
+  "stale": false,
+  "stage": "mature",
+  "worktrees": [
+    {
+      "path": "/Users/jondev/dev/active/boards/repo-root-tracker",
+      "count": 21,
+      "checkedAt": "2026-10-03T19:24:38.971790+00:00",
+      "stale": false,
+      "stage": "mature"
+    },
+    {
+      "path": "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai",
+      "count": 21,
+      "checkedAt": "2026-10-03T19:24:38.971790+00:00",
+      "stale": false,
+      "stage": "mature"
+    }
+  ]
+}

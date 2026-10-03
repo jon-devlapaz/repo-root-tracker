@@ -1,0 +1,10 @@
+{
+  "profile": "light",
+  "kind": "feature",
+  "schema": 1,
+  "seed_contract": {
+    "path": "runs/sculptural-bonsai/seed-contract.md",
+    "sha256": "6b82b2a535ad0b5e5e097fb18cf30485f8b1618f345e9001b39e1ab45b133e64",
+    "source": "/Users/jondev/Documents/Codex/2026-10-03/seed-me-bonsai-design/seed-contract.simulated.md"
+  }
+}

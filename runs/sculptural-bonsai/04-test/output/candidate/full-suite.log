@@ -1,0 +1,33 @@
+........................................................................ [ 11%]
+....................................................ss.................. [ 23%]
+........................................................................ [ 34%]
+........................................................................ [ 46%]
+........................................................................ [ 57%]
+........................................................................ [ 69%]
+..s.........................................F........................... [ 80%]
+........................................................................ [ 92%]
+..................................................                       [100%]
+=================================== FAILURES ===================================
+_________________ test_selected_plot_shows_name_without_toggle _________________
+
+page = <Page url='http://dashboard.test/#/board'>
+
+    def test_selected_plot_shows_name_without_toggle(page):
+        goto_board(page)
+        assert page.locator('.plot-name').count() == 0
+        click_plot(selected_tile(page))
+        assert page.locator('.plot-name[data-selected="true"]').count() == 1
+>       assert page.locator('.plot-name[data-selected="true"]').inner_text() == 'dirty'
+E       AssertionError: assert 'dirty\nMain not tracked' == 'dirty'
+E         
+E         - dirty
+E         + dirty
+E         ?      +
+E         + Main not tracked
+
+tests/test_isometric_scene.py:123: AssertionError
+=========================== short test summary info ============================
+SKIPPED [2] tests/test_board_performance.py:62: §8 requires an active headed browser on the recorded reference machine; set RRT_REFERENCE_PERF=1
+SKIPPED [1] tests/test_github.py:275: live GitHub profile not requested (set RRT_LIVE_GITHUB=1)
+FAILED tests/test_isometric_scene.py::test_selected_plot_shows_name_without_toggle
+1 failed, 622 passed, 3 skipped in 296.41s (0:04:56)

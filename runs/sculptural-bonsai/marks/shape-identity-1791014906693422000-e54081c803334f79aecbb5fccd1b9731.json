@@ -1,0 +1,7 @@
+{
+  "item": "shape-identity",
+  "result": "passed",
+  "evidence": "Existing vitals/gold/sapling browser checks passed; new rendered health/error/shape tests and 38 final label/scene checks passed. Shape plans and history normalization unchanged.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791014906693422000
+}

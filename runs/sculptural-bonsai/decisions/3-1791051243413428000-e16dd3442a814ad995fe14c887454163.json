@@ -1,0 +1,8 @@
+{
+  "inputs": "8f3f0be8cca94b804413acd3b9860734311442963a4054a1aee86c568aa40d81",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "User",
+  "source": "codex://threads/01a10056-1f34-7d01-b03f-2df3c547dc32 \u2014 user proceed after six-step live merged-PR integration plan, 2026-10-03",
+  "reason": "User explicitly instructed execution of the reviewed live integration plan; no release approval inferred."
+}

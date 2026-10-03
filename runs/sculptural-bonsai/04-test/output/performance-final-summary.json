@@ -1,0 +1,461 @@
+{
+  "baseline": [
+    {
+      "run": 1,
+      "categories": {
+        "pan": {
+          "work": {
+            "count": 300,
+            "median": 10.199999928474426,
+            "p95": 15.699999988079071,
+            "max": 51.39999997615814
+          },
+          "paint": {
+            "count": 300,
+            "median": 50.39999997615814,
+            "p95": 57.69999998807907,
+            "max": 84.90000003576279
+          }
+        },
+        "zoom": {
+          "work": {
+            "count": 300,
+            "median": 3.399999976158142,
+            "p95": 14.600000023841858,
+            "max": 23
+          },
+          "paint": {
+            "count": 300,
+            "median": 56,
+            "p95": 65.19999998807907,
+            "max": 91.30000001192093
+          }
+        },
+        "replay": {
+          "work": {
+            "count": 300,
+            "median": 0.800000011920929,
+            "p95": 14.300000071525574,
+            "max": 37.700000047683716
+          },
+          "paint": {
+            "count": 300,
+            "median": 47,
+            "p95": 57.69999998807907,
+            "max": 83.60000002384186
+          }
+        },
+        "promotion": {
+          "work": {
+            "count": 30,
+            "median": 11.300000011920929,
+            "p95": 16.5,
+            "max": 21.399999976158142
+          },
+          "paint": {
+            "count": 30,
+            "median": 43.5,
+            "p95": 52.89999997615814,
+            "max": 54.39999997615814
+          }
+        },
+        "refreshGroundOverlap": {
+          "work": {
+            "count": 99,
+            "median": 10.799999952316284,
+            "p95": 16.700000047683716,
+            "max": 51.39999997615814
+          },
+          "paint": {
+            "count": 99,
+            "median": 54.299999952316284,
+            "p95": 60.30000001192093,
+            "max": 84.90000003576279
+          }
+        }
+      },
+      "components": {
+        "layoutBoardNames": 4.400000095367432,
+        "applyBoardCamera": 1489.3000003099442,
+        "runLayoutBoardNames": 1318.2999985218048,
+        "requestLocalStatus": 1.4999999403953552,
+        "boardProjectAggregate": 156.50000005960464,
+        "boardGroundFor": 63.90000003576279,
+        "patchBoardTile": 222.40000015497208,
+        "applyReplay": 779.6999993920326,
+        "cacheBoardMemberHits": 138.79999965429306,
+        "renderIsometricScene": 2872.6999992728233,
+        "renderBoardView": 3570.7000007629395,
+        "renderBoard": 3573.2000005841255,
+        "applyLocalStatus": 19.59999966621399,
+        "rememberRepoMetadata": 9.100000143051147,
+        "finishLocalStatus": 1.4000000357627869,
+        "render": 3545.5000004172325,
+        "groundChunk": 19.400000035762787,
+        "finishBoardGround": 0.30000001192092896
+      },
+      "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)",
+      "longestObservedTaskMs": 52,
+      "tasks": [
+        {
+          "start": 4344.899999976158,
+          "duration": 52
+        }
+      ],
+      "refresh": {
+        "requests": 360,
+        "peak": 3,
+        "backgroundRequests": 1080,
+        "ms": 5421.899999976158
+      },
+      "plots": 25,
+      "targets": 100,
+      "measuredPromotions": 30,
+      "panCameraPositions": 2,
+      "groundTotalWorkMs": 10.800000011920929,
+      "elapsed": 48035.80000001192
+    },
+    {
+      "run": 1,
+      "categories": {
+        "pan": {
+          "work": {
+            "count": 300,
+            "median": 6.399999916553497,
+            "p95": 11,
+            "max": 53.69999998807907
+          },
+          "paint": {
+            "count": 300,
+            "median": 20,
+            "p95": 26.900000035762787,
+            "max": 72.09999996423721
+          }
+        },
+        "zoom": {
+          "work": {
+            "count": 300,
+            "median": 3.5,
+            "p95": 14.400000035762787,
+            "max": 18.600000023841858
+          },
+          "paint": {
+            "count": 300,
+            "median": 24.80000001192093,
+            "p95": 31.69999998807907,
+            "max": 39.5
+          }
+        },
+        "replay": {
+          "work": {
+            "count": 300,
+            "median": 1,
+            "p95": 14.600000023841858,
+            "max": 32.10000002384186
+          },
+          "paint": {
+            "count": 300,
+            "median": 19.599999964237213,
+            "p95": 34,
+            "max": 48.40000003576279
+          }
+        },
+        "promotion": {
+          "work": {
+            "count": 30,
+            "median": 11.300000011920929,
+            "p95": 17.600000023841858,
+            "max": 21.099999964237213
+          },
+          "paint": {
+            "count": 30,
+            "median": 25.80000001192093,
+            "p95": 33.5,
+            "max": 38.700000047683716
+          }
+        },
+        "refreshGroundOverlap": {
+          "work": {
+            "count": 274,
+            "median": 6.599999964237213,
+            "p95": 11.099999964237213,
+            "max": 53.69999998807907
+          },
+          "paint": {
+            "count": 274,
+            "median": 20.5,
+            "p95": 27.30000001192093,
+            "max": 72.09999996423721
+          }
+        }
+      },
+      "components": {
+        "layoutBoardNames": 3.5999998450279236,
+        "applyBoardCamera": 1227.1000005602837,
+        "runLayoutBoardNames": 1107.6000012755394,
+        "requestLocalStatus": 0.3999999761581421,
+        "boardProjectAggregate": 121.29999965429306,
+        "boardGroundFor": 50.000000059604645,
+        "patchBoardTile": 228.19999992847443,
+        "applyReplay": 641.4999995231628,
+        "cacheBoardMemberHits": 121.799999833107,
+        "renderIsometricScene": 2224.6000000834465,
+        "renderBoardView": 2740.5999992489815,
+        "renderBoard": 2742.5999992489815,
+        "applyLocalStatus": 9.699999988079071,
+        "rememberRepoMetadata": 4.899999678134918,
+        "finishLocalStatus": 0.19999998807907104,
+        "render": 2622.1999999284744,
+        "groundChunk": 19.399999976158142,
+        "finishBoardGround": 0.3999999761581421
+      },
+      "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)",
+      "longestObservedTaskMs": 54,
+      "tasks": [
+        {
+          "start": 3915.5,
+          "duration": 54
+        }
+      ],
+      "refresh": {
+        "requests": 360,
+        "peak": 3,
+        "backgroundRequests": 360,
+        "ms": 5763.900000035763
+      },
+      "plots": 25,
+      "targets": 100,
+      "measuredPromotions": 30,
+      "panCameraPositions": 2,
+      "groundTotalWorkMs": 9.899999976158142,
+      "elapsed": 21462.399999976158
+    }
+  ],
+  "final": [
+    {
+      "run": 1,
+      "categories": {
+        "pan": {
+          "work": {
+            "count": 300,
+            "median": 7.099999964237213,
+            "p95": 14.199999928474426,
+            "max": 58.80000013113022
+          },
+          "paint": {
+            "count": 300,
+            "median": 18.900000035762787,
+            "p95": 27.80000001192093,
+            "max": 72.80000001192093
+          }
+        },
+        "zoom": {
+          "work": {
+            "count": 300,
+            "median": 4.099999964237213,
+            "p95": 12.399999976158142,
+            "max": 19.000000059604645
+          },
+          "paint": {
+            "count": 300,
+            "median": 22.099999964237213,
+            "p95": 31.19999998807907,
+            "max": 38.60000002384186
+          }
+        },
+        "replay": {
+          "work": {
+            "count": 300,
+            "median": 6.700000047683716,
+            "p95": 22.5,
+            "max": 30.600000023841858
+          },
+          "paint": {
+            "count": 300,
+            "median": 22.30000001192093,
+            "p95": 36.5,
+            "max": 47.80000001192093
+          }
+        },
+        "promotion": {
+          "work": {
+            "count": 30,
+            "median": 14.5,
+            "p95": 16.500000059604645,
+            "max": 22.70000010728836
+          },
+          "paint": {
+            "count": 30,
+            "median": 27.400000035762787,
+            "p95": 33.299999952316284,
+            "max": 33.5
+          }
+        },
+        "refreshGroundOverlap": {
+          "work": {
+            "count": 268,
+            "median": 7.299999952316284,
+            "p95": 14.200000047683716,
+            "max": 58.80000013113022
+          },
+          "paint": {
+            "count": 268,
+            "median": 19.80000001192093,
+            "p95": 28.30000001192093,
+            "max": 72.80000001192093
+          }
+        }
+      },
+      "components": {
+        "layoutBoardNames": 5.100000083446503,
+        "applyBoardCamera": 1524.1999990940094,
+        "runLayoutBoardNames": 1477.5000002384186,
+        "requestLocalStatus": 2.899999976158142,
+        "boardProjectAggregate": 140.89999949932098,
+        "boardGroundFor": 53.90000021457672,
+        "patchBoardTile": 276.20000022649765,
+        "applyReplay": 655.6000001430511,
+        "cacheBoardMemberHits": 125.60000032186508,
+        "renderIsometricScene": 2666.699999988079,
+        "renderBoardView": 3254.600000500679,
+        "renderBoard": 3257.6000006198883,
+        "applyLocalStatus": 8.100000441074371,
+        "rememberRepoMetadata": 4.699999630451202,
+        "finishLocalStatus": 0.09999996423721313,
+        "render": 3108.500001192093,
+        "groundChunk": 20.5,
+        "finishBoardGround": 0.5
+      },
+      "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)",
+      "longestObservedTaskMs": 54,
+      "tasks": [
+        {
+          "start": 3797,
+          "duration": 54
+        }
+      ],
+      "refresh": {
+        "requests": 360,
+        "peak": 3,
+        "backgroundRequests": 360,
+        "ms": 5566.699999988079
+      },
+      "plots": 25,
+      "targets": 100,
+      "measuredPromotions": 30,
+      "panCameraPositions": 2,
+      "groundTotalWorkMs": 11,
+      "elapsed": 20488.19999998808
+    },
+    {
+      "run": 1,
+      "categories": {
+        "pan": {
+          "work": {
+            "count": 300,
+            "median": 6.399999976158142,
+            "p95": 10.899999976158142,
+            "max": 44
+          },
+          "paint": {
+            "count": 300,
+            "median": 16.69999998807907,
+            "p95": 19.30000001192093,
+            "max": 51.90000003576279
+          }
+        },
+        "zoom": {
+          "work": {
+            "count": 300,
+            "median": 3.199999988079071,
+            "p95": 8,
+            "max": 19.199999928474426
+          },
+          "paint": {
+            "count": 300,
+            "median": 16.69999998807907,
+            "p95": 18.400000035762787,
+            "max": 33.09999996423721
+          }
+        },
+        "replay": {
+          "work": {
+            "count": 300,
+            "median": 0.9000000357627869,
+            "p95": 10.899999976158142,
+            "max": 21.400000035762787
+          },
+          "paint": {
+            "count": 300,
+            "median": 16.69999998807907,
+            "p95": 25,
+            "max": 28.700000047683716
+          }
+        },
+        "promotion": {
+          "work": {
+            "count": 30,
+            "median": 16.600000023841858,
+            "p95": 24.700000047683716,
+            "max": 109.00000023841858
+          },
+          "paint": {
+            "count": 30,
+            "median": 27.099999964237213,
+            "p95": 34,
+            "max": 36.90000003576279
+          }
+        },
+        "refreshGroundOverlap": {
+          "work": {
+            "count": 311,
+            "median": 6.5,
+            "p95": 11.300000131130219,
+            "max": 44
+          },
+          "paint": {
+            "count": 311,
+            "median": 16.69999998807907,
+            "p95": 21,
+            "max": 51.90000003576279
+          }
+        }
+      },
+      "components": {
+        "layoutBoardNames": 3.9000001549720764,
+        "applyBoardCamera": 1053.0000014305115,
+        "runLayoutBoardNames": 1061.5000004768372,
+        "requestLocalStatus": 0.4999999403953552,
+        "boardProjectAggregate": 99.30000084638596,
+        "boardGroundFor": 43.3000003695488,
+        "patchBoardTile": 233.99999970197678,
+        "applyReplay": 563.7999997735023,
+        "cacheBoardMemberHits": 105.19999957084656,
+        "renderIsometricScene": 1997.4000000357628,
+        "renderBoardView": 2439.8999992012978,
+        "renderBoard": 2441.7999994158745,
+        "applyLocalStatus": 7.099999964237213,
+        "rememberRepoMetadata": 4.900000154972076,
+        "finishLocalStatus": 0.19999992847442627,
+        "render": 2296.199999809265,
+        "groundChunk": 18.599999964237213,
+        "finishBoardGround": 0.30000001192092896
+      },
+      "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)",
+      "longestObservedTaskMs": 0,
+      "tasks": [],
+      "refresh": {
+        "requests": 360,
+        "peak": 3,
+        "backgroundRequests": 309,
+        "ms": 5316.799999952316
+      },
+      "plots": 25,
+      "targets": 100,
+      "measuredPromotions": 30,
+      "panCameraPositions": 2,
+      "groundTotalWorkMs": 10.200000047683716,
+      "elapsed": 16506.700000047684
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "item": "labels-and-ownership",
+  "result": "passed",
+  "evidence": "38 final browser checks passed in candidate/labels-final.log, including exact ownership for standalone, confirmed main, linked worktree and unknown/untracked identities; selection/keyboard/touch reveal and 27 selected/unselected label layouts.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791014906776049000
+}

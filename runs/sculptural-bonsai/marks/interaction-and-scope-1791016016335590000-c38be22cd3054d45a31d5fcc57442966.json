@@ -1,0 +1,7 @@
+{
+  "item": "interaction-and-scope",
+  "result": "passed",
+  "evidence": "Final configured full627 plus focused102 passes exercise refresh, selection, keyboard, focus, touch, zoom/pan, overflow, bounds, organization and shared sprites. Backend/storage/fonts/runtime dependencies unchanged. Only short-branch SVG sampling and documented labels/visuals changed.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791016016335590000
+}

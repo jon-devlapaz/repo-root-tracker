@@ -1,0 +1,7 @@
+{
+  "item": "new-tests-and-full-suite",
+  "result": "passed",
+  "evidence": "Candidate e24b561: final verify log records 639 passed/3 opt-in skips, 102 focused browser regressions passed, and 12 merged PR tests passed. Actual GitHub-to-browser capture in live-pr-growth/live-check.json returned 21 for main and worktree.",
+  "candidate": "2b9cfeb04bce0f8d80eaa8f09ed225de82398f6a6503c755068005e121700c9c",
+  "time_ns": 1791052523879286000
+}

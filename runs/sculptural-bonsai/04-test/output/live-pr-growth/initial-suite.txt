@@ -1,0 +1,2806 @@
+........................................................................ [ 11%]
+....................................................ss.................. [ 22%]
+........................................................................ [ 33%]
+...........................................FFF.......................... [ 44%]
+....................................FF..FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF [ 56%]
+FFFFFFFFFF....FFF..F.................................................... [ 67%]
+.FF...sF....F...................................................F....... [ 78%]
+........................................................................ [ 89%]
+..................................................................       [100%]
+=================================== FAILURES ===================================
+__________ test_all_seeded_tree_styles_have_stable_click_centers[0.5] __________
+
+page = <Page url='http://dashboard.test/#/board'>, zoom = 0.5
+
+    @pytest.mark.parametrize('zoom', [.5, 1, 2.5])
+    def test_all_seeded_tree_styles_have_stable_click_centers(page, zoom):
+        project_board(page, 8)
+        page.evaluate('''() => {
+          const styles=new Set(),paths=[];
+          for(let i=0;styles.size<8;i++){const path='/styles/w'+i,style=bonsaiSeed(path)%8;if(!styles.has(style)){styles.add(style);paths.push(path);}}
+          repos=paths.map(path=>({path,_status:{project_id:'/styles/.git',project_path:'/styles/main',is_worktree:true,branch:'work',dirty:{is_clean:true},github_repo:null}}));
+          repoIdentities.clear();metadataObservedPaths.clear();rebuildProjectModel();repos.forEach(r=>rememberRepoMetadata(r.path,r._status));renderBoard();
+        }''')
+        paths = page.evaluate('boardProjects[0].worktreePaths')
+        seen = set()
+        for path in paths:
+            page.evaluate('path=>selectBoardRepo(path)', path)
+            set_camera(page, zoom, path)
+            target = member(page, path).locator('[data-tree-variant]')
+            seen.add(target.get_attribute('data-tree-variant'))
+            before = target.bounding_box()
+            page.evaluate('''path=>{const r=repoByPath.get(path);r._status.dirty={is_clean:false,modified:2};renderBoard()}''', path)
+            # Camera and the generator bounds remain fixed under a weather-only patch.
+            assert target.bounding_box() == before
+            page.evaluate('path=>{repoByPath.get(path)._status={error:true};renderBoard()}', path)
+            assert target.bounding_box() == before
+            page.evaluate('clearBoardSelection()')
+            assert page.evaluate('boardSelectedPath') is None
+            assert target.bounding_box() == before
+            point = target.bounding_box()
+            x,y = round(point['x']+point['width']/2),round(point['y']+point['height']/2)
+            picked = page.evaluate('''({x,y})=>{const s=document.getElementById('board-stage').getBoundingClientRect();return pickBoardPlot(x-s.left,y-s.top)}''', {'x':x,'y':y})
+>           assert picked == path
+E           AssertionError: assert '/styles/w0' == '/styles/w5'
+E             
+E             - /styles/w5
+E             ?          ^
+E             + /styles/w0
+E             ?          ^
+
+tests/test_board_saplings.py:274: AssertionError
+___________ test_all_seeded_tree_styles_have_stable_click_centers[1] ___________
+
+page = <Page url='http://dashboard.test/#/board'>, zoom = 1
+
+    @pytest.mark.parametrize('zoom', [.5, 1, 2.5])
+    def test_all_seeded_tree_styles_have_stable_click_centers(page, zoom):
+        project_board(page, 8)
+        page.evaluate('''() => {
+          const styles=new Set(),paths=[];
+          for(let i=0;styles.size<8;i++){const path='/styles/w'+i,style=bonsaiSeed(path)%8;if(!styles.has(style)){styles.add(style);paths.push(path);}}
+          repos=paths.map(path=>({path,_status:{project_id:'/styles/.git',project_path:'/styles/main',is_worktree:true,branch:'work',dirty:{is_clean:true},github_repo:null}}));
+          repoIdentities.clear();metadataObservedPaths.clear();rebuildProjectModel();repos.forEach(r=>rememberRepoMetadata(r.path,r._status));renderBoard();
+        }''')
+        paths = page.evaluate('boardProjects[0].worktreePaths')
+        seen = set()
+        for path in paths:
+            page.evaluate('path=>selectBoardRepo(path)', path)
+            set_camera(page, zoom, path)
+            target = member(page, path).locator('[data-tree-variant]')
+            seen.add(target.get_attribute('data-tree-variant'))
+            before = target.bounding_box()
+            page.evaluate('''path=>{const r=repoByPath.get(path);r._status.dirty={is_clean:false,modified:2};renderBoard()}''', path)
+            # Camera and the generator bounds remain fixed under a weather-only patch.
+            assert target.bounding_box() == before
+            page.evaluate('path=>{repoByPath.get(path)._status={error:true};renderBoard()}', path)
+            assert target.bounding_box() == before
+            page.evaluate('clearBoardSelection()')
+            assert page.evaluate('boardSelectedPath') is None
+            assert target.bounding_box() == before
+            point = target.bounding_box()
+            x,y = round(point['x']+point['width']/2),round(point['y']+point['height']/2)
+            picked = page.evaluate('''({x,y})=>{const s=document.getElementById('board-stage').getBoundingClientRect();return pickBoardPlot(x-s.left,y-s.top)}''', {'x':x,'y':y})
+>           assert picked == path
+E           AssertionError: assert '/styles/w0' == '/styles/w5'
+E             
+E             - /styles/w5
+E             ?          ^
+E             + /styles/w0
+E             ?          ^
+
+tests/test_board_saplings.py:274: AssertionError
+__________ test_all_seeded_tree_styles_have_stable_click_centers[2.5] __________
+
+page = <Page url='http://dashboard.test/#/board'>, zoom = 2.5
+
+    @pytest.mark.parametrize('zoom', [.5, 1, 2.5])
+    def test_all_seeded_tree_styles_have_stable_click_centers(page, zoom):
+        project_board(page, 8)
+        page.evaluate('''() => {
+          const styles=new Set(),paths=[];
+          for(let i=0;styles.size<8;i++){const path='/styles/w'+i,style=bonsaiSeed(path)%8;if(!styles.has(style)){styles.add(style);paths.push(path);}}
+          repos=paths.map(path=>({path,_status:{project_id:'/styles/.git',project_path:'/styles/main',is_worktree:true,branch:'work',dirty:{is_clean:true},github_repo:null}}));
+          repoIdentities.clear();metadataObservedPaths.clear();rebuildProjectModel();repos.forEach(r=>rememberRepoMetadata(r.path,r._status));renderBoard();
+        }''')
+        paths = page.evaluate('boardProjects[0].worktreePaths')
+        seen = set()
+        for path in paths:
+            page.evaluate('path=>selectBoardRepo(path)', path)
+            set_camera(page, zoom, path)
+            target = member(page, path).locator('[data-tree-variant]')
+            seen.add(target.get_attribute('data-tree-variant'))
+            before = target.bounding_box()
+            page.evaluate('''path=>{const r=repoByPath.get(path);r._status.dirty={is_clean:false,modified:2};renderBoard()}''', path)
+            # Camera and the generator bounds remain fixed under a weather-only patch.
+            assert target.bounding_box() == before
+            page.evaluate('path=>{repoByPath.get(path)._status={error:true};renderBoard()}', path)
+            assert target.bounding_box() == before
+            page.evaluate('clearBoardSelection()')
+            assert page.evaluate('boardSelectedPath') is None
+            assert target.bounding_box() == before
+            point = target.bounding_box()
+            x,y = round(point['x']+point['width']/2),round(point['y']+point['height']/2)
+            picked = page.evaluate('''({x,y})=>{const s=document.getElementById('board-stage').getBoundingClientRect();return pickBoardPlot(x-s.left,y-s.top)}''', {'x':x,'y':y})
+>           assert picked == path
+E           AssertionError: assert '/styles/w0' == '/styles/w5'
+E             
+E             - /styles/w5
+E             ?          ^
+E             + /styles/w0
+E             ?          ^
+
+tests/test_board_saplings.py:274: AssertionError
+______ test_github_partial_failure_is_explicit_and_refresh_bypasses_cache ______
+
+repo = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_partial_failure_is0/project')
+
+    def test_github_partial_failure_is_explicit_and_refresh_bypasses_cache(repo):
+        git(repo, "remote", "add", "origin", "https://github.com/test/project.git")
+        clear_cache()
+        with patch("repo_root_tracker.github._gh", side_effect=[None, [], None]) as run:
+>           first = get_github_info(repo)
+                    ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_dashboard_metadata.py:102: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/repo_root_tracker/github.py:293: in get_github_info
+    default_branch, workflows, workflow_access = _workflow_health(slug, repo_path)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:162: in _workflow_health
+    metadata = _api_record(base, "default_branch", path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:154: in _api_record
+    data = _gh("api", endpoint, "--hostname", "github.com", "--method", "GET",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='_gh' id='4417317120'>
+args = ('api', 'repos/test/project', '--hostname', 'github.com', '--method', 'GET', ...)
+kwargs = {'cwd': PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_partial_failure_is0/project')}
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+>               result = next(effect)
+                         ^^^^^^^^^^^^
+E               StopIteration
+
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1243: StopIteration
+_______ test_github_cache_deduplicates_worktrees_and_maps_review_signals _______
+
+repo = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_cache_deduplicates0/project')
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_cache_deduplicates0')
+
+    def test_github_cache_deduplicates_worktrees_and_maps_review_signals(repo, tmp_path):
+        git(repo, "remote", "add", "origin", "https://github.com/test/project.git")
+        checkout = tmp_path / "linked"
+        git(repo, "worktree", "add", "--detach", str(checkout))
+        clear_cache()
+    
+        def gh(*args, cwd):
+            if args[0] == "pr":
+                return [{"number": 1, "reviewDecision": "CHANGES_REQUESTED", "mergeable": "CONFLICTING", "isDraft": True}]
+            return []
+    
+        with patch("repo_root_tracker.github._gh", side_effect=gh) as run:
+            with ThreadPoolExecutor(max_workers=2) as pool:
+                results = list(pool.map(get_github_info, [repo, checkout]))
+>           assert run.call_count == 3
+E           AssertionError: assert 4 == 3
+E            +  where 4 = <MagicMock name='_gh' id='4417318128'>.call_count
+
+tests/test_dashboard_metadata.py:133: AssertionError
+_____________________ test_no_prs_but_default_branch_fails _____________________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_prs_but_default_branch0')
+
+    def test_no_prs_but_default_branch_fails(tmp_path):
+>       info = info_for(tmp_path, Gh())
+               ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:76: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1074ae120>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_prs_but_default_branch0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_one_passing_workflow_never_masks_another_failure _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_one_passing_workflow_neve0')
+
+    def test_one_passing_workflow_never_masks_another_failure(tmp_path):
+        gh = Gh(workflows=[workflow(1), workflow(2, "Lint")], current=[run(1, 1, "success"), run(2, 2)])
+>       assert info_for(tmp_path, gh).workflows.state == "failing"
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:85: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107807c50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_one_passing_workflow_neve0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______________ test_old_success_cannot_mask_current_head_pending _______________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_cannot_mask_c0')
+
+    def test_old_success_cannot_mask_current_head_pending(tmp_path):
+        gh = Gh(current=[run(status="in_progress", conclusion=None)], older=[run(99, conclusion="success", sha=OLD)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107807250>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_cannot_mask_c0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_remote_default_branch_is_used_and_encoded[trunk] _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_remote_default_branch_is_0')
+branch = 'trunk'
+
+    @pytest.mark.parametrize('branch', ['trunk', 'release/stable'])
+    def test_remote_default_branch_is_used_and_encoded(tmp_path, branch):
+        gh = Gh(branch=branch, current=[run(conclusion='success', branch=branch)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107aa4640>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_remote_default_branch_is_0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+________ test_remote_default_branch_is_used_and_encoded[release/stable] ________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_remote_default_branch_is_1')
+branch = 'release/stable'
+
+    @pytest.mark.parametrize('branch', ['trunk', 'release/stable'])
+    def test_remote_default_branch_is_used_and_encoded(tmp_path, branch):
+        gh = Gh(branch=branch, current=[run(conclusion='success', branch=branch)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:98: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107aa6060>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_remote_default_branch_is_1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______ test_current_head_outcomes_are_truthful[completed-success-passing] ______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are0')
+status = 'completed', conclusion = 'success', state = 'passing'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1079b7e30>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______ test_current_head_outcomes_are_truthful[in_progress-None-pending] _______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are1')
+status = 'in_progress', conclusion = None, state = 'pending'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107fd8f30>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________ test_current_head_outcomes_are_truthful[queued-None-pending] _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are2')
+status = 'queued', conclusion = None, state = 'pending'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107fdb240>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are2')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+________ test_current_head_outcomes_are_truthful[waiting-None-pending] _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are3')
+status = 'waiting', conclusion = None, state = 'pending'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1078ebe50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are3')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______ test_current_head_outcomes_are_truthful[completed-failure-failing] ______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are4')
+status = 'completed', conclusion = 'failure', state = 'failing'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1078eb650>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are4')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_____ test_current_head_outcomes_are_truthful[completed-timed_out-failing] _____
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are5')
+status = 'completed', conclusion = 'timed_out', state = 'failing'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1082cb2f0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are5')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+__ test_current_head_outcomes_are_truthful[completed-action_required-failing] __
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are6')
+status = 'completed', conclusion = 'action_required', state = 'failing'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1082cb890>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are6')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_____ test_current_head_outcomes_are_truthful[completed-cancelled-unknown] _____
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are7')
+status = 'completed', conclusion = 'cancelled', state = 'unknown'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x106eb3690>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are7')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______ test_current_head_outcomes_are_truthful[completed-skipped-unknown] ______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are8')
+status = 'completed', conclusion = 'skipped', state = 'unknown'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10884de10>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are8')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______ test_current_head_outcomes_are_truthful[completed-neutral-unknown] ______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are9')
+status = 'completed', conclusion = 'neutral', state = 'unknown'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107871570>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are9')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______ test_current_head_outcomes_are_truthful[completed-None-unknown] ________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are10')
+status = 'completed', conclusion = None, state = 'unknown'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1085e0110>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are10')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________ test_current_head_outcomes_are_truthful[unexpected--unknown] _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are11')
+status = 'unexpected', conclusion = '', state = 'unknown'
+
+    @pytest.mark.parametrize('status,conclusion,state', [
+        ('completed', 'success', 'passing'), ('in_progress', None, 'pending'),
+        ('queued', None, 'pending'), ('waiting', None, 'pending'),
+        ('completed', 'failure', 'failing'), ('completed', 'timed_out', 'failing'),
+        ('completed', 'action_required', 'failing'), ('completed', 'cancelled', 'unknown'),
+        ('completed', 'skipped', 'unknown'), ('completed', 'neutral', 'unknown'),
+        ('completed', None, 'unknown'), ('unexpected', '', 'unknown'),
+    ])
+    def test_current_head_outcomes_are_truthful(tmp_path, status, conclusion, state):
+>       info = info_for(tmp_path, Gh(current=[run(status=status, conclusion=conclusion)]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:115: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1085e01d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_current_head_outcomes_are11')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______ test_old_success_never_masks_current_failure_or_pending[failure] _______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_never_masks_c0')
+conclusion = 'failure'
+
+    @pytest.mark.parametrize('conclusion', ['failure', None])
+    def test_old_success_never_masks_current_failure_or_pending(tmp_path, conclusion):
+        current = run(conclusion=conclusion, status='completed' if conclusion else 'queued')
+        gh = Gh(current=[current], older=[run(99, conclusion='success', sha=OLD)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107bc83c0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_never_masks_c0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+________ test_old_success_never_masks_current_failure_or_pending[None] _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_never_masks_c1')
+conclusion = None
+
+    @pytest.mark.parametrize('conclusion', ['failure', None])
+    def test_old_success_never_masks_current_failure_or_pending(tmp_path, conclusion):
+        current = run(conclusion=conclusion, status='completed' if conclusion else 'queued')
+        gh = Gh(current=[current], older=[run(99, conclusion='success', sha=OLD)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:124: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107bc8cb0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_old_success_never_masks_c1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______ test_latest_run_per_workflow_wins_even_if_old_run_updated_later ________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_latest_run_per_workflow_w0')
+
+    def test_latest_run_per_workflow_wins_even_if_old_run_updated_later(tmp_path):
+        old = run(1)
+        old['updated_at'] = '2026-10-02T00:00:00Z'
+        gh = Gh(current=[old, run(2, conclusion='success')])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:133: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10899c910>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_latest_run_per_workflow_w0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______________ test_failure_wins_over_pending_in_other_workflow _______________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_failure_wins_over_pending0')
+
+    def test_failure_wins_over_pending_in_other_workflow(tmp_path):
+        gh = Gh(workflows=[workflow(1), workflow(2)], current=[run(), run(2, 2, None, status='queued')])
+>       assert info_for(tmp_path, gh).workflows.state == 'failing'
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:141: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10899f070>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_failure_wins_over_pending0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________________ test_success_only_on_an_older_head_is_stale __________________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_success_only_on_an_older_0')
+
+    def test_success_only_on_an_older_head_is_stale(tmp_path):
+        gh = Gh(current=[], older=[run(conclusion='success', sha=OLD)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:146: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107dab020>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_success_only_on_an_older_0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_no_runs_or_disabled_is_never_passing[workflows0] _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne0')
+workflows = []
+
+    @pytest.mark.parametrize('workflows', [[], [workflow()], [workflow(state='disabled_manually')]])
+    def test_no_runs_or_disabled_is_never_passing(tmp_path, workflows):
+>       info = info_for(tmp_path, Gh(workflows=workflows, current=[]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107dbb0d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_no_runs_or_disabled_is_never_passing[workflows1] _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne1')
+workflows = [{'id': 1, 'name': 'CI', 'state': 'active', 'html_url': 'https://github.com/owner/repo/actions/workflows/1'}]
+
+    @pytest.mark.parametrize('workflows', [[], [workflow()], [workflow(state='disabled_manually')]])
+    def test_no_runs_or_disabled_is_never_passing(tmp_path, workflows):
+>       info = info_for(tmp_path, Gh(workflows=workflows, current=[]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107b73b50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_no_runs_or_disabled_is_never_passing[workflows2] _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne2')
+workflows = [{'id': 1, 'name': 'CI', 'state': 'disabled_manually', 'html_url': 'https://github.com/owner/repo/actions/workflows/1'}]
+
+    @pytest.mark.parametrize('workflows', [[], [workflow()], [workflow(state='disabled_manually')]])
+    def test_no_runs_or_disabled_is_never_passing(tmp_path, workflows):
+>       info = info_for(tmp_path, Gh(workflows=workflows, current=[]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:156: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1081e4dd0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_no_runs_or_disabled_is_ne2')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+______________ test_disabled_workflow_old_success_is_not_passing _______________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_disabled_workflow_old_suc0')
+
+    def test_disabled_workflow_old_success_is_not_passing(tmp_path):
+        gh = Gh(workflows=[workflow(state='disabled_manually')], current=[run(conclusion='success')])
+>       assert info_for(tmp_path, gh).workflows.state == 'unknown'
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:162: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x108349c50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_disabled_workflow_old_suc0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+____________ test_missing_workflow_run_is_not_hidden_by_one_success ____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_missing_workflow_run_is_n0')
+
+    def test_missing_workflow_run_is_not_hidden_by_one_success(tmp_path):
+        gh = Gh(workflows=[workflow(1), workflow(2, 'Lint')], current=[run(conclusion='success')])
+>       assert info_for(tmp_path, gh).workflows.state == 'unknown'
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:167: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107a08050>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_missing_workflow_run_is_n0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run0] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e0')
+bad_run = {'id': 1, 'workflow_id': 1, 'name': 'CI', 'run_number': 1, ...}
+
+    @pytest.mark.parametrize('bad_run', [run(branch='feature'), run(sha=OLD), dict(run(), event='pull_request'), dict(run(), event='pull_request_target')])
+    def test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run(tmp_path, bad_run):
+>       info = info_for(tmp_path, Gh(current=[bad_run]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10833c950>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run1] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e1')
+bad_run = {'id': 1, 'workflow_id': 1, 'name': 'CI', 'run_number': 1, ...}
+
+    @pytest.mark.parametrize('bad_run', [run(branch='feature'), run(sha=OLD), dict(run(), event='pull_request'), dict(run(), event='pull_request_target')])
+    def test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run(tmp_path, bad_run):
+>       info = info_for(tmp_path, Gh(current=[bad_run]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1086ee6d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run2] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e2')
+bad_run = {'id': 1, 'workflow_id': 1, 'name': 'CI', 'run_number': 1, ...}
+
+    @pytest.mark.parametrize('bad_run', [run(branch='feature'), run(sha=OLD), dict(run(), event='pull_request'), dict(run(), event='pull_request_target')])
+    def test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run(tmp_path, bad_run):
+>       info = info_for(tmp_path, Gh(current=[bad_run]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107dbbb50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e2')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run3] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e3')
+bad_run = {'id': 1, 'workflow_id': 1, 'name': 'CI', 'run_number': 1, ...}
+
+    @pytest.mark.parametrize('bad_run', [run(branch='feature'), run(sha=OLD), dict(run(), event='pull_request'), dict(run(), event='pull_request_target')])
+    def test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run(tmp_path, bad_run):
+>       info = info_for(tmp_path, Gh(current=[bad_run]))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:172: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107b732d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_wrong_branch_head_or_pr_e3')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________ test_partial_gh_failure_is_explicit_and_never_passing[repo] __________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp0')
+failure = 'repo'
+
+    @pytest.mark.parametrize('failure', ['repo', 'head', 'workflows', 'current', 'older'])
+    def test_partial_gh_failure_is_explicit_and_never_passing(tmp_path, failure):
+        gh = Gh(current=[] if failure == 'older' else [run(conclusion='success')])
+        gh.fail.add(failure)
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107a0ad50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________ test_partial_gh_failure_is_explicit_and_never_passing[head] __________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp1')
+failure = 'head'
+
+    @pytest.mark.parametrize('failure', ['repo', 'head', 'workflows', 'current', 'older'])
+    def test_partial_gh_failure_is_explicit_and_never_passing(tmp_path, failure):
+        gh = Gh(current=[] if failure == 'older' else [run(conclusion='success')])
+        gh.fail.add(failure)
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x108a0a1d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______ test_partial_gh_failure_is_explicit_and_never_passing[workflows] _______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp2')
+failure = 'workflows'
+
+    @pytest.mark.parametrize('failure', ['repo', 'head', 'workflows', 'current', 'older'])
+    def test_partial_gh_failure_is_explicit_and_never_passing(tmp_path, failure):
+        gh = Gh(current=[] if failure == 'older' else [run(conclusion='success')])
+        gh.fail.add(failure)
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10833ced0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp2')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+________ test_partial_gh_failure_is_explicit_and_never_passing[current] ________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp3')
+failure = 'current'
+
+    @pytest.mark.parametrize('failure', ['repo', 'head', 'workflows', 'current', 'older'])
+    def test_partial_gh_failure_is_explicit_and_never_passing(tmp_path, failure):
+        gh = Gh(current=[] if failure == 'older' else [run(conclusion='success')])
+        gh.fail.add(failure)
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x108764350>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp3')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_________ test_partial_gh_failure_is_explicit_and_never_passing[older] _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp4')
+failure = 'older'
+
+    @pytest.mark.parametrize('failure', ['repo', 'head', 'workflows', 'current', 'older'])
+    def test_partial_gh_failure_is_explicit_and_never_passing(tmp_path, failure):
+        gh = Gh(current=[] if failure == 'older' else [run(conclusion='success')])
+        gh.fail.add(failure)
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:181: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1083e92d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_partial_gh_failure_is_exp4')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_______ test_confirmed_failure_survives_inventory_and_pr_query_failures ________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_confirmed_failure_survive0')
+
+    def test_confirmed_failure_survives_inventory_and_pr_query_failures(tmp_path):
+        gh = Gh()
+        gh.fail.update({'workflows', 'pr', 'issue'})
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:191: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1081e7ed0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_confirmed_failure_survive0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_bounded_incomplete_data_never_claims_passing[workflows-success-unknown] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n0')
+conclusion = 'success', state = 'unknown', query = 'workflows'
+
+    @pytest.mark.parametrize('conclusion,state', [('success', 'unknown'), ('failure', 'failing')])
+    @pytest.mark.parametrize('query', ['workflows', 'current'])
+    def test_bounded_incomplete_data_never_claims_passing(tmp_path, conclusion, state, query):
+        gh = Gh(current=[run(conclusion=conclusion)])
+        gh.counts[query] = 101
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107b72b50>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_ test_bounded_incomplete_data_never_claims_passing[workflows-failure-failing] _
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n1')
+conclusion = 'failure', state = 'failing', query = 'workflows'
+
+    @pytest.mark.parametrize('conclusion,state', [('success', 'unknown'), ('failure', 'failing')])
+    @pytest.mark.parametrize('query', ['workflows', 'current'])
+    def test_bounded_incomplete_data_never_claims_passing(tmp_path, conclusion, state, query):
+        gh = Gh(current=[run(conclusion=conclusion)])
+        gh.counts[query] = 101
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1086ef350>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n1')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+__ test_bounded_incomplete_data_never_claims_passing[current-success-unknown] __
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n2')
+conclusion = 'success', state = 'unknown', query = 'current'
+
+    @pytest.mark.parametrize('conclusion,state', [('success', 'unknown'), ('failure', 'failing')])
+    @pytest.mark.parametrize('query', ['workflows', 'current'])
+    def test_bounded_incomplete_data_never_claims_passing(tmp_path, conclusion, state, query):
+        gh = Gh(current=[run(conclusion=conclusion)])
+        gh.counts[query] = 101
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107a09350>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n2')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+__ test_bounded_incomplete_data_never_claims_passing[current-failure-failing] __
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n3')
+conclusion = 'failure', state = 'failing', query = 'current'
+
+    @pytest.mark.parametrize('conclusion,state', [('success', 'unknown'), ('failure', 'failing')])
+    @pytest.mark.parametrize('query', ['workflows', 'current'])
+    def test_bounded_incomplete_data_never_claims_passing(tmp_path, conclusion, state, query):
+        gh = Gh(current=[run(conclusion=conclusion)])
+        gh.counts[query] = 101
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:202: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x108a0a8d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_bounded_incomplete_data_n3')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_____________ test_cache_refresh_and_worktree_family_deduplication _____________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_cache_refresh_and_worktre0')
+
+    def test_cache_refresh_and_worktree_family_deduplication(tmp_path):
+        import subprocess
+        from concurrent.futures import ThreadPoolExecutor
+    
+        root, sibling = tmp_path / 'repo', tmp_path / 'worktree'
+        subprocess.run(['git', 'init', str(root)], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(root), '-c', 'user.name=Test', '-c', 'user.email=test@example.test',
+                        'commit', '--allow-empty', '-m', 'initial'], check=True, capture_output=True)
+        subprocess.run(['git', '-C', str(root), 'remote', 'add', 'origin', 'https://github.com/owner/repo.git'], check=True)
+        subprocess.run(['git', '-C', str(root), 'worktree', 'add', '--detach', str(sibling)], check=True, capture_output=True)
+        gh = Gh()
+        with patch('repo_root_tracker.github._gh', side_effect=gh):
+            with ThreadPoolExecutor(max_workers=2) as pool:
+>               results = list(pool.map(get_github_info, [root, sibling]))
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:221: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py:645: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py:312: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py:454: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/thread.py:86: in run
+    result = ctx.run(self.task)
+             ^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/concurrent/futures/thread.py:73: in run
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1078e37d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_cache_refresh_and_worktre0/repo')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+___________ test_api_github_exposes_health_and_keeps_existing_fields ___________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_api_github_exposes_health0')
+
+    def test_api_github_exposes_health_and_keeps_existing_fields(tmp_path):
+        from repo_root_tracker import server
+    
+        gh = Gh()
+        handler = server.Handler.__new__(server.Handler)
+        handler.headers = {'Host': 'localhost'}
+        handler.path = '/api/github?path=' + str(tmp_path) + '&refresh=1'
+        with patch('repo_root_tracker.github._github_remote', return_value='owner/repo'), \
+             patch('repo_root_tracker.github._gh', side_effect=gh), \
+             patch('repo_root_tracker.server.load_repos', return_value=[{'path': str(tmp_path)}]), \
+             patch.object(handler, '_json') as respond:
+>           handler.do_GET()
+
+tests/test_default_branch_ci.py:264: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/repo_root_tracker/server.py:275: in do_GET
+    self._json(200, get_github_info(repo_path, refresh=params.get("refresh") == "1").to_dict())
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x1083ea7d0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_api_github_exposes_health0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+__________ test_malformed_workflow_inventory_cannot_claim_all_passing __________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_malformed_workflow_invent0')
+
+    def test_malformed_workflow_inventory_cannot_claim_all_passing(tmp_path):
+        gh = Gh(workflows=[workflow(1), {'name': 'Missing workflow ID', 'state': 'active'}], current=[run(conclusion='success')])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:277: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107dbabd0>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_malformed_workflow_invent0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+________ test_actions_api_host_is_pinned_even_with_a_different_gh_host _________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_actions_api_host_is_pinne0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x107aa7ce0>
+
+    def test_actions_api_host_is_pinned_even_with_a_different_gh_host(tmp_path, monkeypatch):
+        monkeypatch.setenv('GH_HOST', 'github.enterprise.test')
+        # A missing current run also exercises the history request through the same helper.
+        gh = Gh(current=[], older=[run(conclusion='success', sha=OLD)])
+>       info = info_for(tmp_path, gh)
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:286: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x107762050>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_actions_api_host_is_pinne0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+_____ test_github_remote_access_failure_preserves_unknown_workflow_health ______
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_remote_access_fail0')
+
+    def test_github_remote_access_failure_preserves_unknown_workflow_health(tmp_path):
+        gh = Gh()
+        gh.fail.update({'pr', 'issue', 'repo'})
+>       data = info_for(tmp_path, gh).to_dict()
+               ^^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_default_branch_ci.py:315: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/test_default_branch_ci.py:72: in info_for
+    return get_github_info(tmp_path, refresh=refresh)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:285: in get_github_info
+    merged_count = _merged_pr_count(slug, repo_path)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:259: in _merged_pr_count
+    data = _gh("api", "graphql", "--hostname", "github.com", "-f", f"query={query}",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1247: in _execute_mock_call
+    result = effect(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <test_default_branch_ci.Gh object at 0x10833e150>
+cwd = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_remote_access_fail0')
+args = ('api', 'graphql', '--hostname', 'github.com', '-f', 'query=query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}', ...)
+
+    def __call__(self, *args, cwd):
+        self.calls.append(args)
+        if args[0] in {"pr", "issue"}:
+            return None if args[0] in self.fail else []
+        assert args[0] == "api"
+        endpoint = urlsplit(args[1])
+        path, query = unquote(endpoint.path), parse_qs(endpoint.query)
+>       assert path.startswith("repos/owner/repo")
+E       AssertionError: assert False
+E        +  where False = <built-in method startswith of str object at 0x1056dccf0>('repos/owner/repo')
+E        +    where <built-in method startswith of str object at 0x1056dccf0> = 'graphql'.startswith
+
+tests/test_default_branch_ci.py:49: AssertionError
+__________________________ test_prs_and_issues_mapped __________________________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_prs_and_issues_mapped0')
+
+    def test_prs_and_issues_mapped(tmp_path: Path) -> None:
+        subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(tmp_path), "remote", "add", "origin",
+                        "https://github.com/acme/widget.git"],
+                       check=True, capture_output=True)
+        calls = {"n": 0}
+    
+        def fake_gh(*args, cwd):
+            calls["n"] += 1
+            if "pr" in args:
+                return [{"number": 7, "title": "Fix it", "headRefName": "fix/x",
+                         "url": "https://github.com/acme/widget/pull/7",
+                         "statusCheckRollup": [{"status": "COMPLETED",
+                                                "conclusion": "SUCCESS"}]}]
+            return [{"number": 3, "title": "Bug", "url": "https://github.com/acme/widget/issues/3"}]
+    
+        with patch("repo_root_tracker.github._gh", side_effect=fake_gh):
+            info = get_github_info(tmp_path)
+        assert len(info.prs) == 1
+        assert info.prs[0].number == 7
+        assert info.prs[0].ci.state == "pass"
+        assert len(info.issues) == 1
+        assert info.issues[0].number == 3
+>       assert calls["n"] == 4
+E       assert 4 == 3
+
+tests/test_github.py:145: AssertionError
+___________________________ test_cache_bounds_calls ____________________________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_cache_bounds_calls0')
+
+    def test_cache_bounds_calls(tmp_path: Path) -> None:
+        subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
+        subprocess.run(["git", "-C", str(tmp_path), "remote", "add", "origin",
+                        "https://github.com/acme/widget.git"],
+                       check=True, capture_output=True)
+        calls = {"n": 0}
+    
+        def fake_gh(*args, cwd):
+            calls["n"] += 1
+            return []
+    
+        with patch("repo_root_tracker.github._gh", side_effect=fake_gh):
+            get_github_info(tmp_path)
+            get_github_info(tmp_path)
+            get_github_info(tmp_path)
+>       assert calls["n"] == 4  # PRs, issues, merged total, default-branch metadata, then cache hits
+        ^^^^^^^^^^^^^^^^^^^^^^
+E       assert 4 == 3
+
+tests/test_github.py:163: AssertionError
+_________________ test_github_queries_explicitly_target_origin _________________
+
+repo = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_github_queries_explicitly0')
+
+    def test_github_queries_explicitly_target_origin(repo):
+        def gh(*args, cwd):
+            slug = args[args.index('--repo') + 1].removeprefix('github.com/') if '--repo' in args else 'other/base'
+            return [{'number': 1, 'url': f'https://github.com/{slug}/pull/1'}] if args[0] == 'pr' else []
+    
+        with patch('repo_root_tracker.github._gh', side_effect=gh) as run:
+            info = get_github_info(repo)
+        assert info.prs[0].url == f'{info.repo_url}/pull/1'
+        for call in run.call_args_list:
+            args = call.args
+            if args[0] == 'api':
+>               assert args[1].split('?', 1)[0] == f'repos/{info.repo}'
+E               AssertionError: assert 'graphql' == 'repos/owner/fork'
+E                 
+E                 - repos/owner/fork
+E                 + graphql
+
+tests/test_github_reliability.py:30: AssertionError
+_________________ test_paginated_query_failure_stays_explicit __________________
+
+repo = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_paginated_query_failure_s0')
+
+    def test_paginated_query_failure_stays_explicit(repo):
+        with patch('repo_root_tracker.github._gh', side_effect=[None, [], None]):
+>           info = get_github_info(repo)
+                   ^^^^^^^^^^^^^^^^^^^^^
+
+tests/test_github_reliability.py:71: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+src/repo_root_tracker/github.py:293: in get_github_info
+    default_branch, workflows, workflow_access = _workflow_health(slug, repo_path)
+                                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:162: in _workflow_health
+    metadata = _api_record(base, "default_branch", path)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+src/repo_root_tracker/github.py:154: in _api_record
+    data = _gh("api", endpoint, "--hostname", "github.com", "--method", "GET",
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1176: in __call__
+    return self._mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1180: in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <MagicMock name='_gh' id='4417315104'>
+args = ('api', 'repos/owner/fork', '--hostname', 'github.com', '--method', 'GET', ...)
+kwargs = {'cwd': PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_paginated_query_failure_s0')}
+
+    def _execute_mock_call(self, /, *args, **kwargs):
+        # separate from _increment_mock_call so that awaited functions are
+        # executed separately from their call, also AsyncMock overrides this method
+    
+        effect = self.side_effect
+        if effect is not None:
+            if _is_exception(effect):
+                raise effect
+            elif not _callable(effect):
+>               result = next(effect)
+                         ^^^^^^^^^^^^
+E               StopIteration
+
+/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/unittest/mock.py:1243: StopIteration
+__________________________ test_browser_growth_state ___________________________
+
+tmp_path = PosixPath('/private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pytest-of-jondev/pytest-204/test_browser_growth_state0')
+
+    def test_browser_growth_state(tmp_path):
+        from playwright.sync_api import sync_playwright
+        from bonsai_review import open_scene
+        with sync_playwright() as p:
+            browser=p.chromium.launch()
+            page=browser.new_page(viewport={'width':1440,'height':900})
+            errors=[]
+            page.on('pageerror',lambda e:errors.append(str(e)))
+            open_scene(page)
+>           page.evaluate('''() => {
+              const repo=repos[0], slug=githubSlugForRepo(repo), linked=repos[1];
+              const accept=(n,extra)=>acceptGithubSnapshot(slug,n,{has_github:true,prs:[],issues:[],checked_at:new Date().toISOString(),...extra});
+              if(mergedPrGrowthInfo(repo).count!==null)throw Error('Unknown count');
+              accept(1,{merged_pr_count:0});
+              if(mergedPrGrowthInfo(repo).stage!=='seedling')throw Error('Zero count');
+              accept(2,{merged_pr_count:25});
+              if(mergedPrGrowthInfo(linked).count!==25)throw Error('Worktree count differs');
+              const time=mergedPrGrowthInfo(repo).checkedAt;
+              accept(3,{transport_failed:true,merged_pr_count:0});
+              const retained=mergedPrGrowthInfo(repo);
+              if(retained.count!==25 || !retained.stale || retained.checkedAt!==time)throw Error('Failed retention');
+              accept(2,{merged_pr_count:1});
+              if(mergedPrGrowthInfo(repo).count!==25)throw Error('Old response accepted');
+              accept(4,{merged_pr_count:26});
+              if(mergedPrGrowthInfo(repo).stale)throw Error('Did not recover');
+              linked._status.github_repo='other/repo';
+              if(mergedPrGrowthInfo(linked).count!==null)throw Error('Identity leaked');
+              for(const [count,stage] of [[0,'seedling'],[5,'seedling'],[6,'growing'],[20,'growing'],[21,'mature'],[null,'unknown']]) {
+                if(pixelGrowth(count).stage!==stage)throw Error('Boundary');
+              }
+              selectBoardRepo(repo.path);
+              renderBoard();
+            }''')
+
+tests/test_merged_pr_growth.py:47: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/sync_api/_generated.py:9122: in evaluate
+    self._sync(
+/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:469: in evaluate
+    return await self._main_frame.evaluate(expression, arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_frame.py:323: in evaluate
+    await self._channel.send(
+/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:69: in send
+    return await self._connection.wrap_api_call(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <playwright._impl._connection.Connection object at 0x1078e9850>
+cb = <function Channel.send.<locals>.<lambda> at 0x10852f1c0>
+is_internal = False, title = None
+
+    async def wrap_api_call(
+        self, cb: Callable[[], Any], is_internal: bool = False, title: str = None
+    ) -> Any:
+        if self._api_zone.get():
+            return await cb()
+        task = asyncio.current_task(self._loop)
+        st: List[inspect.FrameInfo] = getattr(
+            task, "__pw_stack__", None
+        ) or inspect.stack(0)
+    
+        parsed_st = _extract_stack_trace_information_from_stack(st, is_internal, title)
+        self._api_zone.set(parsed_st)
+        try:
+            return await cb()
+        except Exception as error:
+>           raise rewrite_error(error, f"{parsed_st['apiName']}: {error}") from None
+E           playwright._impl._errors.Error: Page.evaluate: Error: Identity leaked
+E               at eval (eval at evaluate (:302:30), <anonymous>:18:60)
+E               at UtilityScript.evaluate (<anonymous>:309:18)
+E               at UtilityScript.<anonymous> (<anonymous>:1:44)
+
+/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:559: Error
+=========================== short test summary info ============================
+FAILED tests/test_board_saplings.py::test_all_seeded_tree_styles_have_stable_click_centers[0.5]
+FAILED tests/test_board_saplings.py::test_all_seeded_tree_styles_have_stable_click_centers[1]
+FAILED tests/test_board_saplings.py::test_all_seeded_tree_styles_have_stable_click_centers[2.5]
+FAILED tests/test_dashboard_metadata.py::test_github_partial_failure_is_explicit_and_refresh_bypasses_cache
+FAILED tests/test_dashboard_metadata.py::test_github_cache_deduplicates_worktrees_and_maps_review_signals
+FAILED tests/test_default_branch_ci.py::test_no_prs_but_default_branch_fails
+FAILED tests/test_default_branch_ci.py::test_one_passing_workflow_never_masks_another_failure
+FAILED tests/test_default_branch_ci.py::test_old_success_cannot_mask_current_head_pending
+FAILED tests/test_default_branch_ci.py::test_remote_default_branch_is_used_and_encoded[trunk]
+FAILED tests/test_default_branch_ci.py::test_remote_default_branch_is_used_and_encoded[release/stable]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-success-passing]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[in_progress-None-pending]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[queued-None-pending]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[waiting-None-pending]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-failure-failing]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-timed_out-failing]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-action_required-failing]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-cancelled-unknown]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-skipped-unknown]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-neutral-unknown]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[completed-None-unknown]
+FAILED tests/test_default_branch_ci.py::test_current_head_outcomes_are_truthful[unexpected--unknown]
+FAILED tests/test_default_branch_ci.py::test_old_success_never_masks_current_failure_or_pending[failure]
+FAILED tests/test_default_branch_ci.py::test_old_success_never_masks_current_failure_or_pending[None]
+FAILED tests/test_default_branch_ci.py::test_latest_run_per_workflow_wins_even_if_old_run_updated_later
+FAILED tests/test_default_branch_ci.py::test_failure_wins_over_pending_in_other_workflow
+FAILED tests/test_default_branch_ci.py::test_success_only_on_an_older_head_is_stale
+FAILED tests/test_default_branch_ci.py::test_no_runs_or_disabled_is_never_passing[workflows0]
+FAILED tests/test_default_branch_ci.py::test_no_runs_or_disabled_is_never_passing[workflows1]
+FAILED tests/test_default_branch_ci.py::test_no_runs_or_disabled_is_never_passing[workflows2]
+FAILED tests/test_default_branch_ci.py::test_disabled_workflow_old_success_is_not_passing
+FAILED tests/test_default_branch_ci.py::test_missing_workflow_run_is_not_hidden_by_one_success
+FAILED tests/test_default_branch_ci.py::test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run0]
+FAILED tests/test_default_branch_ci.py::test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run1]
+FAILED tests/test_default_branch_ci.py::test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run2]
+FAILED tests/test_default_branch_ci.py::test_wrong_branch_head_or_pr_event_cannot_count_as_default_branch_run[bad_run3]
+FAILED tests/test_default_branch_ci.py::test_partial_gh_failure_is_explicit_and_never_passing[repo]
+FAILED tests/test_default_branch_ci.py::test_partial_gh_failure_is_explicit_and_never_passing[head]
+FAILED tests/test_default_branch_ci.py::test_partial_gh_failure_is_explicit_and_never_passing[workflows]
+FAILED tests/test_default_branch_ci.py::test_partial_gh_failure_is_explicit_and_never_passing[current]
+FAILED tests/test_default_branch_ci.py::test_partial_gh_failure_is_explicit_and_never_passing[older]
+FAILED tests/test_default_branch_ci.py::test_confirmed_failure_survives_inventory_and_pr_query_failures
+FAILED tests/test_default_branch_ci.py::test_bounded_incomplete_data_never_claims_passing[workflows-success-unknown]
+FAILED tests/test_default_branch_ci.py::test_bounded_incomplete_data_never_claims_passing[workflows-failure-failing]
+FAILED tests/test_default_branch_ci.py::test_bounded_incomplete_data_never_claims_passing[current-success-unknown]
+FAILED tests/test_default_branch_ci.py::test_bounded_incomplete_data_never_claims_passing[current-failure-failing]
+FAILED tests/test_default_branch_ci.py::test_cache_refresh_and_worktree_family_deduplication
+FAILED tests/test_default_branch_ci.py::test_api_github_exposes_health_and_keeps_existing_fields
+FAILED tests/test_default_branch_ci.py::test_malformed_workflow_inventory_cannot_claim_all_passing
+FAILED tests/test_default_branch_ci.py::test_actions_api_host_is_pinned_even_with_a_different_gh_host
+FAILED tests/test_default_branch_ci.py::test_github_remote_access_failure_preserves_unknown_workflow_health
+FAILED tests/test_github.py::test_prs_and_issues_mapped - assert 4 == 3
+FAILED tests/test_github.py::test_cache_bounds_calls - assert 4 == 3
+FAILED tests/test_github_reliability.py::test_github_queries_explicitly_target_origin
+FAILED tests/test_github_reliability.py::test_paginated_query_failure_stays_explicit
+FAILED tests/test_merged_pr_growth.py::test_browser_growth_state - playwright...
+56 failed, 583 passed, 3 skipped in 398.90s (0:06:38)

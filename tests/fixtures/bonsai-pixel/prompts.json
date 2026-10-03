@@ -1,0 +1,15 @@
+{
+  "tool": "built-in imagegen",
+  "date": "2026-10-03",
+  "reference": "gold.png",
+  "prompts": {
+    "trunk": "Use case: precise-object-edit. Create a reusable game sprite matching the reference bonsai's brown gnarled S-curved trunk and its main branches. Remove ALL leaves, moss, pot, soil and background. Keep only the beautiful brown wood, with five tapering limbs branching left and right at different heights. Single isolated bare bonsai skeleton, thick flared base at bottom center, curved narrow top. Full sprite centered with 5% padding. Premium crisp pixel art, use broad visible square pixel clusters and stepped edges so it reads at 80px tall. Warm umber shadows, brown midtones, restrained tan highlights. No gold leaves, no text, no ground, no shadow. Actual transparent background. Match the reference character, no smooth illustration.",
+    "foliage": "Use case: stylized-concept. The reference is style inspiration. Generate ONE reusable bonsai foliage cluster sprite, horizontally oval with an irregular scalloped silhouette. Only foliage, NO trunk, branch, pot, moss, background, text or shadow. Make it grayscale only, charcoal shadows, medium gray body, pale gray highlights, white used sparingly. It will be tinted by the game renderer. Rich premium pixel-art broad square clusters, hard stepped edges, absolutely no blur. Width about twice height. One continuous airy leaf pad with a few transparent tiny holes, coherent readable mass when displayed at 32px wide. Center with 6% transparent margin. Match the reference leaf texture but simplify the tiniest details for a small screen. Actual transparent background.",
+    "pot": "Use case: precise-object-edit. Generate only the reference's shallow charcoal bonsai pot with its two small feet and olive moss soil surface. Remove the entire tree including ALL trunk roots branches and leaves. Single isolated front-view shallow bowl, slight top view of moss. Width 3.2 times height, centered, full object and 5% padding. Premium crisp pixel-art in broad square clusters, warm charcoal ceramic shadows and restrained gray rim highlights. Moss muted olive. No surrounding cast shadow, no ground, no text, no background. Actual transparent background. Reads clearly at 48px wide."
+  },
+  "outputs": {
+    "trunk": "/Users/jondev/.codex/generated_images/01a10056-1f34-7d01-b03f-2df3c547dc32/exec-f54b11b5-2c44-4e9d-8ee2-de96d7b52be4.png",
+    "foliage": "/Users/jondev/.codex/generated_images/01a10056-1f34-7d01-b03f-2df3c547dc32/exec-7eb4e524-7d82-4581-9965-0184dd466553.png",
+    "pot": "/Users/jondev/.codex/generated_images/01a10056-1f34-7d01-b03f-2df3c547dc32/exec-6dffc497-ef4c-47c9-8e7a-3f2135a259b6.png"
+  }
+}

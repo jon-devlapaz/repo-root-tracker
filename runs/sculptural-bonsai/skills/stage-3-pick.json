@@ -1,0 +1,9 @@
+{
+  "stage": 3,
+  "document": "runs/sculptural-bonsai/brief.md",
+  "sha256": "ad8541b90ffb0971cc07cf3a9613a0300acb484222142c375b9378535889d8cb",
+  "chars": 5091,
+  "status": "routed",
+  "winner": "control-ui",
+  "confidence": 0.71
+}
