@@ -1,0 +1,7 @@
+{
+  "item": "composition-matrix",
+  "result": "passed",
+  "evidence": "Baseline and candidate-final screenshot matrices captured and inspected for quiet/crowded/attention at 390, 768, 1440 widths; selected gold/changed, contrast, list/detail and all eight styles retained. Names-off default avoids permanent crowded panels; limitations in review.md.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791014906856364000
+}

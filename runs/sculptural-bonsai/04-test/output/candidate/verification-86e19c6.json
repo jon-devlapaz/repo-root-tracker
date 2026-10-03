@@ -1,0 +1,4 @@
+{
+  "result": "failed",
+  "error": "Checklist incomplete: new-tests-and-full-suite, reference-performance, human-appearance (mark them with: sdlc.py mark sculptural-bonsai <id> passed --evidence \"...\")"
+}

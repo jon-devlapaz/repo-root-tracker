@@ -1,0 +1,7 @@
+{
+  "item": "new-tests-and-full-suite",
+  "result": "passed",
+  "evidence": "SDLC configured checks at 86e19c6 executed full suite:627 passed,3 documented opt-in skips in289.83s, followed by102 focused browser passes in54.97s. All18 new tests collected/executed. Overall gate truthfully failed missing human/performance attestations and this newly proven item; raw log retained as candidate/verification-86e19c6.log.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791015417135552000
+}

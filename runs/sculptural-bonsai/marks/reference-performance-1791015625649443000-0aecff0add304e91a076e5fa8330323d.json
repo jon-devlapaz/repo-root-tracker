@@ -1,0 +1,7 @@
+{
+  "item": "reference-performance",
+  "result": "failed",
+  "evidence": "Final641c951 headed reference performance failed both viewports in49.33s after short-branch sampling reduction. Raw candidate/performance-final.log retains unchanged limits,360-request/peak3 passes and failing timing results. Frozen baseline also fails. Diagnostic script reduced SVG13.4% but does not substitute for failed reference gate. See review.md final comparison.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791015625649443000
+}

@@ -1,0 +1,360 @@
+RRT_PERFORMANCE_REFERENCE {"hardware": "Mac17,9", "cpu": "Apple M5 Pro", "cores": 15, "memory_bytes": 25769803776, "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O", "browser": "148.0.7778.96", "chromium_executable": "/Users/jondev/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing", "playwright": "1.60.0", "candidate": "86e19c6392d93027001c48429e603492c6697b4d", "dashboard_sha256": "dda0c5a9da4d3727f83e7d781ea96d355c2fd73e1e5641d623573e536c9cf7eb", "fixture_sha256": "4385da3f32668b6ae1b7e9cc55a08adf9c8db4b0d0e3532a536cb9306408dc12", "viewport": {"width": 1440, "height": 900}, "dpr": 1, "headed": true, "foreground": true, "motion": "normal", "names": true, "throttling": "none", "devtools": "closed"}
+RRT_PERFORMANCE_COLD [188.69999998807907, 145.89999997615814, 142.5, 145.60000002384186, 144.4000000357628]
+RRT_PERFORMANCE_RUN {"run": 1, "categories": {"pan": {"work": {"count": 300, "median": 10.199999928474426, "p95": 15.699999988079071, "max": 51.39999997615814}, "paint": {"count": 300, "median": 50.39999997615814, "p95": 57.69999998807907, "max": 84.90000003576279}}, "zoom": {"work": {"count": 300, "median": 3.399999976158142, "p95": 14.600000023841858, "max": 23}, "paint": {"count": 300, "median": 56, "p95": 65.19999998807907, "max": 91.30000001192093}}, "replay": {"work": {"count": 300, "median": 0.800000011920929, "p95": 14.300000071525574, "max": 37.700000047683716}, "paint": {"count": 300, "median": 47, "p95": 57.69999998807907, "max": 83.60000002384186}}, "promotion": {"work": {"count": 30, "median": 11.300000011920929, "p95": 16.5, "max": 21.399999976158142}, "paint": {"count": 30, "median": 43.5, "p95": 52.89999997615814, "max": 54.39999997615814}}, "refreshGroundOverlap": {"work": {"count": 99, "median": 10.799999952316284, "p95": 16.700000047683716, "max": 51.39999997615814}, "paint": {"count": 99, "median": 54.299999952316284, "p95": 60.30000001192093, "max": 84.90000003576279}}}, "components": {"layoutBoardNames": 4.400000095367432, "applyBoardCamera": 1489.3000003099442, "runLayoutBoardNames": 1318.2999985218048, "requestLocalStatus": 1.4999999403953552, "boardProjectAggregate": 156.50000005960464, "boardGroundFor": 63.90000003576279, "patchBoardTile": 222.40000015497208, "applyReplay": 779.6999993920326, "cacheBoardMemberHits": 138.79999965429306, "renderIsometricScene": 2872.6999992728233, "renderBoardView": 3570.7000007629395, "renderBoard": 3573.2000005841255, "applyLocalStatus": 19.59999966621399, "rememberRepoMetadata": 9.100000143051147, "finishLocalStatus": 1.4000000357627869, "render": 3545.5000004172325, "groundChunk": 19.400000035762787, "finishBoardGround": 0.30000001192092896}, "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)", "longestObservedTaskMs": 52, "tasks": [{"start": 4344.899999976158, "duration": 52}], "refresh": {"requests": 360, "peak": 3, "backgroundRequests": 1080, "ms": 5421.899999976158}, "plots": 25, "targets": 100, "measuredPromotions": 30, "panCameraPositions": 2, "groundTotalWorkMs": 10.800000011920929, "elapsed": 48035.80000001192}
+FRRT_PERFORMANCE_REFERENCE {"hardware": "Mac17,9", "cpu": "Apple M5 Pro", "cores": 15, "memory_bytes": 25769803776, "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O", "browser": "148.0.7778.96", "chromium_executable": "/Users/jondev/Library/Caches/ms-playwright/chromium-1223/chrome-mac-arm64/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing", "playwright": "1.60.0", "candidate": "86e19c6392d93027001c48429e603492c6697b4d", "dashboard_sha256": "dda0c5a9da4d3727f83e7d781ea96d355c2fd73e1e5641d623573e536c9cf7eb", "fixture_sha256": "4385da3f32668b6ae1b7e9cc55a08adf9c8db4b0d0e3532a536cb9306408dc12", "viewport": {"width": 390, "height": 844}, "dpr": 1, "headed": true, "foreground": true, "motion": "normal", "names": true, "throttling": "none", "devtools": "closed"}
+RRT_PERFORMANCE_COLD [171.10000002384186, 162.80000001192093, 166, 157.69999998807907, 162.19999998807907]
+RRT_PERFORMANCE_RUN {"run": 1, "categories": {"pan": {"work": {"count": 300, "median": 6.399999916553497, "p95": 11, "max": 53.69999998807907}, "paint": {"count": 300, "median": 20, "p95": 26.900000035762787, "max": 72.09999996423721}}, "zoom": {"work": {"count": 300, "median": 3.5, "p95": 14.400000035762787, "max": 18.600000023841858}, "paint": {"count": 300, "median": 24.80000001192093, "p95": 31.69999998807907, "max": 39.5}}, "replay": {"work": {"count": 300, "median": 1, "p95": 14.600000023841858, "max": 32.10000002384186}, "paint": {"count": 300, "median": 19.599999964237213, "p95": 34, "max": 48.40000003576279}}, "promotion": {"work": {"count": 30, "median": 11.300000011920929, "p95": 17.600000023841858, "max": 21.099999964237213}, "paint": {"count": 30, "median": 25.80000001192093, "p95": 33.5, "max": 38.700000047683716}}, "refreshGroundOverlap": {"work": {"count": 274, "median": 6.599999964237213, "p95": 11.099999964237213, "max": 53.69999998807907}, "paint": {"count": 274, "median": 20.5, "p95": 27.30000001192093, "max": 72.09999996423721}}}, "components": {"layoutBoardNames": 3.5999998450279236, "applyBoardCamera": 1227.1000005602837, "runLayoutBoardNames": 1107.6000012755394, "requestLocalStatus": 0.3999999761581421, "boardProjectAggregate": 121.29999965429306, "boardGroundFor": 50.000000059604645, "patchBoardTile": 228.19999992847443, "applyReplay": 641.4999995231628, "cacheBoardMemberHits": 121.799999833107, "renderIsometricScene": 2224.6000000834465, "renderBoardView": 2740.5999992489815, "renderBoard": 2742.5999992489815, "applyLocalStatus": 9.699999988079071, "rememberRepoMetadata": 4.899999678134918, "finishLocalStatus": 0.19999998807907104, "render": 2622.1999999284744, "groundChunk": 19.399999976158142, "finishBoardGround": 0.3999999761581421}, "taskObserver": "PerformanceObserver longtask (reports tasks >=50ms)", "longestObservedTaskMs": 54, "tasks": [{"start": 3915.5, "duration": 54}], "refresh": {"requests": 360, "peak": 3, "backgroundRequests": 360, "ms": 5763.900000035763}, "plots": 25, "targets": 100, "measuredPromotions": 30, "panCameraPositions": 2, "groundTotalWorkMs": 9.899999976158142, "elapsed": 21462.399999976158}
+F
+=================================== FAILURES ===================================
+___________________ test_reference_performance_gate[desktop] ___________________
+
+viewport = {'width': 1440, 'height': 900}
+record_property = <function record_property.<locals>.append_property at 0x109a922a0>
+
+    @pytest.mark.parametrize('viewport', [{'width': 1440, 'height': 900}, {'width': 390, 'height': 844}], ids=['desktop', 'mobile'])
+    def test_reference_performance_gate(viewport, record_property):
+        statuses = fixture_data()
+        assert len(statuses) == 360
+        hardware = platform.machine()
+        cpu = platform.processor()
+        memory = None
+        if platform.system() == 'Darwin':
+            hardware = subprocess.check_output(['sysctl', '-n', 'hw.model'], text=True).strip()
+            cpu = subprocess.check_output(['sysctl', '-n', 'machdep.cpu.brand_string'], text=True).strip()
+            memory = int(subprocess.check_output(['sysctl', '-n', 'hw.memsize'], text=True).strip())
+        with playwright.sync_playwright() as p:
+            browser = p.chromium.launch(headless=False)
+            metadata = {'hardware': hardware, 'cpu': cpu, 'cores': os.cpu_count(), 'memory_bytes': memory,
+                        'os': platform.platform(), 'browser': browser.version,
+                        'chromium_executable': p.chromium.executable_path, 'playwright': importlib.metadata.version('playwright'),
+                        'candidate': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                        'dashboard_sha256': hashlib.sha256(DASHBOARD.read_bytes()).hexdigest(),
+                        'fixture_sha256': hashlib.sha256(json.dumps(statuses, sort_keys=True).encode()).hexdigest(),
+                        'viewport': viewport, 'dpr': 1, 'headed': True, 'foreground': True,
+                        'motion': 'normal', 'names': True, 'throttling': 'none', 'devtools': 'closed'}
+            print('RRT_PERFORMANCE_REFERENCE ' + json.dumps(metadata))
+            record_property('reference', json.dumps(metadata))
+            cold = []
+            for i in range(5):
+                context = browser.new_context(viewport=viewport, device_scale_factor=1, reduced_motion='no-preference')
+                page = context.new_page()
+                routes(page, statuses, held=True)
+                page.bring_to_front()
+                page.goto('http://dashboard.test/#/board', wait_until='domcontentloaded')
+                page.wait_for_selector('.board-member')
+                page.wait_for_function('window.coldPaintMs>0')
+                ms=page.evaluate('coldPaintMs')
+                assert page.evaluate('coldGroundDraws') == 0
+                cold.append(ms)
+                assert page.locator('.tile').count() == 25 and page.locator('.board-member').count() == 100
+                context.close()
+            print('RRT_PERFORMANCE_COLD ' + json.dumps(cold))
+            record_property('coldPaintMs', json.dumps(cold))
+            assert all(ms < 1000 for ms in cold), cold
+            for run in range(1, 4):
+                context = browser.new_context(viewport=viewport, device_scale_factor=1, reduced_motion='no-preference')
+                page = context.new_page()
+                routes(page, statuses)
+                errors = []
+                page.on('pageerror', lambda e: errors.append(str(e)))
+                page.bring_to_front()
+                page.goto('http://dashboard.test/#/board')
+                page.wait_for_function('boardLayoutReady && !refreshingBoard && repos.length===360 && repos.every(r=>!r._checking)', timeout=30000)
+                page.evaluate('''()=>{for(let i=0;i<90;i++){const slug='demo/project-'+String(i).padStart(2,'0');
+                  acceptGithubSnapshot(slug,1,{has_github:true,repo:slug,prs:[],issues:[],errors:[],checked_at:new Date().toISOString(),
+                    workflows:{state:i%11===0?'pending':'passing',errors:[],runs:[{current_head:true,status:i%11===0?'in_progress':'completed',conclusion:'success'}]}});}
+                  renderBoard();}''')
+                page.evaluate(Path(__file__).with_name('board_performance.js').read_text())
+                evidence = page.evaluate('run=>runBoardReferenceSample(run)', run)
+                print('RRT_PERFORMANCE_RUN ' + json.dumps(evidence))
+                record_property(f'run{run}', json.dumps(evidence))
+                assert errors == []
+                assert evidence['plots'] <= 25 and evidence['targets'] <= 100
+                assert evidence['measuredPromotions'] == 30 and evidence['panCameraPositions'] > 1
+                assert evidence['refresh']['requests'] == 360 and evidence['refresh']['peak'] <= 3
+>               assert evidence['longestObservedTaskMs'] <= 50, evidence
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 10.199999928474426, 'p95': 15.699999988079071, 'max': 51.39999997615814}, 'paint': {'count': 300, 'median': 50.39999997615814, 'p95': 57.69999998807907, 'max': 84.90000003576279}}, 'zoom': {'work': {'count': 300, 'median': 3.399999976158142, 'p95': 14.600000023841858, 'max': 23}, 'paint': {'count': 300, 'median': 56, 'p95': 65.19999998807907, 'max': 91.30000001192093}}, 'replay': {'work': {'count': 300, 'median': 0.800000011920929, 'p95': 14.300000071525574, 'max': 37.700000047683716}, 'paint': {'count': 300, 'median': 47, 'p95': 57.69999998807907, 'max': 83.60000002384186}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 16.5, 'max': 21.399999976158142}, 'paint': {'count': 30, 'median': 43.5, 'p95': 52.89999997615814, 'max': 54.39999997615814}}, 'refreshGroundOverlap': {'work': {'count': 99, 'median': 10.799999952316284, 'p95': 16.700000047683716, 'max': 51.39999997615814}, 'paint': {'count': 99, 'median': 54.299999952316284, 'p95': 60.30000001192093, 'max': 84.90000003576279}}}, 'components': {'layoutBoardNames': 4.400000095367432, 'applyBoardCamera': 1489.3000003099442, 'runLayoutBoardNames': 1318.2999985218048, 'requestLocalStatus': 1.4999999403953552, 'boardProjectAggregate': 156.50000005960464, 'boardGroundFor': 63.90000003576279, 'patchBoardTile': 222.40000015497208, 'applyReplay': 779.6999993920326, 'cacheBoardMemberHits': 138.79999965429306, 'renderIsometricScene': 2872.6999992728233, 'renderBoardView': 3570.7000007629395, 'renderBoard': 3573.2000005841255, 'applyLocalStatus': 19.59999966621399, 'rememberRepoMetadata': 9.100000143051147, 'finishLocalStatus': 1.4000000357627869, 'render': 3545.5000004172325, 'groundChunk': 19.400000035762787, 'finishBoardGround': 0.30000001192092896}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 52, 'tasks': [{'start': 4344.899999976158, 'duration': 52}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 1080, 'ms': 5421.899999976158}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 10.800000011920929, 'elapsed': 48035.80000001192}
+
+tests/test_board_performance.py:123: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-27' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-28' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-29' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-58' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-59' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-60' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-120' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-121' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-122' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-151' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-152' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-153' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 10.199999928474426, 'p95': 15.699999988079071, 'max': 51.39999997615814}, 'paint': {'count': 300, 'median': 50.39999997615814, 'p95': 57.69999998807907, 'max': 84.90000003576279}}, 'zoom': {'work': {'count': 300, 'median': 3.399999976158142, 'p95': 14.600000023841858, 'max': 23}, 'paint': {'count': 300, 'median': 56, 'p95': 65.19999998807907, 'max': 91.30000001192093}}, 'replay': {'work': {'count': 300, 'median': 0.800000011920929, 'p95': 14.300000071525574, 'max': 37.700000047683716}, 'paint': {'count': 300, 'median': 47, 'p95': 57.69999998807907, 'max': 83.60000002384186}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 16.5, 'max': 21.399999976158142}, 'paint': {'count': 30, 'median': 43.5, 'p95': 52.89999997615814, 'max': 54.39999997615814}}, 'refreshGroundOverlap': {'work': {'count': 99, 'median': 10.799999952316284, 'p95': 16.700000047683716, 'max': 51.39999997615814}, 'paint': {'count': 99, 'median': 54.299999952316284, 'p95': 60.30000001192093, 'max': 84.90000003576279}}}, 'components': {'layoutBoardNames': 4.400000095367432, 'applyBoardCamera': 1489.3000003099442, 'runLayoutBoardNames': 1318.2999985218048, 'requestLocalStatus': 1.4999999403953552, 'boardProjectAggregate': 156.50000005960464, 'boardGroundFor': 63.90000003576279, 'patchBoardTile': 222.40000015497208, 'applyReplay': 779.6999993920326, 'cacheBoardMemberHits': 138.79999965429306, 'renderIsometricScene': 2872.6999992728233, 'renderBoardView': 3570.7000007629395, 'renderBoard': 3573.2000005841255, 'applyLocalStatus': 19.59999966621399, 'rememberRepoMetadata': 9.100000143051147, 'finishLocalStatus': 1.4000000357627869, 'render': 3545.5000004172325, 'groundChunk': 19.400000035762787, 'finishBoardGround': 0.30000001192092896}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 52, 'tasks': [{'start': 4344.899999976158, 'duration': 52}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 1080, 'ms': 5421.899999976158}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 10.800000011920929, 'elapsed': 48035.80000001192}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 10.199999928474426, 'p95': 15.699999988079071, 'max': 51.39999997615814}, 'paint': {'count': 300, 'median': 50.39999997615814, 'p95': 57.69999998807907, 'max': 84.90000003576279}}, 'zoom': {'work': {'count': 300, 'median': 3.399999976158142, 'p95': 14.600000023841858, 'max': 23}, 'paint': {'count': 300, 'median': 56, 'p95': 65.19999998807907, 'max': 91.30000001192093}}, 'replay': {'work': {'count': 300, 'median': 0.800000011920929, 'p95': 14.300000071525574, 'max': 37.700000047683716}, 'paint': {'count': 300, 'median': 47, 'p95': 57.69999998807907, 'max': 83.60000002384186}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 16.5, 'max': 21.399999976158142}, 'paint': {'count': 30, 'median': 43.5, 'p95': 52.89999997615814, 'max': 54.39999997615814}}, 'refreshGroundOverlap': {'work': {'count': 99, 'median': 10.799999952316284, 'p95': 16.700000047683716, 'max': 51.39999997615814}, 'paint': {'count': 99, 'median': 54.299999952316284, 'p95': 60.30000001192093, 'max': 84.90000003576279}}}, 'components': {'layoutBoardNames': 4.400000095367432, 'applyBoardCamera': 1489.3000003099442, 'runLayoutBoardNames': 1318.2999985218048, 'requestLocalStatus': 1.4999999403953552, 'boardProjectAggregate': 156.50000005960464, 'boardGroundFor': 63.90000003576279, 'patchBoardTile': 222.40000015497208, 'applyReplay': 779.6999993920326, 'cacheBoardMemberHits': 138.79999965429306, 'renderIsometricScene': 2872.6999992728233, 'renderBoardView': 3570.7000007629395, 'renderBoard': 3573.2000005841255, 'applyLocalStatus': 19.59999966621399, 'rememberRepoMetadata': 9.100000143051147, 'finishLocalStatus': 1.4000000357627869, 'render': 3545.5000004172325, 'groundChunk': 19.400000035762787, 'finishBoardGround': 0.30000001192092896}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 52, 'tasks': [{'start': 4344.899999976158, 'duration': 52}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 1080, 'ms': 5421.899999976158}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 10.800000011920929, 'elapsed': 48035.80000001192}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 10.199999928474426, 'p95': 15.699999988079071, 'max': 51.39999997615814}, 'paint': {'count': 300, 'median': 50.39999997615814, 'p95': 57.69999998807907, 'max': 84.90000003576279}}, 'zoom': {'work': {'count': 300, 'median': 3.399999976158142, 'p95': 14.600000023841858, 'max': 23}, 'paint': {'count': 300, 'median': 56, 'p95': 65.19999998807907, 'max': 91.30000001192093}}, 'replay': {'work': {'count': 300, 'median': 0.800000011920929, 'p95': 14.300000071525574, 'max': 37.700000047683716}, 'paint': {'count': 300, 'median': 47, 'p95': 57.69999998807907, 'max': 83.60000002384186}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 16.5, 'max': 21.399999976158142}, 'paint': {'count': 30, 'median': 43.5, 'p95': 52.89999997615814, 'max': 54.39999997615814}}, 'refreshGroundOverlap': {'work': {'count': 99, 'median': 10.799999952316284, 'p95': 16.700000047683716, 'max': 51.39999997615814}, 'paint': {'count': 99, 'median': 54.299999952316284, 'p95': 60.30000001192093, 'max': 84.90000003576279}}}, 'components': {'layoutBoardNames': 4.400000095367432, 'applyBoardCamera': 1489.3000003099442, 'runLayoutBoardNames': 1318.2999985218048, 'requestLocalStatus': 1.4999999403953552, 'boardProjectAggregate': 156.50000005960464, 'boardGroundFor': 63.90000003576279, 'patchBoardTile': 222.40000015497208, 'applyReplay': 779.6999993920326, 'cacheBoardMemberHits': 138.79999965429306, 'renderIsometricScene': 2872.6999992728233, 'renderBoardView': 3570.7000007629395, 'renderBoard': 3573.2000005841255, 'applyLocalStatus': 19.59999966621399, 'rememberRepoMetadata': 9.100000143051147, 'finishLocalStatus': 1.4000000357627869, 'render': 3545.5000004172325, 'groundChunk': 19.400000035762787, 'finishBoardGround': 0.30000001192092896}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 52, 'tasks': [{'start': 4344.899999976158, 'duration': 52}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 1080, 'ms': 5421.899999976158}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 10.800000011920929, 'elapsed': 48035.80000001192}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+___________________ test_reference_performance_gate[mobile] ____________________
+
+viewport = {'width': 390, 'height': 844}
+record_property = <function record_property.<locals>.append_property at 0x10a3e2770>
+
+    @pytest.mark.parametrize('viewport', [{'width': 1440, 'height': 900}, {'width': 390, 'height': 844}], ids=['desktop', 'mobile'])
+    def test_reference_performance_gate(viewport, record_property):
+        statuses = fixture_data()
+        assert len(statuses) == 360
+        hardware = platform.machine()
+        cpu = platform.processor()
+        memory = None
+        if platform.system() == 'Darwin':
+            hardware = subprocess.check_output(['sysctl', '-n', 'hw.model'], text=True).strip()
+            cpu = subprocess.check_output(['sysctl', '-n', 'machdep.cpu.brand_string'], text=True).strip()
+            memory = int(subprocess.check_output(['sysctl', '-n', 'hw.memsize'], text=True).strip())
+        with playwright.sync_playwright() as p:
+            browser = p.chromium.launch(headless=False)
+            metadata = {'hardware': hardware, 'cpu': cpu, 'cores': os.cpu_count(), 'memory_bytes': memory,
+                        'os': platform.platform(), 'browser': browser.version,
+                        'chromium_executable': p.chromium.executable_path, 'playwright': importlib.metadata.version('playwright'),
+                        'candidate': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+                        'dashboard_sha256': hashlib.sha256(DASHBOARD.read_bytes()).hexdigest(),
+                        'fixture_sha256': hashlib.sha256(json.dumps(statuses, sort_keys=True).encode()).hexdigest(),
+                        'viewport': viewport, 'dpr': 1, 'headed': True, 'foreground': True,
+                        'motion': 'normal', 'names': True, 'throttling': 'none', 'devtools': 'closed'}
+            print('RRT_PERFORMANCE_REFERENCE ' + json.dumps(metadata))
+            record_property('reference', json.dumps(metadata))
+            cold = []
+            for i in range(5):
+                context = browser.new_context(viewport=viewport, device_scale_factor=1, reduced_motion='no-preference')
+                page = context.new_page()
+                routes(page, statuses, held=True)
+                page.bring_to_front()
+                page.goto('http://dashboard.test/#/board', wait_until='domcontentloaded')
+                page.wait_for_selector('.board-member')
+                page.wait_for_function('window.coldPaintMs>0')
+                ms=page.evaluate('coldPaintMs')
+                assert page.evaluate('coldGroundDraws') == 0
+                cold.append(ms)
+                assert page.locator('.tile').count() == 25 and page.locator('.board-member').count() == 100
+                context.close()
+            print('RRT_PERFORMANCE_COLD ' + json.dumps(cold))
+            record_property('coldPaintMs', json.dumps(cold))
+            assert all(ms < 1000 for ms in cold), cold
+            for run in range(1, 4):
+                context = browser.new_context(viewport=viewport, device_scale_factor=1, reduced_motion='no-preference')
+                page = context.new_page()
+                routes(page, statuses)
+                errors = []
+                page.on('pageerror', lambda e: errors.append(str(e)))
+                page.bring_to_front()
+                page.goto('http://dashboard.test/#/board')
+                page.wait_for_function('boardLayoutReady && !refreshingBoard && repos.length===360 && repos.every(r=>!r._checking)', timeout=30000)
+                page.evaluate('''()=>{for(let i=0;i<90;i++){const slug='demo/project-'+String(i).padStart(2,'0');
+                  acceptGithubSnapshot(slug,1,{has_github:true,repo:slug,prs:[],issues:[],errors:[],checked_at:new Date().toISOString(),
+                    workflows:{state:i%11===0?'pending':'passing',errors:[],runs:[{current_head:true,status:i%11===0?'in_progress':'completed',conclusion:'success'}]}});}
+                  renderBoard();}''')
+                page.evaluate(Path(__file__).with_name('board_performance.js').read_text())
+                evidence = page.evaluate('run=>runBoardReferenceSample(run)', run)
+                print('RRT_PERFORMANCE_RUN ' + json.dumps(evidence))
+                record_property(f'run{run}', json.dumps(evidence))
+                assert errors == []
+                assert evidence['plots'] <= 25 and evidence['targets'] <= 100
+                assert evidence['measuredPromotions'] == 30 and evidence['panCameraPositions'] > 1
+                assert evidence['refresh']['requests'] == 360 and evidence['refresh']['peak'] <= 3
+>               assert evidence['longestObservedTaskMs'] <= 50, evidence
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E               AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 6.399999916553497, 'p95': 11, 'max': 53.69999998807907}, 'paint': {'count': 300, 'median': 20, 'p95': 26.900000035762787, 'max': 72.09999996423721}}, 'zoom': {'work': {'count': 300, 'median': 3.5, 'p95': 14.400000035762787, 'max': 18.600000023841858}, 'paint': {'count': 300, 'median': 24.80000001192093, 'p95': 31.69999998807907, 'max': 39.5}}, 'replay': {'work': {'count': 300, 'median': 1, 'p95': 14.600000023841858, 'max': 32.10000002384186}, 'paint': {'count': 300, 'median': 19.599999964237213, 'p95': 34, 'max': 48.40000003576279}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 17.600000023841858, 'max': 21.099999964237213}, 'paint': {'count': 30, 'median': 25.80000001192093, 'p95': 33.5, 'max': 38.700000047683716}}, 'refreshGroundOverlap': {'work': {'count': 274, 'median': 6.599999964237213, 'p95': 11.099999964237213, 'max': 53.69999998807907}, 'paint': {'count': 274, 'median': 20.5, 'p95': 27.30000001192093, 'max': 72.09999996423721}}}, 'components': {'layoutBoardNames': 3.5999998450279236, 'applyBoardCamera': 1227.1000005602837, 'runLayoutBoardNames': 1107.6000012755394, 'requestLocalStatus': 0.3999999761581421, 'boardProjectAggregate': 121.29999965429306, 'boardGroundFor': 50.000000059604645, 'patchBoardTile': 228.19999992847443, 'applyReplay': 641.4999995231628, 'cacheBoardMemberHits': 121.799999833107, 'renderIsometricScene': 2224.6000000834465, 'renderBoardView': 2740.5999992489815, 'renderBoard': 2742.5999992489815, 'applyLocalStatus': 9.699999988079071, 'rememberRepoMetadata': 4.899999678134918, 'finishLocalStatus': 0.19999998807907104, 'render': 2622.1999999284744, 'groundChunk': 19.399999976158142, 'finishBoardGround': 0.3999999761581421}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 54, 'tasks': [{'start': 3915.5, 'duration': 54}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 360, 'ms': 5763.900000035763}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 9.899999976158142, 'elapsed': 21462.399999976158}
+
+tests/test_board_performance.py:123: AssertionError
+------------------------------ Captured log call -------------------------------
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1294' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1295' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1296' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1325' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1326' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1327' coro=<Page._on_route() done, defined at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:291> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1387' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1388' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1389' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1418' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1419' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Task was destroyed but it is pending!
+task: <Task pending name='Task-1420' coro=<Page._on_route() running at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py:305> wait_for=<Future pending cb=[Task.task_wakeup()]> cb=[Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466]>
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 6.399999916553497, 'p95': 11, 'max': 53.69999998807907}, 'paint': {'count': 300, 'median': 20, 'p95': 26.900000035762787, 'max': 72.09999996423721}}, 'zoom': {'work': {'count': 300, 'median': 3.5, 'p95': 14.400000035762787, 'max': 18.600000023841858}, 'paint': {'count': 300, 'median': 24.80000001192093, 'p95': 31.69999998807907, 'max': 39.5}}, 'replay': {'work': {'count': 300, 'median': 1, 'p95': 14.600000023841858, 'max': 32.10000002384186}, 'paint': {'count': 300, 'median': 19.599999964237213, 'p95': 34, 'max': 48.40000003576279}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 17.600000023841858, 'max': 21.099999964237213}, 'paint': {'count': 30, 'median': 25.80000001192093, 'p95': 33.5, 'max': 38.700000047683716}}, 'refreshGroundOverlap': {'work': {'count': 274, 'median': 6.599999964237213, 'p95': 11.099999964237213, 'max': 53.69999998807907}, 'paint': {'count': 274, 'median': 20.5, 'p95': 27.30000001192093, 'max': 72.09999996423721}}}, 'components': {'layoutBoardNames': 3.5999998450279236, 'applyBoardCamera': 1227.1000005602837, 'runLayoutBoardNames': 1107.6000012755394, 'requestLocalStatus': 0.3999999761581421, 'boardProjectAggregate': 121.29999965429306, 'boardGroundFor': 50.000000059604645, 'patchBoardTile': 228.19999992847443, 'applyReplay': 641.4999995231628, 'cacheBoardMemberHits': 121.799999833107, 'renderIsometricScene': 2224.6000000834465, 'renderBoardView': 2740.5999992489815, 'renderBoard': 2742.5999992489815, 'applyLocalStatus': 9.699999988079071, 'rememberRepoMetadata': 4.899999678134918, 'finishLocalStatus': 0.19999998807907104, 'render': 2622.1999999284744, 'groundChunk': 19.399999976158142, 'finishBoardGround': 0.3999999761581421}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 54, 'tasks': [{'start': 3915.5, 'duration': 54}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 360, 'ms': 5763.900000035763}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 9.899999976158142, 'elapsed': 21462.399999976158}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 6.399999916553497, 'p95': 11, 'max': 53.69999998807907}, 'paint': {'count': 300, 'median': 20, 'p95': 26.900000035762787, 'max': 72.09999996423721}}, 'zoom': {'work': {'count': 300, 'median': 3.5, 'p95': 14.400000035762787, 'max': 18.600000023841858}, 'paint': {'count': 300, 'median': 24.80000001192093, 'p95': 31.69999998807907, 'max': 39.5}}, 'replay': {'work': {'count': 300, 'median': 1, 'p95': 14.600000023841858, 'max': 32.10000002384186}, 'paint': {'count': 300, 'median': 19.599999964237213, 'p95': 34, 'max': 48.40000003576279}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 17.600000023841858, 'max': 21.099999964237213}, 'paint': {'count': 30, 'median': 25.80000001192093, 'p95': 33.5, 'max': 38.700000047683716}}, 'refreshGroundOverlap': {'work': {'count': 274, 'median': 6.599999964237213, 'p95': 11.099999964237213, 'max': 53.69999998807907}, 'paint': {'count': 274, 'median': 20.5, 'p95': 27.30000001192093, 'max': 72.09999996423721}}}, 'components': {'layoutBoardNames': 3.5999998450279236, 'applyBoardCamera': 1227.1000005602837, 'runLayoutBoardNames': 1107.6000012755394, 'requestLocalStatus': 0.3999999761581421, 'boardProjectAggregate': 121.29999965429306, 'boardGroundFor': 50.000000059604645, 'patchBoardTile': 228.19999992847443, 'applyReplay': 641.4999995231628, 'cacheBoardMemberHits': 121.799999833107, 'renderIsometricScene': 2224.6000000834465, 'renderBoardView': 2740.5999992489815, 'renderBoard': 2742.5999992489815, 'applyLocalStatus': 9.699999988079071, 'rememberRepoMetadata': 4.899999678134918, 'finishLocalStatus': 0.19999998807907104, 'render': 2622.1999999284744, 'groundChunk': 19.399999976158142, 'finishBoardGround': 0.3999999761581421}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 54, 'tasks': [{'start': 3915.5, 'duration': 54}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 360, 'ms': 5763.900000035763}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 9.899999976158142, 'elapsed': 21462.399999976158}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+ERROR    asyncio:base_events.py:1886 Exception in callback Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466
+handle: <Handle Connection.dispatch.<locals>._done_callback() at /private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py:466>
+Traceback (most recent call last):
+  File "/Users/jondev/dev/active/boards/working-copies/repo-root-tracker-sculptural-bonsai/tests/test_board_performance.py", line 123, in test_reference_performance_gate
+    assert evidence['longestObservedTaskMs'] <= 50, evidence
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: {'run': 1, 'categories': {'pan': {'work': {'count': 300, 'median': 6.399999916553497, 'p95': 11, 'max': 53.69999998807907}, 'paint': {'count': 300, 'median': 20, 'p95': 26.900000035762787, 'max': 72.09999996423721}}, 'zoom': {'work': {'count': 300, 'median': 3.5, 'p95': 14.400000035762787, 'max': 18.600000023841858}, 'paint': {'count': 300, 'median': 24.80000001192093, 'p95': 31.69999998807907, 'max': 39.5}}, 'replay': {'work': {'count': 300, 'median': 1, 'p95': 14.600000023841858, 'max': 32.10000002384186}, 'paint': {'count': 300, 'median': 19.599999964237213, 'p95': 34, 'max': 48.40000003576279}}, 'promotion': {'work': {'count': 30, 'median': 11.300000011920929, 'p95': 17.600000023841858, 'max': 21.099999964237213}, 'paint': {'count': 30, 'median': 25.80000001192093, 'p95': 33.5, 'max': 38.700000047683716}}, 'refreshGroundOverlap': {'work': {'count': 274, 'median': 6.599999964237213, 'p95': 11.099999964237213, 'max': 53.69999998807907}, 'paint': {'count': 274, 'median': 20.5, 'p95': 27.30000001192093, 'max': 72.09999996423721}}}, 'components': {'layoutBoardNames': 3.5999998450279236, 'applyBoardCamera': 1227.1000005602837, 'runLayoutBoardNames': 1107.6000012755394, 'requestLocalStatus': 0.3999999761581421, 'boardProjectAggregate': 121.29999965429306, 'boardGroundFor': 50.000000059604645, 'patchBoardTile': 228.19999992847443, 'applyReplay': 641.4999995231628, 'cacheBoardMemberHits': 121.799999833107, 'renderIsometricScene': 2224.6000000834465, 'renderBoardView': 2740.5999992489815, 'renderBoard': 2742.5999992489815, 'applyLocalStatus': 9.699999988079071, 'rememberRepoMetadata': 4.899999678134918, 'finishLocalStatus': 0.19999998807907104, 'render': 2622.1999999284744, 'groundChunk': 19.399999976158142, 'finishBoardGround': 0.3999999761581421}, 'taskObserver': 'PerformanceObserver longtask (reports tasks >=50ms)', 'longestObservedTaskMs': 54, 'tasks': [{'start': 3915.5, 'duration': 54}], 'refresh': {'requests': 360, 'peak': 3, 'backgroundRequests': 360, 'ms': 5763.900000035763}, 'plots': 25, 'targets': 100, 'measuredPromotions': 30, 'panCameraPositions': 2, 'groundTotalWorkMs': 9.899999976158142, 'elapsed': 21462.399999976158}
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/opt/homebrew/Cellar/python@3.14/3.14.7/Frameworks/Python.framework/Versions/3.14/lib/python3.14/asyncio/events.py", line 94, in _run
+    self._context.run(self._callback, *self._args)
+    ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_connection.py", line 467, in _done_callback
+    exc = future.exception()
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_page.py", line 305, in _on_route
+    handled = await route_handler.handle(route)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 428, in handle
+    return await self._handle_internal(route)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/private/tmp/sculptural-bonsai-venv/lib/python3.14/site-packages/playwright/_impl/_helper.py", line 470, in _handle_internal
+    return await handled_future
+           ^^^^^^^^^^^^^^^^^^^^
+asyncio.exceptions.CancelledError
+=========================== short test summary info ============================
+FAILED tests/test_board_performance.py::test_reference_performance_gate[desktop]
+FAILED tests/test_board_performance.py::test_reference_performance_gate[mobile]
+2 failed in 82.90s (0:01:22)

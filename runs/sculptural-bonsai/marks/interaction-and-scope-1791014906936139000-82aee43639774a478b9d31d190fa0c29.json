@@ -1,0 +1,7 @@
+{
+  "item": "interaction-and-scope",
+  "result": "passed",
+  "evidence": "Existing 102 focused browser regressions passed in candidate/focused.log; 38 final label/scene checks passed. Refresh/selection, keyboard, touch, overflow, zoom/pan, bounds and shared sprites exercised. Backend, storage, fonts and runtime dependencies unchanged.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791014906936139000
+}

@@ -1,0 +1,7 @@
+{
+  "item": "shape-identity",
+  "result": "passed",
+  "evidence": "Final configured full suite627 passed, including all18 new rendered cases; focused102 passed. All seeded styles, history growth, health-only stability and failed-check retention exercised. See final test-log.md.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791016016080491000
+}

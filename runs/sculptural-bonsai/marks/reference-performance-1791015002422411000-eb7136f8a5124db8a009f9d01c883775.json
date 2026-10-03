@@ -1,0 +1,7 @@
+{
+  "item": "reference-performance",
+  "result": "failed",
+  "evidence": "Corrected baseline and candidate both fail unchanged timing limits. Baseline longest tasks 52/54 ms; candidate 54/0 ms. Candidate desktop replay p95 19 ms >16.7 and promotion medians 13.8/17.2 ms >10. Both explicit refresh batches are exactly360 with peak3; background retained. See baseline/performance-corrected.log, candidate/performance-corrected.log and review.md. Shared host is not certified quiet.",
+  "candidate": "fb2ddca41f4b136959a53132f85b6d0dbcb722f9116bbe59d3b007974d377649",
+  "time_ns": 1791015002422411000
+}

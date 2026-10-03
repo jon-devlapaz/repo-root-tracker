@@ -1,0 +1,3882 @@
+{
+  "quiet": {
+    "/review/team-00/cedar": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-1": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-1": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-1": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-1": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    }
+  },
+  "crowded": {
+    "/review/team-00/cedar": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-1": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-2": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-3": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-4": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-1": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-2": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-3": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-4": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-1": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-2": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-3": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-4": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-1": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-2": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-3": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-4": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar-worktree-1": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar-worktree-2": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar-worktree-3": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar-worktree-4": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow-worktree-1": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow-worktree-2": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow-worktree-3": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow-worktree-4": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper-worktree-1": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper-worktree-2": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper-worktree-3": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper-worktree-4": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple-worktree-1": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple-worktree-2": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple-worktree-3": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple-worktree-4": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-08/cedar": {
+      "project_id": "/review/team-08/cedar/.git",
+      "project_path": "/review/team-08/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-8",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-08/cedar-worktree-1": {
+      "project_id": "/review/team-08/cedar/.git",
+      "project_path": "/review/team-08/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-8",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-08/cedar-worktree-2": {
+      "project_id": "/review/team-08/cedar/.git",
+      "project_path": "/review/team-08/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-8",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-08/cedar-worktree-3": {
+      "project_id": "/review/team-08/cedar/.git",
+      "project_path": "/review/team-08/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-8",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-08/cedar-worktree-4": {
+      "project_id": "/review/team-08/cedar/.git",
+      "project_path": "/review/team-08/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-8",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-09/willow": {
+      "project_id": "/review/team-09/willow/.git",
+      "project_path": "/review/team-09/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-9",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-09/willow-worktree-1": {
+      "project_id": "/review/team-09/willow/.git",
+      "project_path": "/review/team-09/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-9",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-09/willow-worktree-2": {
+      "project_id": "/review/team-09/willow/.git",
+      "project_path": "/review/team-09/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-9",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-09/willow-worktree-3": {
+      "project_id": "/review/team-09/willow/.git",
+      "project_path": "/review/team-09/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-9",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-09/willow-worktree-4": {
+      "project_id": "/review/team-09/willow/.git",
+      "project_path": "/review/team-09/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-9",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-10/juniper": {
+      "project_id": "/review/team-10/juniper/.git",
+      "project_path": "/review/team-10/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-10",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-10/juniper-worktree-1": {
+      "project_id": "/review/team-10/juniper/.git",
+      "project_path": "/review/team-10/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-10",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-10/juniper-worktree-2": {
+      "project_id": "/review/team-10/juniper/.git",
+      "project_path": "/review/team-10/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-10",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-10/juniper-worktree-3": {
+      "project_id": "/review/team-10/juniper/.git",
+      "project_path": "/review/team-10/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-10",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-10/juniper-worktree-4": {
+      "project_id": "/review/team-10/juniper/.git",
+      "project_path": "/review/team-10/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-10",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-11/maple": {
+      "project_id": "/review/team-11/maple/.git",
+      "project_path": "/review/team-11/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-11",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-11/maple-worktree-1": {
+      "project_id": "/review/team-11/maple/.git",
+      "project_path": "/review/team-11/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-11",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-11/maple-worktree-2": {
+      "project_id": "/review/team-11/maple/.git",
+      "project_path": "/review/team-11/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-11",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-11/maple-worktree-3": {
+      "project_id": "/review/team-11/maple/.git",
+      "project_path": "/review/team-11/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-11",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-11/maple-worktree-4": {
+      "project_id": "/review/team-11/maple/.git",
+      "project_path": "/review/team-11/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-11",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-12/cedar": {
+      "project_id": "/review/team-12/cedar/.git",
+      "project_path": "/review/team-12/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-12",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-12/cedar-worktree-1": {
+      "project_id": "/review/team-12/cedar/.git",
+      "project_path": "/review/team-12/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-12",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-12/cedar-worktree-2": {
+      "project_id": "/review/team-12/cedar/.git",
+      "project_path": "/review/team-12/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-12",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-12/cedar-worktree-3": {
+      "project_id": "/review/team-12/cedar/.git",
+      "project_path": "/review/team-12/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-12",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-12/cedar-worktree-4": {
+      "project_id": "/review/team-12/cedar/.git",
+      "project_path": "/review/team-12/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-12",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-13/willow": {
+      "project_id": "/review/team-13/willow/.git",
+      "project_path": "/review/team-13/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-13",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-13/willow-worktree-1": {
+      "project_id": "/review/team-13/willow/.git",
+      "project_path": "/review/team-13/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-13",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-13/willow-worktree-2": {
+      "project_id": "/review/team-13/willow/.git",
+      "project_path": "/review/team-13/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-13",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-13/willow-worktree-3": {
+      "project_id": "/review/team-13/willow/.git",
+      "project_path": "/review/team-13/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-13",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-13/willow-worktree-4": {
+      "project_id": "/review/team-13/willow/.git",
+      "project_path": "/review/team-13/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-13",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-14/juniper": {
+      "project_id": "/review/team-14/juniper/.git",
+      "project_path": "/review/team-14/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-14",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-14/juniper-worktree-1": {
+      "project_id": "/review/team-14/juniper/.git",
+      "project_path": "/review/team-14/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-14",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-14/juniper-worktree-2": {
+      "project_id": "/review/team-14/juniper/.git",
+      "project_path": "/review/team-14/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-14",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-14/juniper-worktree-3": {
+      "project_id": "/review/team-14/juniper/.git",
+      "project_path": "/review/team-14/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-14",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-14/juniper-worktree-4": {
+      "project_id": "/review/team-14/juniper/.git",
+      "project_path": "/review/team-14/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-14",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-15/maple": {
+      "project_id": "/review/team-15/maple/.git",
+      "project_path": "/review/team-15/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-15",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-15/maple-worktree-1": {
+      "project_id": "/review/team-15/maple/.git",
+      "project_path": "/review/team-15/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-15",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-15/maple-worktree-2": {
+      "project_id": "/review/team-15/maple/.git",
+      "project_path": "/review/team-15/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-15",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-15/maple-worktree-3": {
+      "project_id": "/review/team-15/maple/.git",
+      "project_path": "/review/team-15/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-15",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-15/maple-worktree-4": {
+      "project_id": "/review/team-15/maple/.git",
+      "project_path": "/review/team-15/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-15",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-16/cedar": {
+      "project_id": "/review/team-16/cedar/.git",
+      "project_path": "/review/team-16/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-16",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-16/cedar-worktree-1": {
+      "project_id": "/review/team-16/cedar/.git",
+      "project_path": "/review/team-16/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-16",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-16/cedar-worktree-2": {
+      "project_id": "/review/team-16/cedar/.git",
+      "project_path": "/review/team-16/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-16",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-16/cedar-worktree-3": {
+      "project_id": "/review/team-16/cedar/.git",
+      "project_path": "/review/team-16/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-16",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-16/cedar-worktree-4": {
+      "project_id": "/review/team-16/cedar/.git",
+      "project_path": "/review/team-16/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-16",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-17/willow": {
+      "project_id": "/review/team-17/willow/.git",
+      "project_path": "/review/team-17/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-17",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-17/willow-worktree-1": {
+      "project_id": "/review/team-17/willow/.git",
+      "project_path": "/review/team-17/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-17",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-17/willow-worktree-2": {
+      "project_id": "/review/team-17/willow/.git",
+      "project_path": "/review/team-17/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-17",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-17/willow-worktree-3": {
+      "project_id": "/review/team-17/willow/.git",
+      "project_path": "/review/team-17/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-17",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-17/willow-worktree-4": {
+      "project_id": "/review/team-17/willow/.git",
+      "project_path": "/review/team-17/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-17",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-18/juniper": {
+      "project_id": "/review/team-18/juniper/.git",
+      "project_path": "/review/team-18/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-18",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-18/juniper-worktree-1": {
+      "project_id": "/review/team-18/juniper/.git",
+      "project_path": "/review/team-18/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-18",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-18/juniper-worktree-2": {
+      "project_id": "/review/team-18/juniper/.git",
+      "project_path": "/review/team-18/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-18",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-18/juniper-worktree-3": {
+      "project_id": "/review/team-18/juniper/.git",
+      "project_path": "/review/team-18/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-18",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-18/juniper-worktree-4": {
+      "project_id": "/review/team-18/juniper/.git",
+      "project_path": "/review/team-18/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-18",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-19/maple": {
+      "project_id": "/review/team-19/maple/.git",
+      "project_path": "/review/team-19/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-19",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-19/maple-worktree-1": {
+      "project_id": "/review/team-19/maple/.git",
+      "project_path": "/review/team-19/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-19",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-19/maple-worktree-2": {
+      "project_id": "/review/team-19/maple/.git",
+      "project_path": "/review/team-19/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-19",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-19/maple-worktree-3": {
+      "project_id": "/review/team-19/maple/.git",
+      "project_path": "/review/team-19/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-19",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-19/maple-worktree-4": {
+      "project_id": "/review/team-19/maple/.git",
+      "project_path": "/review/team-19/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-19",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-20/cedar": {
+      "project_id": "/review/team-20/cedar/.git",
+      "project_path": "/review/team-20/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-20",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-20/cedar-worktree-1": {
+      "project_id": "/review/team-20/cedar/.git",
+      "project_path": "/review/team-20/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-20",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-20/cedar-worktree-2": {
+      "project_id": "/review/team-20/cedar/.git",
+      "project_path": "/review/team-20/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-20",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-20/cedar-worktree-3": {
+      "project_id": "/review/team-20/cedar/.git",
+      "project_path": "/review/team-20/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-20",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-20/cedar-worktree-4": {
+      "project_id": "/review/team-20/cedar/.git",
+      "project_path": "/review/team-20/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-20",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-21/willow": {
+      "project_id": "/review/team-21/willow/.git",
+      "project_path": "/review/team-21/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-21",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-21/willow-worktree-1": {
+      "project_id": "/review/team-21/willow/.git",
+      "project_path": "/review/team-21/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-21",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-21/willow-worktree-2": {
+      "project_id": "/review/team-21/willow/.git",
+      "project_path": "/review/team-21/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-21",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-21/willow-worktree-3": {
+      "project_id": "/review/team-21/willow/.git",
+      "project_path": "/review/team-21/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-21",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-21/willow-worktree-4": {
+      "project_id": "/review/team-21/willow/.git",
+      "project_path": "/review/team-21/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-21",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-22/juniper": {
+      "project_id": "/review/team-22/juniper/.git",
+      "project_path": "/review/team-22/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-22",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-22/juniper-worktree-1": {
+      "project_id": "/review/team-22/juniper/.git",
+      "project_path": "/review/team-22/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-22",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-22/juniper-worktree-2": {
+      "project_id": "/review/team-22/juniper/.git",
+      "project_path": "/review/team-22/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-22",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-22/juniper-worktree-3": {
+      "project_id": "/review/team-22/juniper/.git",
+      "project_path": "/review/team-22/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-22",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-22/juniper-worktree-4": {
+      "project_id": "/review/team-22/juniper/.git",
+      "project_path": "/review/team-22/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-22",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-23/maple": {
+      "project_id": "/review/team-23/maple/.git",
+      "project_path": "/review/team-23/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-23",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-23/maple-worktree-1": {
+      "project_id": "/review/team-23/maple/.git",
+      "project_path": "/review/team-23/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-23",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-23/maple-worktree-2": {
+      "project_id": "/review/team-23/maple/.git",
+      "project_path": "/review/team-23/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-23",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-23/maple-worktree-3": {
+      "project_id": "/review/team-23/maple/.git",
+      "project_path": "/review/team-23/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-23",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-23/maple-worktree-4": {
+      "project_id": "/review/team-23/maple/.git",
+      "project_path": "/review/team-23/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-23",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-24/cedar": {
+      "project_id": "/review/team-24/cedar/.git",
+      "project_path": "/review/team-24/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-24",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-24/cedar-worktree-1": {
+      "project_id": "/review/team-24/cedar/.git",
+      "project_path": "/review/team-24/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-24",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-24/cedar-worktree-2": {
+      "project_id": "/review/team-24/cedar/.git",
+      "project_path": "/review/team-24/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-24",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-24/cedar-worktree-3": {
+      "project_id": "/review/team-24/cedar/.git",
+      "project_path": "/review/team-24/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-24",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-24/cedar-worktree-4": {
+      "project_id": "/review/team-24/cedar/.git",
+      "project_path": "/review/team-24/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-24",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    }
+  },
+  "attention": {
+    "/review/team-00/cedar": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-00/cedar-worktree-1": {
+      "project_id": "/review/team-00/cedar/.git",
+      "project_path": "/review/team-00/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-0",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-01/willow-worktree-1": {
+      "project_id": "/review/team-01/willow/.git",
+      "project_path": "/review/team-01/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-1",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 2,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity-worktree-1": {
+      "project_id": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity/.git",
+      "project_path": "/review/team-02/a-very-long-project-name-with-a-complete-readable-identity",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 2,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-2",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-03/maple-worktree-1": {
+      "project_id": "/review/team-03/maple/.git",
+      "project_path": "/review/team-03/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-3",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-04/cedar-worktree-1": {
+      "project_id": "/review/team-04/cedar/.git",
+      "project_path": "/review/team-04/cedar",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-4",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-05/willow-worktree-1": {
+      "project_id": "/review/team-05/willow/.git",
+      "project_path": "/review/team-05/willow",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-5",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 2,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-06/juniper-worktree-1": {
+      "project_id": "/review/team-06/juniper/.git",
+      "project_path": "/review/team-06/juniper",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 2,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-6",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": false,
+      "branch": "main",
+      "dirty": {
+        "is_clean": true,
+        "modified": 0
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    },
+    "/review/team-07/maple-worktree-1": {
+      "project_id": "/review/team-07/maple/.git",
+      "project_path": "/review/team-07/maple",
+      "is_worktree": true,
+      "branch": "feature/a-long-worktree-branch-name",
+      "dirty": {
+        "is_clean": false,
+        "modified": 2
+      },
+      "sync": {
+        "has_upstream": true,
+        "ahead": 0,
+        "behind": 0
+      },
+      "stale_branches": [],
+      "branches": [
+        "main",
+        "develop"
+      ],
+      "activity_30d": 8,
+      "first_commit_date": "2020-01-01",
+      "github_repo": "review/project-7",
+      "last_commit": {
+        "date": "2026-10-02T12:00:00Z"
+      }
+    }
+  }
+}

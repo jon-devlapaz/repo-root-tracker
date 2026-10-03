@@ -1,0 +1,7 @@
+{
+  "item": "specimens",
+  "result": "passed",
+  "evidence": "Final641c951 candidate-final/specimens.png inspected against baseline and initial prototype. Eight styles at detail/board/sapling sizes retain connected taper, sparse/cascade character and matte pots after8-sample short-branch reduction.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791016015993367000
+}

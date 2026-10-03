@@ -1,0 +1,28 @@
+............F........................................................... [ 62%]
+...........................................                              [100%]
+=================================== FAILURES ===================================
+____________ test_refresh_keeps_positions_selection_and_shared_tree ____________
+
+page = <Page url='http://dashboard.test/#/list'>
+
+    def test_refresh_keeps_positions_selection_and_shared_tree(page):
+        path=page.locator('.board-sapling').first.get_attribute('data-path')
+        page.evaluate('path=>selectBoardRepo(path)',path)
+        before=page.evaluate('boardScene.plots.map(p=>[p.projectKey,p.x,p.y])')
+        page.get_by_role('button',name='Refresh local Git',exact=True).click()
+        page.wait_for_function('!refreshingBoard && repos.every(r=>!r._checking)')
+        assert page.evaluate('boardSelectedPath')==path
+        assert page.evaluate('boardScene.plots.map(p=>[p.projectKey,p.x,p.y])')==before
+        assert page.locator('.bonsai-trunk').count()>0
+        page.get_by_role('button',name='List',exact=True).click()
+>       assert page.locator('#list-view .bonsai-trunk').count()>0
+E       AssertionError: assert 0 > 0
+E        +  where 0 = count()
+E        +    where count = <Locator frame=<Frame name= url='http://dashboard.test/#/list'> selector='#list-view .bonsai-trunk'>.count
+E        +      where <Locator frame=<Frame name= url='http://dashboard.test/#/list'> selector='#list-view .bonsai-trunk'> = locator('#list-view .bonsai-trunk')
+E        +        where locator = <Page url='http://dashboard.test/#/list'>.locator
+
+tests/test_bonsai_design_review.py:95: AssertionError
+=========================== short test summary info ============================
+FAILED tests/test_bonsai_design_review.py::test_refresh_keeps_positions_selection_and_shared_tree
+1 failed, 114 passed in 69.75s (0:01:09)

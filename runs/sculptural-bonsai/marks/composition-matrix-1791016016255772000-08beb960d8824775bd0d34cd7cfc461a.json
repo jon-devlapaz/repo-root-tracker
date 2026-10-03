@@ -1,0 +1,7 @@
+{
+  "item": "composition-matrix",
+  "result": "passed",
+  "evidence": "Exact final641c951 screenshot matrix captured and inspected for quiet/crowded/attention at390/768/1440 widths, names on/off, mixed gold/orange selection, contrast, shared list/detail and eight styles. Review.md records dense names-on limits without plot-bound changes.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791016016255772000
+}

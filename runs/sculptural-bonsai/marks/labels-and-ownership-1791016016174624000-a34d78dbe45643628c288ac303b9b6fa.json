@@ -1,0 +1,7 @@
+{
+  "item": "labels-and-ownership",
+  "result": "passed",
+  "evidence": "Final configured tests pass label rectangles across9 boards/viewports and unselected/main-selected/worktree-selected states; full-name keyboard/touch reveal; exact confirmed/unknown/untracked ownership; hover-click tooltip overlap regression. See test-log.md and candidate-final screenshots.",
+  "candidate": "2f3e19016ccce687106309b7f85f19721dfb9c9919e163c3d7517689acd82562",
+  "time_ns": 1791016016174624000
+}
