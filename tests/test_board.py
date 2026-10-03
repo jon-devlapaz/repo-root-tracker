@@ -256,6 +256,8 @@ def test_board_pager_persist(page):
 
 
 def test_board_first_paint(page):
+    # The fixture's initial list load must finish before requests are held, or a slow runner races it.
+    page.wait_for_function('initialLocalBatchSettled && repos.every(r => !r._checking)')
     held = []
     page.route('**/api/repos/status?*', lambda route: held.append(route))
     page.evaluate("location.hash = '#/board'")

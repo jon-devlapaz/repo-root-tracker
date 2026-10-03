@@ -52,4 +52,4 @@ Clone them on the Pi (for example under `/var/lib/rrt/repos`, as the `rrt` user)
 - Firewall: allow only 22, 80 and 443 (`sudo ufw allow 22,80,443/tcp && sudo ufw enable`).
 
 ## Keeping private repos fresh
-The Pi has no GitHub login by default, so its 10-minute fetch cannot update private repos. Create a **fine-grained** token (Repository access: your repos, Permissions: Contents → Read-only) and install it with `deploy/set-github-token.sh` (it refuses classic tokens). Rotate it like any credential; the Pi stores it only for the `rrt` service user.
+The Pi has no GitHub login by default, so its 10-minute fetch cannot update private repos. Create a **fine-grained** token (Repository access: your repos, Permissions: Contents → Read-only) and install it with `deploy/set-github-token.sh` (it refuses classic tokens unless you set `RRT_ALLOW_CLASSIC=1`). It also signs the `gh` CLI in, which the dashboard's GitHub tab needs. Rotate it like any credential; the Pi stores it only for the `rrt` service user.
