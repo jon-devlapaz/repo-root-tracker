@@ -50,3 +50,6 @@ Clone them on the Pi (for example under `/var/lib/rrt/repos`, as the `rrt` user)
 - Logs: `journalctl -u repo-root-tracker -f`. Change the password by re-running step 3 and `sudo systemctl restart repo-root-tracker`.
 - Signing everyone out: delete `/var/lib/rrt/config/session.key` and restart the service.
 - Firewall: allow only 22, 80 and 443 (`sudo ufw allow 22,80,443/tcp && sudo ufw enable`).
+
+## Keeping private repos fresh
+The Pi has no GitHub login by default, so its 10-minute fetch cannot update private repos. Create a **fine-grained** token (Repository access: your repos, Permissions: Contents → Read-only) and install it with `deploy/set-github-token.sh` (it refuses classic tokens). Rotate it like any credential; the Pi stores it only for the `rrt` service user.
