@@ -9,15 +9,19 @@ from urllib.parse import urlparse, parse_qs
 from bonsai_review import DASHBOARD, fixture_data
 
 
-def serve(port, case):
+def serve(port, case, pixel_tree=False):
     data=fixture_data(case)
+    dashboard=DASHBOARD.read_text()
+    if pixel_tree:
+        from pixel_bonsai_preview import pixel_dashboard
+        dashboard=pixel_dashboard(dashboard)
     organization={'version':1,'revision':0,'exists':False,'pins':[],'collections':[],
                   'assignments':{},'grouping':'collection','sort':'name'}
     class Handler(BaseHTTPRequestHandler):
         def do_GET(self):
             url=urlparse(self.path)
             if url.path=='/':
-                body=DASHBOARD.read_text().replace('__HOME__','/review',1).encode()
+                body=dashboard.replace('__HOME__','/review',1).encode()
                 kind='text/html; charset=utf-8'
             else:
                 if url.path=='/api/repos':
@@ -53,4 +57,5 @@ if __name__=='__main__':
     parser=argparse.ArgumentParser()
     parser.add_argument('--port',type=int,default=7856)
     parser.add_argument('--case',choices=['quiet','crowded','attention'],default='quiet')
-    args=parser.parse_args();serve(args.port,args.case)
+    parser.add_argument('--pixel-tree',action='store_true',help='Try pixel artwork on the clean cedar sample only')
+    args=parser.parse_args();serve(args.port,args.case,args.pixel_tree)
