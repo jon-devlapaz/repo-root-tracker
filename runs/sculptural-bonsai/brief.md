@@ -1,3 +1,25 @@
+# Current scope update: live merged-PR growth
+
+On 2026-10-03 the user approved the six-step live-integration plan with "proceed"
+in this chat. This update supersedes the older SVG-only and age-growth clauses
+below for the first pixel family. It does not approve release.
+
+- Fetch total merged PRs once per GitHub project per cache interval, sharing
+  the count across its worktrees. Count merged PRs directly, without list caps.
+- Use 0–5, 6–20, and 21+ for the first pixel family's 40%, 70%, and 100% sizes.
+  Main and linked worktrees use their project's main-path family selection.
+- Unknown counts remain unknown. Failed checks retain the last known count and
+  check time in the running server/browser. Remote identity changes reset ownership.
+- Show the total and check time in the inspector. Preserve local gold and Git
+  warning semantics. Other seven tree styles remain as before in this slice.
+- Embed existing raster layers into the single HTML runtime without adding a
+  runtime dependency. Retain a repeatable embedding script and source assets.
+- Verify collection, refresh/failure behavior, worktree ownership, browser views
+  and performance. Demonstrate real data in an isolated local candidate before release.
+
+The historical brief follows for context. Previous performance failures and
+pending human appearance acceptance remain unresolved.
+
 # Sculptural bonsai
 
 **Draft for your acceptance.** This brief and `checklist.json` define the proposed work. Your “i love it” accepted the visual direction; the simulated interview supplies suggestions, not approval receipts.

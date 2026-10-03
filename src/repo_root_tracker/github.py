@@ -90,6 +90,9 @@ class GithubInfo:
     issue_limit_reached: bool = False
     default_branch: str = ""
     workflows: WorkflowHealth | None = None
+    merged_pr_count: int | None = None
+    merged_pr_checked_at: str = ""
+    merged_pr_error: str = ""
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -250,6 +253,16 @@ def _workflow_health(slug: str, path: Path) -> tuple[str, WorkflowHealth, bool]:
     return branch, health, True
 
 
+def _merged_pr_count(slug: str, path: Path) -> int | None:
+    owner, name = slug.split("/", 1)
+    query = "query($owner:String!,$name:String!){repository(owner:$owner,name:$name){pullRequests(states:MERGED){totalCount}}}"
+    data = _gh("api", "graphql", "--hostname", "github.com", "--method", "POST", "-f", f"query={query}",
+               "-f", f"owner={owner}", "-f", f"name={name}",
+               "--jq", "if .errors then [] else [.data.repository.pullRequests.totalCount] end", cwd=path)
+    count = data[0] if data and len(data) == 1 else None
+    return count if type(count) is int and count >= 0 else None
+
+
 def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
     repo_path = Path(path).expanduser().resolve()
     slug = _github_remote(repo_path)
@@ -269,6 +282,9 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
             issues_raw = _gh("issue", "list", "--state", "open",
                              "--json", "number,title,url",
                              "--limit", str(ISSUE_LIMIT), "--repo", f"github.com/{slug}", cwd=repo_path)
+            merged_count = _merged_pr_count(slug, repo_path)
+            previous = _cache.get(key, (0, GithubInfo()))[1]
+            merged_checked = datetime.now(timezone.utc).isoformat() if merged_count is not None else previous.merged_pr_checked_at
             errors = []
             if prs_raw is None:
                 errors.append("Pull requests could not be checked. Check gh authentication, connectivity, and repository access.")
@@ -277,8 +293,8 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
             default_branch, workflows, workflow_access = _workflow_health(slug, repo_path)
             errors.extend(workflows.errors)
             info = GithubInfo(
-                has_github=prs_raw is not None or issues_raw is not None or workflow_access,
-                gh_unavailable=prs_raw is None and issues_raw is None and not workflow_access,
+                has_github=prs_raw is not None or issues_raw is not None or workflow_access or merged_count is not None,
+                gh_unavailable=prs_raw is None and issues_raw is None and not workflow_access and merged_count is None,
                 repo=slug, repo_url=f"https://github.com/{slug}",
                 prs=[PullRequest(
                     number=p.get("number", 0), title=p.get("title", ""),
@@ -292,6 +308,9 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
                 pr_limit_reached=prs_raw is not None and len(prs_raw) > PR_LIMIT,
                 issue_limit_reached=issues_raw is not None and len(issues_raw) >= ISSUE_LIMIT,
                 default_branch=default_branch, workflows=workflows,
+                merged_pr_count=merged_count if merged_count is not None else previous.merged_pr_count,
+                merged_pr_checked_at=merged_checked,
+                merged_pr_error="" if merged_count is not None else "Merged PR total could not be checked.",
             )
         _cache[key] = (time.monotonic(), info)
         return info

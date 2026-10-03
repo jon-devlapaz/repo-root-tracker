@@ -1,3 +1,7 @@
+The production renderer now connects the first pixel family to live GitHub
+merged totals. See `src/repo_root_tracker/artwork/README.md`. The gallery below
+remains a deliberately synthetic comparison tool.
+
 # Pixel bonsai preview
 
 The latest proposal uses total merged PRs for three clearly different sizes.

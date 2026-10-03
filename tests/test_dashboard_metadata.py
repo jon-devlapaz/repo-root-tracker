@@ -98,21 +98,21 @@ def test_legacy_github_status_contexts():
 def test_github_partial_failure_is_explicit_and_refresh_bypasses_cache(repo):
     git(repo, "remote", "add", "origin", "https://github.com/test/project.git")
     clear_cache()
-    with patch("repo_root_tracker.github._gh", side_effect=[None, [], None]) as run:
+    with patch("repo_root_tracker.github._gh", side_effect=[None, [], None, None]) as run:
         first = get_github_info(repo)
         cached = get_github_info(repo)
         assert cached is first
         assert first.has_github
         assert first.errors and "Pull requests" in first.errors[0]
         assert first.checked_at
-        assert run.call_count == 3
+        assert run.call_count == 4
     with patch("repo_root_tracker.github._gh", side_effect=[
-        [], [], [{"default_branch": "trunk"}], [{"sha": "a" * 40}],
+        [], [], [0], [{"default_branch": "trunk"}], [{"sha": "a" * 40}],
         [{"total_count": 0, "workflows": []}], [{"total_count": 0, "workflow_runs": []}],
     ]) as run:
         refreshed = get_github_info(repo, refresh=True)
         assert not refreshed.errors
-        assert run.call_count == 6
+        assert run.call_count == 7
     clear_cache()
 
 
@@ -130,7 +130,7 @@ def test_github_cache_deduplicates_worktrees_and_maps_review_signals(repo, tmp_p
     with patch("repo_root_tracker.github._gh", side_effect=gh) as run:
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(get_github_info, [repo, checkout]))
-        assert run.call_count == 3
+        assert run.call_count == 4
         assert results[0] is results[1]
         assert results[0].prs[0].review_decision == "CHANGES_REQUESTED"
         assert results[0].prs[0].mergeable == "CONFLICTING"

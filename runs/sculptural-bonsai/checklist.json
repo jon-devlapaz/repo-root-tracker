@@ -64,6 +64,23 @@
       "id": "human-appearance",
       "description": "Obtain the real owner\u2019s review of the actual rendered appearance before adoption.",
       "verify": "Present paired specimens and the full composition matrix, chosen palette/name layout, test results and unresolved issues. Record the actual human review reference and response. An agent may inspect pixels but cannot supply human acceptance; the simulated Alex dialogue and \u201ci love it\u201d about the direction do not approve unseen output."
+    },
+    {
+      "id": "merged-pr-growth",
+      "description": "Connect the first pixel family to project-wide merged PR totals.",
+      "verify": "Check exact count parsing, cache ownership, failed refresh retention, identity reset, browser stages, colors and inspector. Retain a real GitHub capture.",
+      "check": {
+        "argv": [
+          "env",
+          "PYTHONPATH=src",
+          "python3",
+          "-m",
+          "pytest",
+          "tests/test_merged_pr_growth.py",
+          "-q"
+        ],
+        "timeout_seconds": 120
+      }
     }
   ]
 }

@@ -26,7 +26,12 @@ def test_github_queries_explicitly_target_origin(repo):
     assert info.prs[0].url == f'{info.repo_url}/pull/1'
     for call in run.call_args_list:
         args = call.args
-        if args[0] == 'api':
+        if args[:2] == ('api', 'graphql'):
+            owner, name = info.repo.split('/')
+            assert f'owner={owner}' in args and f'name={name}' in args
+            assert args[args.index('--hostname')+1] == 'github.com'
+            assert any(arg.startswith('query=query(') for arg in args)
+        elif args[0] == 'api':
             assert args[1].split('?', 1)[0] == f'repos/{info.repo}'
             assert args[args.index('--method') + 1] == 'GET'
         else:
@@ -67,7 +72,7 @@ def test_pr_coverage_bound_and_lookahead(repo, count, incomplete):
 
 
 def test_paginated_query_failure_stays_explicit(repo):
-    with patch('repo_root_tracker.github._gh', side_effect=[None, [], None]):
+    with patch('repo_root_tracker.github._gh', side_effect=[None, [], None, None]):
         info = get_github_info(repo)
     assert info.errors and 'Pull requests' in info.errors[0]
     assert info.has_github

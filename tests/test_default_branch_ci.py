@@ -44,6 +44,8 @@ class Gh:
         if args[0] in {"pr", "issue"}:
             return None if args[0] in self.fail else []
         assert args[0] == "api"
+        if args[1] == "graphql":
+            return None if "merged" in self.fail else [0]
         endpoint = urlsplit(args[1])
         path, query = unquote(endpoint.path), parse_qs(endpoint.query)
         assert path.startswith("repos/owner/repo")
@@ -99,8 +101,8 @@ def test_remote_default_branch_is_used_and_encoded(tmp_path, branch):
     assert info.default_branch == branch
     assert info.workflows.state == 'passing'
     assert any('/branches/' + branch.replace('/', '%2F') in args[1] for args in gh.calls if args[0] == 'api')
-    assert all(args[args.index('--method') + 1] == 'GET' for args in gh.calls if args[0] == 'api')
-    assert len(gh.calls) == 6  # two existing queries plus four bounded API calls
+    assert all(args[args.index('--method') + 1] == 'GET' for args in gh.calls if args[0] == 'api' and args[1] != 'graphql')
+    assert len(gh.calls) == 7  # open PRs, issues, merged total, and four bounded REST calls
 
 
 @pytest.mark.parametrize('status,conclusion,state', [
@@ -221,12 +223,12 @@ def test_cache_refresh_and_worktree_family_deduplication(tmp_path):
             results = list(pool.map(get_github_info, [root, sibling]))
         assert results[0] is results[1]
         assert results[0].workflows.state == 'failing'
-        assert len(gh.calls) == 6
+        assert len(gh.calls) == 7
         gh.current = [run(conclusion='success')]
         assert get_github_info(sibling).workflows.state == 'failing'
-        assert len(gh.calls) == 6
+        assert len(gh.calls) == 7
         assert get_github_info(sibling, refresh=True).workflows.state == 'passing'
-        assert len(gh.calls) == 12
+        assert len(gh.calls) == 14
 
 
 @pytest.mark.parametrize('error', ['timeout', 'missing', 'invalid-json', 'denied'])
@@ -286,11 +288,11 @@ def test_actions_api_host_is_pinned_even_with_a_different_gh_host(tmp_path, monk
     info = info_for(tmp_path, gh)
     assert info.workflows.state == 'stale'
     api_calls = [args for args in gh.calls if args[0] == 'api']
-    assert len(api_calls) == 5
+    assert len(api_calls) == 6
     for args in api_calls:
         assert '--hostname' in args
         assert args[args.index('--hostname') + 1] == 'github.com'
-        assert args[args.index('--method') + 1] == 'GET'
+        assert args[args.index('--method') + 1] == ('POST' if args[1] == 'graphql' else 'GET')
 
 
 @pytest.mark.parametrize('origin', [None, 'https://gitlab.com/owner/repo.git'])
@@ -311,7 +313,7 @@ def test_no_github_remote_has_no_workflow_health(tmp_path, origin):
 
 def test_github_remote_access_failure_preserves_unknown_workflow_health(tmp_path):
     gh = Gh()
-    gh.fail.update({'pr', 'issue', 'repo'})
+    gh.fail.update({'pr', 'issue', 'repo', 'merged'})
     data = info_for(tmp_path, gh).to_dict()
     assert data['repo'] == 'owner/repo'
     assert not data['has_github'] and data['gh_unavailable']
