@@ -26,13 +26,13 @@ def check(output):
             page.screenshot(path=str(output / f'board-{width}.png'), full_page=True)
             tile.screenshot(path=str(output / f'tree-{width}.png'))
             # A local change switches foliage color without changing growth.
-            before = tile.locator("[data-pixel-family]").get_attribute("data-girth")
+            before = tile.locator("[data-pixel-family]").get_attribute("data-growth")
             page.evaluate('''path => {
                 repoByPath.get(path)._status.dirty = {is_clean:false, modified:1};
                 renderBoard();
             }''', TARGET)
             assert tile.locator('[data-pixel-family]').get_attribute('data-pixel-color') != 'gold'
-            assert tile.locator('[data-pixel-family]').get_attribute('data-girth') == before
+            assert tile.locator('[data-pixel-family]').get_attribute('data-growth') == before
             page.evaluate('showPixelFamily()')
             page.locator('#pixel-family-review').screenshot(path=str(output / f'family-{width}.png'))
             page.locator('#pixel-family-close').click()
@@ -49,31 +49,28 @@ def check(output):
         page=browser.new_page(viewport={'width':1440,'height':1100})
         open_scene(page,dashboard=dashboard)
         combinations=page.evaluate("""() => {
-            let count=0;
-            for(const palette of [BONSAI_GOLD,...BONSAI_FOLIAGE])
-              for(const girth of [.78,.92,1.08,1.22])
-                for(const density of [.86,1,1.07])
-                  for(let br=0;br<=4;br++){
-                    const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
-                    svg.innerHTML=pixelFamilyTree(palette,{girth,density,br});
-                    if(svg.querySelectorAll('[data-pixel-limb]').length!==br)throw Error('Branch count');
-                    const tree=svg.querySelector('[data-pixel-family]');
-                    if(+tree.dataset.girth!==girth || +tree.dataset.density!==density)throw Error('Growth');
-                    if(tree.dataset.pixelColor==='gold' !== (palette===BONSAI_GOLD))throw Error('Gold state');
-                    if(svg.innerHTML.includes('NaN'))throw Error('Invalid geometry');
-                    count++;
-                  }
-            const repo=repoByPath.get('/review/team-00/cedar');
-            const retained=bonsaiVitalsOf(repo.path);
-            repo._status={error:'offline'};
-            checkoutVitals?.clear();
-            const unavailable=bonsaiVitalsOf(repo.path);
-            if(JSON.stringify(retained)!==JSON.stringify(unavailable))throw Error('Lost history');
-            const unknown=normalizeBonsaiVitals({});
-            if(unknown.girth!==1 || unknown.density!==1 || unknown.br!==0)throw Error('Unknown history');
-            return count;
+            const cases=[[0,'seedling'],[5,'seedling'],[6,'growing'],[20,'growing'],[21,'mature'],[500,'mature'],[null,'unknown'],[undefined,'unknown'],[-1,'unknown'],[1.5,'unknown'],['12','unknown']];
+            let total=0;
+            for(const [count,stage] of cases)for(const palette of [BONSAI_GOLD,...BONSAI_FOLIAGE]){
+              const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
+              svg.innerHTML=pixelFamilyTree(palette,count);
+              if(svg.querySelector('[data-pixel-family]').dataset.growth!==stage)throw Error('Wrong stage');
+              if(svg.querySelector('[data-pixel-family]').dataset.pixelColor==='gold' !== (palette===BONSAI_GOLD))throw Error('Wrong color');
+              total++;
+            }
+            const path='/review/team-00/cedar',repo=repoByPath.get(path);
+            const original=bonsaiTree(path,BONSAI_GOLD);
+            repo._status.first_commit_date='2026-10-03';repo._status.activity_30d=0;repo._status.branches=[];
+            if(bonsaiTree(path,BONSAI_GOLD)!==original)throw Error('Time or activity changed growth');
+            PIXEL_SAMPLE_MERGES.set(path,30);
+            if(!bonsaiTree(path,BONSAI_GOLD).includes('data-growth="mature"'))throw Error('Cached old size');
+            PIXEL_SAMPLE_MERGES.delete(path);
+            if(!bonsaiTree(path,BONSAI_GOLD).includes('data-growth="unknown"'))throw Error('Unknown became zero');
+            return total;
         }""")
         page.evaluate('showPixelFamily()')
+        sizes=page.locator('#pixel-family-review section').first.locator('[data-growth-body]').evaluate_all('nodes=>nodes.map(n=>n.getBoundingClientRect().height)')
+        assert sizes[2] > sizes[0]*2.3 and sizes[1] > sizes[0]*1.6, sizes
         gallery=page.evaluate("""() => document.querySelector('svg:has(#pixel-trunk)').outerHTML+
             '<main>'+document.getElementById('pixel-family-review').innerHTML+'</main>'""")
         page.set_content('<style>body{margin:0;background:#161514;color:#ded8ca;font:16px system-ui}main{padding:28px}h1,h2{font-weight:500}button{display:none}</style>'+gallery)
@@ -83,8 +80,8 @@ def check(output):
         assert not errors, errors
     (output / 'checks.json').write_text(json.dumps({
         'widths': [1440, 390], 'selection': 'passed',
-        'color_transition': 'passed', 'combinations': combinations, 'retained_history': 'passed', 'page_errors': errors,
-        'scope': 'One layered family on synthetic cedar main and worktree. No production or performance approval.'
+        'color_transition': 'passed', 'combinations': combinations, 'age_and_activity_independence': 'passed', 'count_refresh': 'passed', 'page_errors': errors,
+        'scope': 'Three PR growth stages on synthetic cedar main and worktree. No production or performance approval.'
     }, indent=2) + '\n')
 
 

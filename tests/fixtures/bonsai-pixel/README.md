@@ -1,52 +1,44 @@
-# Pixel bonsai family
+# Pixel bonsai preview
 
-The user chose pixel art, then said to proceed with one complete tree family
-before extending the other seven shapes. This preview supplies an informal
-upright tree for the synthetic cedar checkout and its linked worktree.
-Production HTML and real repository data remain unchanged.
+The latest proposal uses total merged PRs for three clearly different sizes.
+This is a visual proof with sample data. Live GitHub totals are not connected.
 
-## Preview and checks
+- 0–5 merged PRs: seedling at 40% tree size.
+- 6–20: growing tree at 70%.
+- 21+: mature tree at 100%.
+- Unknown: neutral 70% tree, labeled with a question mark, never treated as zero.
 
-Run `python tests/serve_bonsai_review.py --port 7859 --pixel-tree`, then open
-http://127.0.0.1:7859/?family=1#/board. The Pixel tree states button reopens
-the gallery. Close it and select cedar to see the board and inspector.
+These thresholds are provisional. Size means merged work, not quality. Age,
+activity, and branch count no longer change this preview family's geometry.
+The pot stays fixed. Gold and the four project colors retain their existing
+meaning. Cedar and its worktree both use the synthetic project total of 12.
+Other trees and production HTML are unchanged.
 
-Run `python tests/check_pixel_bonsai.py --output /tmp/pixel-bonsai-check`
-with Playwright and Chromium installed. It checks 300 combinations, clean to
-changed color transitions, retained history after an unavailable check, neutral
-unknown history, desktop/mobile selection, and list/detail rendering. It saves
-screenshots and machine-readable results.
+## Run
 
-## States
+`python tests/serve_bonsai_review.py --port 7860 --pixel-tree`
 
-- Five foliage colors: gold, teal, mauve, indigo, olive.
-- Four known age bands use the existing trunk-width factors.
-- Three activity bands use the existing foliage-density factors.
-- Zero through four extra limbs represent other live local branches, capped at four.
-- Unknown history uses neutral growth. Failed checks retain prior growth.
-- The gallery displays the same artwork at 48, 80 and 128 pixels wide.
+Open http://127.0.0.1:7860/?family=1#/board. The gallery compares sizes at
+96px, 48px and 160px. Close it to try cedar in the board and inspector.
 
-The browser composes trunk, foliage and pot layers. A foliage-only SVG color
-filter maps grayscale shading into the existing project palettes. Bark and pot
-colors stay fixed. Additional limbs use small native paths and leaf sprites.
-Git warnings and weather keep their existing code and meanings.
+`python tests/check_pixel_bonsai.py --output /tmp/pr-growth-check`
 
-## Artwork and prompts
+Requires Playwright and Chromium. Checks cover count boundaries, invalid and
+unknown counts, all five colors, actual rendered height differences, independence
+from age/activity, count refresh without stale markup, desktop/mobile selection,
+and list/detail rendering. Screenshots and checks.json are retained.
 
-The built-in OpenAI imagegen tool generated `trunk.png`, `foliage.png`, and
-`pot.png` on 2026-10-03. These files were copied unchanged into this directory.
-`prompts.json` records the exact prompts and original output paths. `gold.png`
-is the preserved earlier whole-tree reference, generated in the same chat.
-The runtime colors and positions the layers; no offline image editing was used.
+## Artwork
 
-## Limits
+The built-in OpenAI imagegen tool generated trunk.png, foliage.png and pot.png.
+The unchanged originals and exact prompts are recorded in prompts.json. gold.png
+is the earlier whole-tree reference. The browser composes the layers and tints
+only foliage. No new artwork or image-editing tool was needed for PR sizes.
 
-This is one family in a synthetic preview. Seven other forms still need artwork
-and placement. The 48px tree retains its silhouette, but fine bark and branch
-changes are hard to distinguish at that size. It uses the same artwork at small
-sizes rather than a separately drawn miniature. The gallery exposes that limit.
+## Remaining work
 
-No production release, final appearance acceptance, full-suite pass for this
-revision, or performance pass is claimed. Existing failed performance results
-remain unresolved. The first-family user instruction authorizes this preview;
-it does not record release approval or change old SDLC receipts.
+This first visual proof does not fetch live merged PR counts. Production needs
+that collection, shared project totals, retained last-known growth on failed
+checks, visible freshness, the other seven shapes, and performance verification.
+No production release or appearance approval is claimed. Earlier 300-state
+age/activity evidence remains historical and does not describe this proposal.

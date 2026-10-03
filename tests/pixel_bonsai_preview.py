@@ -14,7 +14,7 @@ COLORS = {
 
 
 def pixel_dashboard(source):
-    anchor = 'function buildBonsaiTree(path, palette, ink = false) {'
+    anchor = 'function bonsaiTree(path,palette,ink=false) {'
     if source.count(anchor) != 1:
         raise ValueError('Expected one bonsai renderer')
     definitions = []
@@ -26,5 +26,5 @@ def pixel_dashboard(source):
         definitions.append(f'<filter id="pixel-{name}" color-interpolation-filters="sRGB"><feComponentTransfer>{channels}</feComponentTransfer></filter>')
     definitions = '<svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>'+''.join(definitions)+'</defs></svg>'
     source=source.replace('<body>', '<body>'+definitions, 1)
-    trial = "\n if(path === '/review/team-00/cedar' || path === '/review/team-00/cedar-worktree-1') return pixelFamilyTree(palette, bonsaiVitalsOf(path));\n"
+    trial = "\n if(path === '/review/team-00/cedar' || path === '/review/team-00/cedar-worktree-1') return pixelFamilyTree(palette, PIXEL_SAMPLE_MERGES.get(path));\n"
     return source.replace(anchor, (ASSETS / 'family.js').read_text()+'\n'+anchor+trial)
