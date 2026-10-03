@@ -101,3 +101,21 @@ def test_island_caption_is_not_truncated_on_a_phone(open_at):
     page.wait_for_selector("#board-stage", state="visible")
     caption = page.locator("[data-island] text").first.text_content()
     assert "…" not in caption and caption.endswith("projects")
+
+
+def test_open_tab_refreshes_itself_without_a_click(open_at):
+    page = open_at()
+    page.wait_for_function("initialLocalBatchSettled && repos.every(r => !r._checking)")
+    before = page.evaluate("repos.map(r => r._checkedAt).join()")
+    page.evaluate("livePoll()")
+    page.wait_for_function("(b) => repos.map(r => r._checkedAt).join() !== b", arg=before, timeout=15000)
+
+
+def test_background_poll_never_greys_out_the_plots(open_at):
+    page = open_at()
+    page.wait_for_function("initialLocalBatchSettled && repos.every(r => !r._checking)")
+    page.evaluate("""() => { window.__max = 0; setInterval(() => {
+        window.__max = Math.max(window.__max, document.querySelectorAll('.tile[data-stage="loading"]').length); }, 5); }""")
+    page.evaluate("livePoll()")
+    page.wait_for_timeout(1500)
+    assert page.evaluate("window.__max") == 0

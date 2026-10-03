@@ -4781,6 +4781,15 @@
   setInterval(() => {
     document.querySelectorAll('time[data-checked]').forEach(el => { el.textContent = ageLabel(el.dataset.checked); });
   }, 30000);
+  // Keep an open tab in step with the machine: a quiet local refresh every 15s while it is visible and idle.
+  const LIVE_POLL_MS = 15000;
+  async function livePoll() {
+    if (document.visibilityState !== 'visible' || detailPath || organizing || document.querySelector('dialog[open]') ||
+        resumeRefreshing || refreshingLocal || refreshingBoard || refreshingGithub || githubTasks.size || !repos.length || boardPanning) return;
+    // The quiet list-style pass updates statuses in place, so plots never grey out between polls.
+    try { await revalidateAll(true); } catch { /* the next tick tries again */ }
+  }
+  setInterval(livePoll, LIVE_POLL_MS);
   window.addEventListener('focus', refreshOnReturn);
   document.addEventListener('visibilitychange', refreshOnReturn);
   window.addEventListener('hashchange', route);
