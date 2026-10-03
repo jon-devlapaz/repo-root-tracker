@@ -54,7 +54,8 @@ def set_camera(page, zoom, path=MAIN):
 
 
 def geometry(page, path=WORKTREES[0]):
-    return member(page, path).locator('[data-tree-variant]').evaluate("el=>({transform:el.getAttribute('transform'),html:el.innerHTML,box:JSON.stringify(el.getBBox())})")
+    # Shape only: a clean checkout is gold by design, so colour is not part of the geometry contract.
+    return member(page, path).locator('[data-tree-variant]').evaluate("el=>({transform:el.getAttribute('transform'),html:el.innerHTML.replace(/(fill|stroke)=\"#[0-9a-fA-F]{3,8}\"/g,''),box:JSON.stringify(el.getBBox())})")
 
 
 def test_three_saplings_fit_the_pinned_sprite_box(page):

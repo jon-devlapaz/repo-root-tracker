@@ -37,7 +37,7 @@ Localhost server on port 7842 via `serve.sh`. Data comes from `/api/repos` and r
 Binding visual constraints volunteered by the user for this redesign (recorded, not expanded):
 - Visual identity follows https://socratink.ai/ (user decision, 2026-10-01): warm near-black ground (#100f0f), warm paper text, one teal accent (#3aa99f, deeper #1f7a72 for filled badges), Instrument Serif for display and Inter for text (both SIL OFL, embedded so nothing loads from the network), hairline dividers, a glossy dark orb as the mark. This supersedes the earlier night-garden palette, Hiragino/Shippori mincho type and matcha accent. Instrument Serif and Inter are common faces; they are used deliberately to match the brand.
 - The spirit of *yohaku no bi* (emptiness as a design material) is kept: generous space, one ensō behind the garden, restraint. The six git-state hues (gold clean, orange changes, blue sync, lilac stale, slate unavailable, vermilion blockers) are kept so state stays readable at a glance.
-- Each repo on the board is represented as a bonsai, one bonsai per repo, with tree form encoding git state.
+- Each repo on the board is represented as a bonsai, one bonsai per repo, with tree form encoding git state. A clean (git-golden) checkout's canopy is gold.
 - Radical overhaul across list, board, and detail, not incremental polish. The ambition is to show the upper bound of what Claude models can build in a front end.
 
 ## Evidence on Hand
