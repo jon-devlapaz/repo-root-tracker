@@ -44,3 +44,11 @@ Main service on port 7842 was not changed.
 Build the Lever: retained the renderer capture script and regression test.
 Prove It Works: checked production glyphs and actual live GitHub data.
 Unslop: kept the report in plain language.
+
+## Final verification
+
+Commit c94ffae passed the full suite: 644 passed, 3 skipped in 366.44s.
+The required browser subset passed 102 tests; merged-growth passed 17 tests.
+The SDLC command exits 1 because reference-performance and human-appearance
+remain incomplete. No check thresholds were changed or approval inferred.
+The saved `before/growth-stages.png` uses the same capture script against 37521d0.
