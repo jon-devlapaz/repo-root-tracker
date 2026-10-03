@@ -585,7 +585,7 @@ def test_moving_selected_project_to_workspace_keeps_selection_and_follows_it(wor
 
 def test_vanished_page_falls_back_inside_its_island(workspace):
     page = board(workspace)
-    page.evaluate("() => { boardActivePageKey = 'collection:work:3'; boardSelectedPath = null; boardMembershipPending = true; commitBoardMembership(); }")
+    page.evaluate("() => { boardChoseIsland = true; boardActivePageKey = 'collection:work:3'; boardSelectedPath = null; boardMembershipPending = true; commitBoardMembership(); }")
     assert page.evaluate("boardActivePageKey") == "collection:work:0"
 
 
@@ -616,3 +616,10 @@ def test_board_offers_export_and_recovery_actions(workspace):
     assert page.locator("#board-organization-export").is_visible()
     assert page.locator("#board-organization-restore").is_hidden()
     page.evaluate("() => { keepUnsavedOrganization(); renderBoard(); }")
+
+
+def test_board_opens_on_a_planted_island_until_the_viewer_chooses(workspace):
+    page = board(workspace, {PROJECT_KEY: "personal"})
+    assert page.evaluate("boardActivePageKey") == "collection:personal:0"
+    page.locator("#board-archipelago button").nth(0).click()
+    assert page.evaluate("boardActivePageKey") == "workspace:0"

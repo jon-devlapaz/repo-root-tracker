@@ -43,7 +43,7 @@ def test_list_lives_at_list_route_and_board_button_comes_first(open_at):
     page = open_at("#/list")
     page.wait_for_selector("#list-view", state="visible")
     assert page.locator("#view-list").get_attribute("aria-pressed") == "true"
-    ids = page.evaluate("[...document.querySelectorAll('[aria-label=View] button')].map(b => b.id)")
+    ids = page.evaluate("[...document.querySelectorAll('[aria-label=View] > button')].map(b => b.id)")
     assert ids == ["view-board", "view-list"]
     page.locator("#view-board").click()
     page.wait_for_selector("#board-view", state="visible")
@@ -78,3 +78,18 @@ def test_first_paint_groups_worktrees_before_any_status_arrives():
         assert page.evaluate("boardProjects.length") == 1
         assert page.evaluate("boardProjects[0].paths.length") == 2
         browser.close()
+
+
+def test_phone_shows_the_island_above_the_fold_with_sign_out_beside_the_view_buttons(open_at):
+    page = open_at()
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.wait_for_selector("#board-stage", state="visible")
+    page.evaluate("document.getElementById('signout').hidden = false")
+    stage = page.locator("#board-stage").bounding_box()
+    assert stage["y"] < 700, "island should start above the fold"
+    board = page.locator("#view-board").bounding_box()
+    out = page.locator("#signout button").bounding_box()
+    assert abs(board["y"] - out["y"]) < 12, "sign out shares the view-button row"
+    assert page.evaluate("document.documentElement.scrollWidth <= innerWidth")
+    tools = page.locator(".board-islands-tools").bounding_box()
+    assert tools["y"] > stage["y"], "island controls follow the island on a phone"
