@@ -53,6 +53,13 @@ def activity_for_all(days: int) -> dict:
     return result
 
 
+def _font_faces() -> str:
+    """The dashboard's embedded @font-face rules, so the sign-in page matches the brand without a network font."""
+    import re
+    html = ASSET.read_text(encoding="utf-8")
+    return "".join(re.findall(r"@font-face\s*\{[^}]*\}", html))
+
+
 def repos_with_identity(repos: list[dict]) -> list[dict]:
     """Attach project identity so the dashboard can group worktrees on first paint."""
     if not repos:
@@ -118,7 +125,7 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def _login_page(self, error: str = "", code: int = 200) -> None:
-        body = auth.LOGIN_PAGE.replace("__ERROR__", error).encode()
+        body = auth.LOGIN_PAGE.replace("__ERROR__", error).replace("__FONTS__", _font_faces()).encode()
         self.send_response(code)
         self.send_header("Content-Type", "text/html; charset=utf-8")
         self.send_header("Content-Length", str(len(body)))

@@ -102,8 +102,8 @@ class LoginLimiter:
 
 LOGIN_PAGE = """<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>Sign in · repo-root-tracker</title>
-<style>:root{color-scheme:dark}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#100f0f;color:#ece9e1;
-font:16px/1.5 Inter,system-ui,sans-serif}form{width:min(340px,calc(100vw - 32px))}h1{font:400 38px/1.1 "Instrument Serif",Georgia,serif;margin:0 0 20px}
+<style>__FONTS__:root{color-scheme:dark}body{margin:0;min-height:100dvh;display:grid;place-items:center;background:#100f0f;color:#ece9e1;
+font:16px/1.5 "Inter Embedded",Inter,system-ui,sans-serif}form{width:min(340px,calc(100vw - 32px))}h1{font:400 44px/1.1 "Instrument Serif Embedded","Instrument Serif",Georgia,serif;margin:0 0 20px}
 label{display:block;color:#a9a69d;margin-bottom:6px}input{width:100%;box-sizing:border-box;min-height:44px;padding:8px 2px;background:transparent;border:0;
 border-bottom:1px solid #4a4743;color:inherit;font:inherit}input:focus{outline:none;border-bottom-color:#3aa99f;box-shadow:0 1px 0 #3aa99f}
 button{margin-top:22px;min-height:44px;padding:0 22px;border:0;border-radius:8px;background:#3aa99f;color:#06231f;font:inherit;font-weight:600;cursor:pointer}
