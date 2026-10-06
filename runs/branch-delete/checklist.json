@@ -1,0 +1,134 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "verdict",
+      "description": "The server judges deletability by the brief's rules and fails closed.",
+      "verify": "Truth-table tests, one per rule, on temporary repos with a bare remote and a stubbed gh.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_branch_delete.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "refusals",
+      "description": "Stale sha, bad names, unscanned path, non-loopback peer, wrong Host and cross-site requests delete nothing.",
+      "verify": "Server tests per refusal.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_branch_delete_server.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "delete-and-log",
+      "description": "A delete removes exactly one ref, logs it first with the right sha, and the recovery command restores it.",
+      "verify": "Local and remote delete tests, FAILED line, unwritable log blocks delete, recovery round trip.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_branch_delete_server.py",
+          "-k",
+          "log or recovery or delete"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "ui",
+      "description": "Button, confirm dialog, result, read-only mode and keyboard behaviour work in a browser.",
+      "verify": "Browser tests incl. Cancel default focus, Escape, 390 px.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_ui_delete.py"
+        ],
+        "timeout_seconds": 180
+      }
+    },
+    {
+      "id": "page-weight",
+      "description": "The page is small and self-contained.",
+      "verify": "dashboard.html is under 60 KB with no data:image and no external URLs.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-c",
+          "import re,pathlib;p=pathlib.Path('src/repo_root_tracker/dashboard.html');s=p.read_text();assert len(s.encode())<61440,len(s.encode());assert 'data:image' not in s;assert not re.search(r'(src|href)=[\"\\']https?://',s)"
+        ],
+        "timeout_seconds": 20
+      }
+    },
+    {
+      "id": "full-suite",
+      "description": "The whole suite passes within 120 s with no test weakened.",
+      "verify": "pytest over tests/.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "disposable-clones",
+      "description": "Against disposable clones of two real repos, a merged branch deletes and is recoverable, and an open-PR branch is refused.",
+      "verify": "scripts/check_branch_delete.py clones to a temp dir and never touches real checkouts or remotes.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "scripts/check_branch_delete.py"
+        ],
+        "timeout_seconds": 300
+      }
+    },
+    {
+      "id": "mutations",
+      "description": "Removing the sha check, open-PR check, loopback check, log-before-delete order or current-branch check each fails at least one test.",
+      "verify": "Recorded in the handoff with the failing test for each."
+    },
+    {
+      "id": "jon-confirm-flow",
+      "description": "Jon judges the confirm flow feels right.",
+      "verify": "Attested by Jon in chat after trying the dialog; never filled in by the agent."
+    }
+  ]
+}

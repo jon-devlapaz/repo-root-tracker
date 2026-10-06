@@ -1,0 +1,8 @@
+{
+  "inputs": "9c6680117a5755a0c3a4941bdee59e65137491125527004077d0ad5ed4176bc7",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "Jon",
+  "source": "Chat approval in this session: \"approved, build it\"",
+  "reason": "Accepted branch-delete brief r1 with its three proposed decisions: closed-PR branches get a button, no bulk delete, branches only"
+}
