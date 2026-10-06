@@ -130,8 +130,9 @@ def test_a_repo_deleted_after_the_scan_is_gone_not_clean(live):
 def test_ci_state_feeds_the_golden_verdict_on_later_status_calls(live, monkeypatch):
     live("GET", "/api/scan")
     path = real(live.alpha)
+    head = git(live.alpha, "rev-parse", "refs/heads/main")
     for state, expected in (("passing", "golden"), ("failing", "not golden"), ("pending", "golden pending CI")):
-        monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False, s=state: CiState(state=s, repo="o/r"))
+        monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False, s=state: CiState(state=s, repo="o/r", head_sha=head))
         status, body, _ = live("GET", f"/api/ci?path={path}&refresh=1")
         assert status == 200 and body["ci"]["state"] == state
         assert live("GET", "/api/repos/status?path=" + path)[1]["golden"]["status"] == expected
@@ -249,3 +250,47 @@ def test_without_lan_mode_a_private_peer_is_refused_even_with_the_right_name(liv
     monkeypatch.setattr(srv.Handler, "_peer", lambda self: "private")
     assert live("GET", "/api/scan", {"Host": "192.168.9.9"})[0] == 403
     assert live("GET", "/api/scan")[0] == 403
+
+
+def test_a_ci_result_counts_only_for_the_commit_it_was_checked_for(live, monkeypatch):
+    live("GET", "/api/scan")
+    path = real(live.alpha)
+    head = git(live.alpha, "rev-parse", "refs/heads/main")
+    monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: CiState(state="passing", repo="o/r", head_sha=head,
+                                                                                       checked_at="2026-01-01T00:00:00+00:00"))
+    assert live("GET", f"/api/ci?path={path}")[0] == 200
+    status = live("GET", "/api/repos/status?path=" + path)[1]
+    assert status["golden"]["status"] == "golden" and status["ci"]["current"] is True and status["ci"]["checked_at"]
+    commit(live.alpha, "n.txt", message="main moves on locally")  # a new commit: the old result no longer speaks for it
+    git(live.alpha, "push", "-q", "origin", "main")  # keep it even with origin, so only the stale CI result is in question
+    status = live("GET", "/api/repos/status?path=" + path)[1]
+    assert status["ci"]["current"] is False and status["golden"]["status"] != "golden"
+    assert "different commit" in " ".join(status["golden"]["notes"] + status["golden"]["reasons"])
+
+
+def test_a_stale_failing_result_is_not_reported_as_failing_either(live, monkeypatch):
+    live("GET", "/api/scan")
+    path = real(live.alpha)
+    monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: CiState(state="failing", repo="o/r", head_sha="0" * 40))
+    live("GET", f"/api/ci?path={path}")
+    body = live("GET", "/api/repos/status?path=" + path)[1]
+    assert body["ci"]["current"] is False and "latest CI run on main failed" not in body["golden"]["reasons"]
+
+
+def test_requests_that_a_browser_says_come_from_another_website_are_refused(live):
+    path = real(live.alpha)
+    live("GET", "/api/scan")
+    for target in ("/", "/api/scan", "/api/repos/status?path=" + path, "/api/ci?path=" + path):
+        assert live("GET", target, {"Sec-Fetch-Site": "cross-site"})[0] == 403, target
+    for site in ("same-origin", "none", "same-site"):
+        assert live("GET", "/api/scan", {"Sec-Fetch-Site": site})[0] == 200, site
+
+
+def test_a_phone_cannot_start_a_ci_check_which_would_use_the_owners_github_login(lan, monkeypatch):
+    calls = []
+    monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: calls.append(p) or CiState(state="passing"))
+    lan("GET", "/api/scan", {"Host": "192.168.9.9:7842"})
+    status, body = lan("GET", "/api/ci?path=" + real(lan.alpha), {"Host": "192.168.9.9:7842"})
+    assert status == 403 and calls == []
+    lan.peer["ip"] = "127.0.0.1"
+    assert lan("GET", "/api/ci?path=" + real(lan.alpha), {"Host": f"127.0.0.1:{lan.port}"})[0] == 200 and len(calls) == 1

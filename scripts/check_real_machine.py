@@ -21,7 +21,7 @@ from repo_root_tracker.status import get_repo_status  # noqa: E402
 REASON_TO_CONDITION = (
     ("on ", "branch"), ("uncommitted", "dirty"), ("local branch", "local-branches"), ("no origin", "no-origin"),
     ("remote branch", "remote-branches"), ("not found (not fetched", "remote-branches"), ("extra worktree", "worktrees"),
-    ("not even with", "sync"), ("has no upstream", "sync"),
+    ("not even with", "sync"), ("does not track", "tracking"), ("does not exist", "remote-branches"),
 )
 
 
@@ -34,13 +34,14 @@ def git(repo: str, *args: str) -> str:
 def reference(repo: str) -> set[str]:
     """The failing local conditions, from plain git output. Empty means golden on every local condition."""
     failing: set[str] = set()
-    on_main = (git(repo, "symbolic-ref", "--short", "-q", "HEAD") or "HEAD") == "main"
+    current = git(repo, "symbolic-ref", "--short", "-q", "HEAD") or "HEAD"
     has_origin = bool(git(repo, "remote", "get-url", "origin"))
-    if not on_main:
+    if current != "main":
         failing.add("branch")
     if git(repo, "status", "--porcelain"):
         failing.add("dirty")
-    if set(git(repo, "branch", "--format=%(refname:short)").split()) - {"main"}:
+    # The checked-out branch is already reported as "branch"; the tool does not count it a second time.
+    if set(git(repo, "branch", "--format=%(refname:short)").split()) - {"main", current}:
         failing.add("local-branches")
     remotes = {b for b in git(repo, "branch", "-r", "--format=%(refname:short)").split() if b != "origin" and not b.endswith("/HEAD")}
     if not has_origin:
@@ -49,8 +50,12 @@ def reference(repo: str) -> set[str]:
         failing.add("remote-branches")
     if len(git(repo, "worktree", "list", "--porcelain").split("\n\n")) > 1:
         failing.add("worktrees")
-    if on_main and has_origin and git(repo, "rev-list", "--left-right", "--count", "main...origin/main").split() != ["0", "0"]:
-        failing.add("sync")
+    # Local main against origin/main, whatever is checked out and whatever main tracks.
+    if has_origin and git(repo, "rev-parse", "--verify", "--quiet", "refs/heads/main") and "origin/main" in remotes:
+        if git(repo, "rev-list", "--left-right", "--count", "refs/heads/main...refs/remotes/origin/main").split() != ["0", "0"]:
+            failing.add("sync")
+        if git(repo, "rev-parse", "--abbrev-ref", "main@{upstream}") != "origin/main":
+            failing.add("tracking")
     return failing
 
 

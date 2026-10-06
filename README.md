@@ -12,16 +12,25 @@ Python 3.11 or newer, standard library only, no build step.
 ## What you see
 
 Repos are grouped by what needs doing: **Needs work**, **Pending CI**, then **Golden**. Inside a group the repos
-closest to clean come first, so the quick wins are on top. Each row is the repo, its branch (dimmed on `main`, red
-anywhere else), a status pill, short chips for what is outstanding (`1 change`, `9 remote branches`, `↑2 ↓1`,
-`no origin`), and when it last changed. The counts on the filter chips are the summary. The tab title shows how many
-repos need attention, and "Everything is clean." appears only when every repo is golden.
+closest to clean come first, so the quick wins are on top. Each row is a small status icon and the repo name, its
+branch (dimmed on `main`, red anywhere else), short chips for what is outstanding (`1 change`, `9 remote branches`,
+`↑2 ↓1`, `no origin`), and when it last changed. The counts on the filter chips are the summary, and the tab title
+shows how many repos need work. "Everything is clean." appears only when every repo is golden.
 
-Select a row to see exactly what to do about each outstanding item, with a copy button for the command. For stray
-branches it says whether each one is **merged and safe to delete** or holds **N commits not on main**, and the
-delete command it offers covers only the merged ones. It judges that with `git cherry`, which sees through rebase
-merges. A squash merge leaves nothing git can follow, so such a branch reads as unmerged; check its pull request.
-The tool only shows and copies commands. It never runs them.
+Select a row to see exactly what to do about each outstanding item, with a copy button for the command. Every command
+names its repository (`git -C <path> ...`), so pasting it into the wrong terminal cannot touch another repo. The tool
+only shows and copies commands. It never runs them.
+
+For stray branches it says whether each one is **merged and safe to delete**, holds **N commits not on main**, or
+that it **cannot tell**. A branch counts as merged when it is an ancestor of `main`, or when every commit has an
+equivalent patch on `main` (`git cherry` sees through rebase merges) and it has no merge commits of its own, which can
+carry changes `git cherry` never inspects. A change `main` applied and later reverted still counts as merged: it was
+merged and its history stays on `main`. Git cannot see squash merges, so such a branch reads as unmerged; check its pull
+request. Branches judged by patch need `git branch -D`, so they get their own labelled command.
+
+Remote branches are judged from the last fetch, which the row shows. Each remote delete is lease-guarded
+(`--force-with-lease=<branch>:<commit>`): if someone pushed to the branch after your last fetch, git refuses instead of
+deleting their work.
 
 ### git-golden
 
@@ -38,8 +47,11 @@ latest CI run on `main` succeeded. Open issues and pull requests never count.
 
 Remote branches and "even with origin" come from local refs, so they are only as fresh as the last fetch. Each row
 shows when that was. **Fetch** runs `git fetch --prune` in each repo: it updates remote-tracking refs and never
-touches a working tree, branch or commit. **GitHub** (or **Check CI** in the Pending CI heading) asks `gh` for the CI state on the default branch (needs
-`gh` signed in; without it the verdict stays `golden pending CI`).
+touches a working tree, branch or commit. On load, **CI is checked automatically for repos that are otherwise clean** (never for repos that already need work), and
+**GitHub** (or **Check CI** in the Pending CI heading) asks `gh` for the CI state on the default branch (needs
+`gh` signed in; without it the verdict stays `Pending CI`). A CI result counts only for the exact commit it was checked
+for, so a new local `main` goes back to "stale" until checked again. Switch the automatic check off with `--no-auto-ci`
+or `RRT_AUTO_CI=0`.
 
 ## Which folders are scanned
 
@@ -71,8 +83,8 @@ It prints the address to open (`http://<your-mac's-address>:7842/` and `http://<
 **read-only and has no password**: anyone on that private network can see repo paths, branch names and commit messages.
 What still protects it: it is off unless you ask; only clients on private network ranges (10.x, 172.16-31.x,
 192.168.x, link-local) are served, so a port forwarded from the internet is refused; the `Host` must be this
-machine's own address or name; and **Fetch** and **Rescan** only work from the computer running it, so a phone can look
-but never change anything. macOS may ask you to allow incoming connections for Python the first time.
+machine's own address or name; and **Fetch**, **Rescan** and the GitHub checks only work from the computer running it, so a phone can look but
+never change anything or use your GitHub login. macOS may ask you to allow incoming connections for Python the first time.
 
 ## Tests
 

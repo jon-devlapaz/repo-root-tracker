@@ -325,6 +325,7 @@ class CiState:
     repo: str = ""
     errors: list[str] = field(default_factory=list)
     checked_at: str = ""
+    head_sha: str = ""  # the commit on GitHub's default branch that these runs belong to
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -348,7 +349,8 @@ def get_default_branch_ci(path: str | Path, *, refresh: bool = False) -> CiState
             return hit[1]
         branch, health, _access = _workflow_health(slug, repo_path)
         state = health.state if health.state in ("passing", "failing", "pending") else "unknown"
-        info = CiState(state=state, default_branch=branch, repo=slug, errors=list(health.errors), checked_at=now_iso)
+        info = CiState(state=state, default_branch=branch, repo=slug, errors=list(health.errors), checked_at=now_iso,
+                       head_sha=health.head_sha)
         _ci_cache[slug] = (time.monotonic(), info)
         return info
 

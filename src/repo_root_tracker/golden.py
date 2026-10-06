@@ -16,6 +16,7 @@ CI_NOTES = {
     "unknown": "CI result is unavailable (gh missing, offline, or no run on the current commit)",
     "none": "no GitHub remote, so CI cannot be checked",
     "unchecked": "CI not checked yet",
+    "stale": "the last CI check was for a different commit than local main; check again",
 }
 
 
@@ -62,6 +63,7 @@ def evaluate(
     ahead: int,
     behind: int,
     has_upstream: bool,
+    main_exists: bool = True,
     ci: str = "unchecked",
 ) -> Verdict:
     """Apply every condition; the first failing reason is the headline, all are listed.
@@ -79,7 +81,8 @@ def evaluate(
         flag("branch", f"on {branch}", f"on {branch}, not {MAIN}")
     if changed:
         flag("changes", _plural(changed, "change"), _plural(changed, "uncommitted change"))
-    other_local = sorted(b for b in local_branches if b != MAIN)
+    # The checked-out branch is already reported as "on X"; counting it again would say the same thing twice.
+    other_local = sorted(b for b in local_branches if b != MAIN and b != branch)
     if other_local:
         flag("local-branches", _count(len(other_local), "local branch"), _named("local branch", other_local))
     if not has_origin:
@@ -90,15 +93,18 @@ def evaluate(
         if other_remote:
             flag("remote-branches", _count(len(other_remote), "remote branch"), _named("remote branch", other_remote))
         if origin_main not in remote_branches:
-            flag("not-fetched", "not fetched", f"{origin_main} not found (not fetched yet?)")
+            if remote_branches:
+                flag("no-origin-main", "no origin/main", f"{origin_main} does not exist (origin's default branch is something else)")
+            else:
+                flag("not-fetched", "not fetched", f"{origin_main} not found (not fetched yet?)")
     if other_worktrees:
         flag("worktrees", _plural(len(other_worktrees), "worktree"), _plural(len(other_worktrees), "extra worktree"))
-    if has_origin and branch == MAIN:
-        if not has_upstream:
-            flag("sync", "no upstream", f"{MAIN} has no upstream")
-        elif ahead or behind:
+    if has_origin and main_exists and f"origin/{MAIN}" in remote_branches:
+        if ahead or behind:
             arrows = " ".join(part for part in (f"\u2191{ahead}" if ahead else "", f"\u2193{behind}" if behind else "") if part)
             flag("sync", arrows, f"not even with origin/{MAIN} (ahead {ahead}, behind {behind})")
+        if not has_upstream:
+            flag("tracking", "not tracking origin/main", f"{MAIN} does not track origin/{MAIN}")
     if ci == "failing":
         flag("ci", "CI failing", "latest CI run on main failed")
     if reasons:

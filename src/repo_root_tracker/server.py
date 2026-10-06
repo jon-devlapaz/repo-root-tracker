@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import ipaddress
 import json
+import os
 import socket
 import subprocess
 import threading
@@ -25,12 +26,13 @@ CSP = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline
 PRIVATE_NETWORKS = tuple(ipaddress.ip_network(n) for n in (
     "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",   # RFC 1918: home and office networks
     "169.254.0.0/16", "fe80::/10", "fc00::/7"))          # link-local and IPv6 local
+AUTO_CI = True                   # the page checks CI by itself on load, for repos that are otherwise clean (off: --no-auto-ci)
 LAN = False                      # opt-in with --lan; off means loopback only
 _lan_hosts: set[str] = set()     # Host names accepted in LAN mode: this machine's own addresses and names
 ROOTS: list[str] = []
 _scan_lock = threading.Lock()
 _scan: Scan | None = None
-_ci_last: dict[str, str] = {}
+_ci_last: dict[str, dict] = {}  # path -> {"state", "head_sha", "checked_at"}: the last CI check, with the commit it was for
 
 
 def current_scan(*, refresh: bool = False) -> Scan:
@@ -87,10 +89,23 @@ class Handler(BaseHTTPRequestHandler):
     def _peer(self) -> str:
         return peer_class(self.client_address[0])
 
+    def _ci_for(self, path: str, status) -> tuple[str, dict | None]:
+        """The CI state to judge with. A passing or failing result counts only for the exact commit it was checked for;
+        after local main moves, it is 'stale' until checked again."""
+        remembered = _ci_last.get(path)
+        if not remembered:
+            return "unchecked", None
+        current = remembered["state"] not in ("passing", "failing", "pending") or (
+            bool(status.main_sha) and remembered["head_sha"] == status.main_sha)
+        return (remembered["state"] if current else "stale"), {**remembered, "current": current}
+
     def _admit(self) -> bool:
         """Loopback only by default. In LAN mode, also private-network peers asking for this machine by its own name or
         address, read-only. Anything else, and any cross-site POST, is refused."""
         peer = self._peer()
+        if self.headers.get("Sec-Fetch-Site") == "cross-site":
+            self.send_error(403)  # another website's page is asking; browsers say so, and nothing here is meant for that
+            return False
         if peer == "public" or (peer == "private" and not LAN):
             self.send_error(403)
             return False
@@ -105,7 +120,7 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def _scan_response(self, refresh: bool = False) -> dict:
-        return {**current_scan(refresh=refresh).to_dict(), "writable": self._peer() == "loopback"}
+        return {**current_scan(refresh=refresh).to_dict(), "writable": self._peer() == "loopback", "auto_ci": AUTO_CI}
 
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -130,7 +145,9 @@ class Handler(BaseHTTPRequestHandler):
 
     def _status_response(self, path: str) -> None:
         try:
-            self._json(200, get_repo_status(path).to_dict(ci=_ci_last.get(path, "unchecked")))
+            status = get_repo_status(path)
+            state, remembered = self._ci_for(path, status)
+            self._json(200, {**status.to_dict(ci=state), "ci": remembered})
         except NotARepositoryError as e:
             self._json(410, {"error": str(e), "gone": True})
         except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
@@ -153,8 +170,11 @@ class Handler(BaseHTTPRequestHandler):
             path = self._checked_path(query)
             if not path:
                 return
+            if self._peer() != "loopback":
+                self._json(403, {"error": "CI checks run with your GitHub login, so only this computer may start them"})
+                return
             ci = get_default_branch_ci(path, refresh=query.get("refresh") == ["1"])
-            _ci_last[path] = ci.state
+            _ci_last[path] = {"state": ci.state, "head_sha": ci.head_sha, "checked_at": ci.checked_at}
             self._json(200, {"ci": ci.to_dict()})
         else:
             self.send_error(404)
@@ -195,18 +215,24 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, fmt, *args) -> None:
         pass
 
+    def handle(self) -> None:
+        try:
+            super().handle()
+        except (BrokenPipeError, ConnectionResetError):
+            pass  # the browser went away mid-response (a reload or a closed tab)
 
-def make_server(port: int = 7842, roots: list[str] | None = None, lan: bool = False) -> ThreadingHTTPServer:
+
+def make_server(port: int = 7842, roots: list[str] | None = None, lan: bool = False, auto_ci: bool = True) -> ThreadingHTTPServer:
     """Loopback only unless `lan`. Port 0 picks a free port."""
-    global ROOTS, _scan, LAN, _lan_hosts
-    ROOTS, _scan, LAN = list(roots or default_roots()), None, lan
+    global ROOTS, _scan, LAN, _lan_hosts, AUTO_CI
+    ROOTS, _scan, LAN, AUTO_CI = list(roots or default_roots()), None, lan, auto_ci
     _lan_hosts = ({*lan_addresses(), *lan_hostnames()} if lan else set())
     _ci_last.clear()
     return ThreadingHTTPServer(("0.0.0.0" if lan else "127.0.0.1", port), Handler)
 
 
-def serve(port: int = 7842, roots: list[str] | None = None, lan: bool = False) -> None:
-    server = make_server(port, roots, lan)
+def serve(port: int = 7842, roots: list[str] | None = None, lan: bool = False, auto_ci: bool = True) -> None:
+    server = make_server(port, roots, lan, auto_ci)
     bound = server.server_address[1]
     print(f"http://127.0.0.1:{bound}/", flush=True)
     if lan:
@@ -230,8 +256,10 @@ def main() -> None:
                         help="folder to scan (repeatable). Default: RRT_ROOTS, else ~/dev/active")
     parser.add_argument("--lan", action="store_true",
                         help="also serve devices on your private network (read-only, no password); default is this machine only")
+    parser.add_argument("--no-auto-ci", action="store_true",
+                        help="do not ask GitHub for CI results when the page loads (the GitHub button still works)")
     args = parser.parse_args()
-    serve(args.port, args.roots, args.lan)
+    serve(args.port, args.roots, args.lan, auto_ci=not args.no_auto_ci and os.environ.get("RRT_AUTO_CI", "1") != "0")
 
 
 if __name__ == "__main__":

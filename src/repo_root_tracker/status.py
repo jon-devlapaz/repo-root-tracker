@@ -61,6 +61,10 @@ class RepoStatus:
     other_worktrees: list[str] = field(default_factory=list)
     # One entry per branch other than main: whether git can show it is fully merged, and its age.
     branch_details: list[dict] = field(default_factory=list)
+    branch_details_total: int = 0
+    # Local main against origin/main (not against whatever main tracks), and the commit CI results must match.
+    main_sha: str = ""
+    main_sync: dict = field(default_factory=lambda: {"exists": False, "ahead": 0, "behind": 0, "tracks_origin_main": False})
 
     def golden(self, ci: str = "unchecked") -> Verdict:
         if self.is_worktree:
@@ -68,8 +72,8 @@ class RepoStatus:
         return evaluate(
             branch=self.branch, changed=self.dirty.total, local_branches=self.branches,
             remote_branches=self.remote_branches, has_origin=self.has_origin,
-            other_worktrees=self.other_worktrees, ahead=self.sync.ahead, behind=self.sync.behind,
-            has_upstream=self.sync.has_upstream, ci=ci,
+            other_worktrees=self.other_worktrees, ahead=self.main_sync["ahead"], behind=self.main_sync["behind"],
+            has_upstream=self.main_sync["tracks_origin_main"], main_exists=self.main_sync["exists"], ci=ci,
         )
 
     def to_dict(self, ci: str = "unchecked") -> dict:
@@ -129,35 +133,80 @@ def _relative(iso_date: str) -> str:
 
 
 MAX_BRANCH_DETAILS = 40
+HEADS, REMOTES = "refs/heads/", "refs/remotes/"
 
 
-def _branch_details(repo: Path, local: list[str], remote: list[str]) -> list[dict]:
-    """For every branch except main: `unmerged` is how many of its commits are not on main, judged with `git cherry`,
-    which also sees through rebase merges. Squash merges leave no trace git can follow, so such a branch reads as
-    unmerged. `merged` is None when the base branch is missing and nothing can be judged."""
+def _refs(repo: Path, prefix: str) -> list[tuple[str, str, str]]:
+    """(full ref name, commit, date) for each ref under prefix. Full names, so a local branch called `origin/x` can
+    never be mistaken for the remote-tracking `origin/x`."""
+    rows = _run(repo, "for-each-ref", "--format=%(refname)%09%(objectname)%09%(committerdate:iso-strict)", prefix)
+    return [tuple(line.split("\t")) for line in rows.splitlines() if line]  # type: ignore[misc]
+
+
+def _ref_exists(repo: Path, ref: str) -> bool:
+    try:
+        _run(repo, "rev-parse", "--verify", "--quiet", ref + "^{commit}")
+        return True
+    except RuntimeError:
+        return False
+
+
+def _judge(repo: Path, base: str, ref: str) -> tuple[bool | None, int | None, bool]:
+    """(merged, commits not on base, is an ancestor of base). `merged` is True only when git can show it, None when it
+    cannot tell, and False when the branch holds commits that are not on base.
+
+    `git cherry` sees through rebase merges but never looks at merge commits, which can carry changes of their own. So
+    a branch that is not an ancestor counts as merged only when every commit has an equivalent patch on base AND it
+    has no merge commits that base lacks. A change that main applied and later reverted still counts: it was merged,
+    and its history stays on main, so deleting the branch loses nothing that history does not hold."""
+    try:
+        unmerged = sum(1 for line in _run(repo, "cherry", base, ref).splitlines() if line.startswith("+"))
+    except RuntimeError:
+        return None, None, False
+    if unmerged:
+        return False, unmerged, False
+    try:
+        _run(repo, "merge-base", "--is-ancestor", ref, base)
+        return True, 0, True
+    except RuntimeError:
+        pass
+    try:
+        merges = int(_run(repo, "rev-list", "--merges", "--count", f"{base}..{ref}"))
+    except (RuntimeError, ValueError):
+        return None, 0, False
+    return (True if merges == 0 else None), 0, False
+
+
+def _branch_details(repo: Path, local: list[tuple[str, str, str]], remote: list[tuple[str, str, str]]) -> tuple[list[dict], int]:
+    """For every branch except main. Squash merges leave no trace git can follow, so such a branch reads as unmerged.
+    Returns (details, how many branches exist) because the list is capped."""
     details: list[dict] = []
-    for scope, names, base in (("local", [b for b in local if b != "main"], "main"),
-                               ("remote", [b for b in remote if b != "origin/main"], "origin/main")):
+    total = 0
+    for scope, refs, prefix, base in (("local", local, HEADS, HEADS + "main"), ("remote", remote, REMOTES, REMOTES + "origin/main")):
+        have_base = _ref_exists(repo, base)
+        extra = [(ref, sha, date) for ref, sha, date in refs if ref != base and not ref.endswith("/HEAD")]
+        total += len(extra)
+        for ref, sha, date in extra[:MAX_BRANCH_DETAILS]:
+            merged, unmerged, ancestor = _judge(repo, base, ref) if have_base else (None, None, False)
+            details.append({"name": ref[len(prefix):] if scope == "local" else ref[len(REMOTES):], "scope": scope, "ref": ref,
+                            "sha": sha, "merged": merged, "unmerged": unmerged, "ancestor": ancestor,
+                            "last_commit_date": date, "relative": _relative(date)})
+    return details, total
+
+
+def _main_sync(repo: Path) -> dict:
+    """Local main against origin/main, whatever is checked out and whatever main tracks."""
+    local, origin = HEADS + "main", REMOTES + "origin/main"
+    info = {"exists": _ref_exists(repo, local), "ahead": 0, "behind": 0, "tracks_origin_main": False}
+    if info["exists"]:
         try:
-            _run(repo, "rev-parse", "--verify", "--quiet", base)
-            have_base = True
-        except RuntimeError:
-            have_base = False
-        for name in names[:MAX_BRANCH_DETAILS]:
-            entry = {"name": name, "scope": scope, "merged": None, "unmerged": None, "last_commit_date": "", "relative": ""}
-            if have_base:
-                try:
-                    unmerged = sum(1 for line in _run(repo, "cherry", base, name).splitlines() if line.startswith("+"))
-                    entry.update(unmerged=unmerged, merged=unmerged == 0)
-                except RuntimeError:
-                    pass
-            try:
-                date = _run(repo, "log", "-1", "--format=%cI", name)
-                entry.update(last_commit_date=date, relative=_relative(date))
-            except RuntimeError:
-                pass
-            details.append(entry)
-    return details
+            info["tracks_origin_main"] = _run(repo, "for-each-ref", "--format=%(upstream)", local) == origin
+            if _ref_exists(repo, origin):
+                ahead, behind = _run(repo, "rev-list", "--left-right", "--count", f"{local}...{origin}").split()
+                info.update(ahead=int(ahead), behind=int(behind))
+        except (RuntimeError, ValueError):
+            pass
+    return info
 
 
 def list_worktrees(repo: Path) -> list[str]:
@@ -212,20 +261,27 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     except (RuntimeError, ValueError):
         status.sync = SyncState(has_upstream=False)
 
+    local_refs: list[tuple[str, str, str]] = []
+    remote_refs: list[tuple[str, str, str]] = []
     try:
-        status.branches = _run(repo, "for-each-ref", "--format=%(refname:short)", "refs/heads/").splitlines()
+        local_refs = _refs(repo, HEADS)
+        status.branches = [ref[len(HEADS):] for ref, _, _ in local_refs]
     except RuntimeError:
         pass
     try:
         _run(repo, "remote", "get-url", "origin")
         status.has_origin = True
-        refs = _run(repo, "for-each-ref", "--format=%(refname)", "refs/remotes/origin/").splitlines()
-        status.remote_branches = sorted(r[len("refs/remotes/"):] for r in refs if not r.endswith("/HEAD"))
+        remote_refs = [r for r in _refs(repo, REMOTES + "origin/") if not r[0].endswith("/HEAD")]
+        status.remote_branches = sorted(ref[len(REMOTES):] for ref, _, _ in remote_refs)
     except RuntimeError:
         status.has_origin = False
-
+    status.main_sync = _main_sync(repo)
+    try:
+        status.main_sha = _run(repo, "rev-parse", "--verify", "--quiet", HEADS + "main")
+    except RuntimeError:
+        pass
     if not status.is_worktree:
-        status.branch_details = _branch_details(repo, status.branches, status.remote_branches)
+        status.branch_details, status.branch_details_total = _branch_details(repo, local_refs, remote_refs)
     status.checked_at = datetime.now(timezone.utc).isoformat()
     return status
 

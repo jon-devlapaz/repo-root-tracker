@@ -5,9 +5,9 @@ A plain table. The aim is to be read in a second, not admired.
 - **Type and color:** the system font and the system light or dark scheme (`prefers-color-scheme`). No web fonts, no
   images; icons are small inline SVGs in one stroke weight. Three status colors (green, amber, red) on top of words.
 - **Layout:** one `<table>`, grouped by status (Needs work, Pending CI, Golden), linked worktrees indented under
-  their project. A row expands in place. Under 720 px the table becomes stacked cards so nothing scrolls sideways.
-- **Say little, show state:** the status is a pill (drawn icon and one or two words) and what is outstanding is a few
-  short chips, not sentences. The counts on the filter chips are the summary, so there is no separate headline block.
+  their project. A row expands in place. Under 720 px each repo becomes a three-line card with no field labels and a 44 px tap target.
+- **Say little, show state:** the group heading says the status once; each row has a small drawn icon (with the words in
+  its accessible name) and a few short chips, not sentences, so nothing repeats. The counts on the filter chips are the summary, so there is no separate headline block.
   The branch is dimmed on `main` so only deviations carry color.
 - **Order:** within a group, repos with the fewest outstanding items first. Search, a sort and four buttons
   (Refresh, Fetch, GitHub, Rescan) are the only controls.

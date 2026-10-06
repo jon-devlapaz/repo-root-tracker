@@ -33,7 +33,7 @@ def test_every_condition_met_with_passing_ci_is_golden():
     (dict(other_worktrees=["/a", "/b"]), "2 extra worktrees"),
     (dict(ahead=2), "not even with origin/main (ahead 2, behind 0)"),
     (dict(behind=1), "not even with origin/main (ahead 0, behind 1)"),
-    (dict(has_upstream=False), "main has no upstream"),
+    (dict(has_upstream=False), "main does not track origin/main"),
     (dict(ci="failing"), "latest CI run on main failed"),
 ])
 def test_each_condition_fails_alone(change, reason):
@@ -46,7 +46,8 @@ def test_each_condition_fails_alone(change, reason):
 def test_the_first_failing_condition_is_the_headline_and_all_are_listed():
     v = verdict(branch="dev", changed=2, ahead=1, ci="failing")
     assert v.headline == "on dev, not main"
-    assert v.reasons == ["on dev, not main", "2 uncommitted changes", "latest CI run on main failed"]
+    assert v.reasons == ["on dev, not main", "2 uncommitted changes", "not even with origin/main (ahead 1, behind 0)",
+                         "latest CI run on main failed"]
 
 
 @pytest.mark.parametrize("ci, note", [
@@ -68,9 +69,30 @@ def test_open_pull_requests_and_issues_are_not_inputs_at_all():
     assert not {n for n in names if "pr" in n.split("_") or "issue" in n}
 
 
-def test_a_detached_head_cannot_hide_behind_main_being_in_sync():
-    v = verdict(branch="HEAD", ahead=5)
-    assert v.status == NOT_GOLDEN and not any("origin/main (ahead" in r for r in v.reasons)
+def test_main_is_judged_against_origin_main_whatever_is_checked_out():
+    v = verdict(branch="HEAD", ahead=5)  # a detached HEAD cannot hide that local main is ahead of origin/main
+    assert v.status == NOT_GOLDEN and "not even with origin/main (ahead 5, behind 0)" in v.reasons
+    assert "on HEAD, not main" in v.reasons
+
+
+def test_no_local_main_means_no_sync_complaint_the_branch_reason_already_covers_it():
+    v = verdict(branch="master", main_exists=False, local_branches=["master"], ahead=3, has_upstream=False)
+    assert [i["kind"] for i in v.items] == ["branch"]
+
+
+def test_the_checked_out_branch_is_not_also_counted_as_a_stray_local_branch():
+    v = verdict(branch="feat/x", local_branches=["main", "feat/x"])
+    assert [i["kind"] for i in v.items] == ["branch"] and v.reasons == ["on feat/x, not main"]
+    assert [i["kind"] for i in verdict(branch="feat/x", local_branches=["main", "feat/x", "old"]).items] == ["branch", "local-branches"]
+
+
+def test_a_missing_origin_main_is_told_apart_from_a_repo_that_was_never_fetched():
+    never = verdict(remote_branches=[])
+    assert [(i["kind"], i["label"]) for i in never.items] == [("not-fetched", "not fetched")]
+    other_default = verdict(remote_branches=["origin/master"])
+    kinds = [(i["kind"], i["label"]) for i in other_default.items]
+    assert ("no-origin-main", "no origin/main") in kinds and ("remote-branches", "1 remote branch") in kinds
+    assert "not-fetched" not in [k for k, _ in kinds]
 
 
 def test_linked_worktrees_are_judged_through_their_project():
@@ -95,7 +117,7 @@ def test_sync_chip_uses_arrows_and_only_the_nonzero_side():
     assert verdict(ahead=2).items == [{"kind": "sync", "label": "\u21912"}]
     assert verdict(behind=3).items == [{"kind": "sync", "label": "\u21933"}]
     assert verdict(ahead=1, behind=4).items[0]["label"] == "\u21911 \u21934"
-    assert verdict(has_upstream=False).items == [{"kind": "sync", "label": "no upstream"}]
+    assert verdict(has_upstream=False).items == [{"kind": "tracking", "label": "not tracking origin/main"}]
 
 
 def test_golden_and_pending_have_no_chips():

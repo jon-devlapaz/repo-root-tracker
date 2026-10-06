@@ -196,3 +196,118 @@ def test_branch_details_are_capped(tmp_path):
     for i in range(MAX_BRANCH_DETAILS + 5):
         git(repo, "branch", f"b{i:03}")
     assert len(get_repo_status(repo).branch_details) == MAX_BRANCH_DETAILS
+
+
+# ---- findings from the independent critique: each case below was reproduced there with temporary repos ---------------
+
+def branch(status, scope, name):
+    return next(d for d in status.branch_details if d["scope"] == scope and d["name"] == name)
+
+
+def test_a_local_branch_named_like_a_remote_one_cannot_hijack_the_judgment(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "feat")
+    commit(repo, "u.txt", message="unique work")
+    git(repo, "push", "-q", "origin", "feat")
+    git(repo, "switch", "-q", "main")
+    git(repo, "branch", "-D", "feat")
+    git(repo, "branch", "origin/feat", "main")  # a LOCAL ref called origin/feat: `origin/feat` is now ambiguous
+    s = get_repo_status(repo)
+    assert "origin/feat" in s.branches  # shown as what it is, not as heads/origin/feat
+    remote, local = branch(s, "remote", "origin/feat"), branch(s, "local", "origin/feat")
+    assert (remote["merged"], remote["unmerged"]) == (False, 1), remote  # the real remote branch holds unique work
+    assert local["merged"] is True  # the lookalike local branch is just main
+    assert remote["sha"] == git(repo, "rev-parse", "refs/remotes/origin/feat")
+
+
+def test_every_extra_branch_records_its_exact_commit_for_a_lease_guarded_delete(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "push", "-q", "origin", "main:old")
+    git(repo, "branch", "keep")
+    s = get_repo_status(repo)
+    assert branch(s, "remote", "origin/old")["sha"] == git(repo, "rev-parse", "refs/remotes/origin/old")
+    assert branch(s, "local", "keep")["sha"] == git(repo, "rev-parse", "refs/heads/keep")
+
+
+def test_a_merge_commit_that_smuggles_in_a_change_is_not_called_merged(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "side")
+    commit(repo, "s.txt", message="side work")
+    git(repo, "switch", "-q", "-c", "evilbr", "main")
+    git(repo, "merge", "-q", "--no-commit", "--no-ff", "side")
+    (repo / "extra.txt").write_text("not on main\n")
+    git(repo, "add", "extra.txt")
+    git(repo, "commit", "-q", "-m", "merge side, and also add extra")
+    git(repo, "switch", "-q", "main")
+    git(repo, "merge", "-q", "--ff-only", "side")  # main has `side`, but not `extra`
+    assert "extra.txt" not in git(repo, "ls-tree", "-r", "--name-only", "main")
+    evil = branch(get_repo_status(repo), "local", "evilbr")
+    assert evil["unmerged"] == 0  # git cherry does not look at merge commits
+    assert evil["merged"] is None, evil  # so the tool must say it cannot tell, never "safe to delete"
+
+
+def test_a_change_main_applied_and_later_reverted_still_counts_as_merged_by_patch(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "reapply")
+    commit(repo, "x.txt", "x\n", message="add x")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")  # so the cherry-pick is a different commit, not the identical one
+    git(repo, "cherry-pick", "reapply")
+    git(repo, "revert", "--no-edit", "HEAD")
+    assert not (repo / "x.txt").exists()
+    entry = branch(get_repo_status(repo), "local", "reapply")
+    assert entry["unmerged"] == 0 and entry["ancestor"] is False
+    # Judgment call: main applied this exact change and later reverted it, so the work was merged and its history stays on
+    # main. Deleting the branch loses nothing that history does not hold, so it is "merged by patch" (git still needs -D).
+    assert entry["merged"] is True, entry
+
+
+def test_ancestor_and_patch_equivalent_merges_are_told_apart(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "branch", "plain")  # an ancestor of main
+    git(repo, "switch", "-q", "-c", "rebased")
+    commit(repo, "r.txt", message="rebased work")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")
+    git(repo, "cherry-pick", "rebased")
+    s = get_repo_status(repo)
+    plain, rebased = branch(s, "local", "plain"), branch(s, "local", "rebased")
+    assert (plain["merged"], plain["ancestor"]) == (True, True)
+    assert (rebased["merged"], rebased["ancestor"]) == (True, False)  # git needs -D for this one
+
+
+def test_main_is_compared_with_origin_main_not_with_whatever_it_tracks(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    upstream = tmp_path / "up.git"
+    import subprocess
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(upstream)], check=True, capture_output=True)
+    git(repo, "remote", "add", "upstream", str(upstream))
+    git(repo, "push", "-q", "upstream", "main")
+    git(repo, "branch", "--set-upstream-to=upstream/main", "main")  # a fork: main tracks upstream, not origin
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "n.txt", message="origin moved")
+    git(other, "push", "-q", "origin", "main")
+    git(repo, "fetch", "-q", "origin")
+    s = get_repo_status(repo)
+    assert (s.sync.has_upstream, s.sync.ahead, s.sync.behind) == (True, 0, 0)  # what HEAD...@{u} says: "even"
+    assert (s.main_sync["ahead"], s.main_sync["behind"], s.main_sync["tracks_origin_main"]) == (0, 1, False)
+    reasons = s.golden("passing").reasons
+    assert "not even with origin/main (ahead 0, behind 1)" in reasons and "main does not track origin/main" in reasons
+
+
+def test_main_is_judged_against_origin_main_even_while_another_branch_is_checked_out(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "n.txt", message="origin moved")
+    git(other, "push", "-q", "origin", "main")
+    git(repo, "fetch", "-q", "origin")
+    git(repo, "switch", "-q", "-c", "work")
+    reasons = get_repo_status(repo).golden("passing").reasons
+    assert "not even with origin/main (ahead 0, behind 1)" in reasons
+
+
+def test_the_main_commit_is_reported_so_a_ci_result_can_be_tied_to_it(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    assert get_repo_status(repo).main_sha == git(repo, "rev-parse", "refs/heads/main")
