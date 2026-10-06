@@ -56,7 +56,15 @@ def test_binds_loopback_only(live):
 def test_the_page_is_small_self_contained_and_locked_down(live):
     status, html, headers = live("GET", "/")
     assert status == 200 and html.startswith(b"<!doctype html>") and len(html) < 61440
-    assert b"data:image" not in html and b"http://" not in html and b"https://" not in html
+    assert b"data:image" not in html
+    # Exactly two URLs may appear: the SVG namespace (a name, never fetched) and the one link a user can click for failing CI.
+    allowed = (b"http://www.w3.org/2000/svg", b"https://github.com/${s.github_repo}/actions")
+    leftover = html
+    for known in allowed:
+        assert known in html, known
+        leftover = leftover.replace(known, b"")
+    assert b"http://" not in leftover and b"https://" not in leftover
+    assert b"<link" not in html and b"@import" not in html and b" src=" not in html
     assert "default-src 'none'" in headers["Content-Security-Policy"] and "connect-src 'self'" in headers["Content-Security-Policy"]
     assert headers["X-Frame-Options"] == "DENY" and headers["Cache-Control"] == "no-store"
 

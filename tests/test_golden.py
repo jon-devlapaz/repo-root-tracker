@@ -81,3 +81,22 @@ def test_linked_worktrees_are_judged_through_their_project():
 def test_verdict_serializes_with_a_headline():
     data = verdict(changed=1).to_dict()
     assert data["status"] == NOT_GOLDEN and data["headline"] == "1 uncommitted change"
+
+
+def test_every_reason_has_a_short_chip_in_the_same_order():
+    v = verdict(branch="dev", changed=3, local_branches=["main", "x"], remote_branches=["origin/main", "origin/a", "origin/b"],
+                other_worktrees=["/w"], ci="failing")
+    assert [i["kind"] for i in v.items] == ["branch", "changes", "local-branches", "remote-branches", "worktrees", "ci"]
+    assert [i["label"] for i in v.items] == ["on dev", "3 changes", "1 local branch", "2 remote branches", "1 worktree", "CI failing"]
+    assert len(v.items) == len(v.reasons)
+
+
+def test_sync_chip_uses_arrows_and_only_the_nonzero_side():
+    assert verdict(ahead=2).items == [{"kind": "sync", "label": "\u21912"}]
+    assert verdict(behind=3).items == [{"kind": "sync", "label": "\u21933"}]
+    assert verdict(ahead=1, behind=4).items[0]["label"] == "\u21911 \u21934"
+    assert verdict(has_upstream=False).items == [{"kind": "sync", "label": "no upstream"}]
+
+
+def test_golden_and_pending_have_no_chips():
+    assert verdict().items == [] and verdict(ci="unchecked").items == []

@@ -59,6 +59,8 @@ class RepoStatus:
     remote_branches: list[str] = field(default_factory=list)
     has_origin: bool = False
     other_worktrees: list[str] = field(default_factory=list)
+    # One entry per branch other than main: whether git can show it is fully merged, and its age.
+    branch_details: list[dict] = field(default_factory=list)
 
     def golden(self, ci: str = "unchecked") -> Verdict:
         if self.is_worktree:
@@ -126,6 +128,38 @@ def _relative(iso_date: str) -> str:
         return iso_date
 
 
+MAX_BRANCH_DETAILS = 40
+
+
+def _branch_details(repo: Path, local: list[str], remote: list[str]) -> list[dict]:
+    """For every branch except main: `unmerged` is how many of its commits are not on main, judged with `git cherry`,
+    which also sees through rebase merges. Squash merges leave no trace git can follow, so such a branch reads as
+    unmerged. `merged` is None when the base branch is missing and nothing can be judged."""
+    details: list[dict] = []
+    for scope, names, base in (("local", [b for b in local if b != "main"], "main"),
+                               ("remote", [b for b in remote if b != "origin/main"], "origin/main")):
+        try:
+            _run(repo, "rev-parse", "--verify", "--quiet", base)
+            have_base = True
+        except RuntimeError:
+            have_base = False
+        for name in names[:MAX_BRANCH_DETAILS]:
+            entry = {"name": name, "scope": scope, "merged": None, "unmerged": None, "last_commit_date": "", "relative": ""}
+            if have_base:
+                try:
+                    unmerged = sum(1 for line in _run(repo, "cherry", base, name).splitlines() if line.startswith("+"))
+                    entry.update(unmerged=unmerged, merged=unmerged == 0)
+                except RuntimeError:
+                    pass
+            try:
+                date = _run(repo, "log", "-1", "--format=%cI", name)
+                entry.update(last_commit_date=date, relative=_relative(date))
+            except RuntimeError:
+                pass
+            details.append(entry)
+    return details
+
+
 def list_worktrees(repo: Path) -> list[str]:
     """Every checkout of the repository, main checkout first, as reported by git."""
     items = _run(repo, "worktree", "list", "--porcelain", "-z").split("\0")
@@ -190,6 +224,8 @@ def get_repo_status(path: str | Path) -> RepoStatus:
     except RuntimeError:
         status.has_origin = False
 
+    if not status.is_worktree:
+        status.branch_details = _branch_details(repo, status.branches, status.remote_branches)
     status.checked_at = datetime.now(timezone.utc).isoformat()
     return status
 

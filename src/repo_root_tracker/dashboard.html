@@ -5,73 +5,120 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>repo-root-tracker</title>
 <style>
-:root { color-scheme: light dark; --bg:#fff; --fg:#1f2328; --muted:#59636e; --line:#d1d9e0; --soft:#f6f8fa;
-  --ok:#1a7f37; --warn:#8a5a00; --bad:#cf222e; --link:#0969da; }
-@media (prefers-color-scheme: dark) { :root { --bg:#0d1117; --fg:#e6edf3; --muted:#9198a1; --line:#30363d; --soft:#161b22;
-  --ok:#3fb950; --warn:#d29922; --bad:#ff7b72; --link:#58a6ff; } }
-* { box-sizing: border-box; }
-body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; }
-main { max-width:1200px; margin:0 auto; padding:20px 16px 48px; overflow-wrap:anywhere; }
-h1 { font-size:20px; margin:0 0 4px; }
-.muted { color:var(--muted); }
-.bar { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:14px 0 8px; }
-input[type=search], select, button { font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:5px 10px; }
-input[type=search] { flex:1 1 220px; min-width:0; }
-button { cursor:pointer; } button:hover { background:var(--soft); } button[aria-pressed=true] { background:var(--soft); border-color:var(--fg); font-weight:600; }
-button:disabled { opacity:.55; cursor:default; }
+:root { color-scheme: light dark;
+  --bg:#fbfbfa; --fg:#1c1f23; --muted:#626a73; --line:#e3e5e8; --soft:#f2f3f4; --hover:#f6f7f8;
+  --ok:#17683a; --ok-bg:#e3f3e8; --warn:#7a4e00; --warn-bg:#fbefd2; --bad:#a3201f; --bad-bg:#fbe4e2; --link:#0b5cc0; }
+@media (prefers-color-scheme: dark) { :root {
+  --bg:#111315; --fg:#e8eaec; --muted:#9aa2ab; --line:#272b30; --soft:#1a1d20; --hover:#171a1d;
+  --ok:#5fcf8a; --ok-bg:#15301f; --warn:#e5b95a; --warn-bg:#33290f; --bad:#ff8f8a; --bad-bg:#3a1c1b; --link:#6cb0ff; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif; font-variant-numeric:tabular-nums; }
+main { max-width:1100px; margin:0 auto; padding:24px 16px 40px; overflow-wrap:anywhere; }
+h1 { font-size:20px; font-weight:650; margin:0; }
+::selection { background:var(--ok-bg); color:var(--fg); }
+.top { display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; }
+.actions { display:flex; flex-wrap:wrap; gap:6px; }
+button, input, select { font:inherit; color:inherit; }
+.btn { background:transparent; border:1px solid var(--line); border-radius:6px; padding:4px 10px; cursor:pointer; }
+.btn:hover { background:var(--hover); } .btn:disabled { opacity:.5; cursor:default; }
+.filters { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:16px 0 4px; }
+.chips { display:flex; flex-wrap:wrap; gap:4px; }
+.chip { background:transparent; border:1px solid transparent; border-radius:6px; padding:3px 9px; cursor:pointer; color:var(--muted); }
+.chip b { color:var(--fg); font-weight:650; margin-left:4px; }
+.chip:hover { background:var(--hover); } .chip[aria-pressed=true] { background:var(--soft); border-color:var(--line); color:var(--fg); }
+input[type=search] { flex:1 1 180px; min-width:0; max-width:320px; margin-left:auto; background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 10px; }
+select { background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:4px 6px; }
 :focus-visible { outline:2px solid var(--link); outline-offset:2px; }
-#status { min-height:1.4em; margin:6px 0; }
-table { width:100%; border-collapse:collapse; table-layout:auto; }
-th, td { text-align:left; padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:top; overflow-wrap:anywhere; }
-th { font-size:12px; text-transform:uppercase; letter-spacing:.04em; color:var(--muted); }
-tr.child td:first-child { padding-left:34px; }
-td.repo { min-width:200px; } .path { display:block; font-size:12px; color:var(--muted); word-break:break-all; }
-.toggle { border:0; background:none; padding:0 4px 0 0; font-weight:600; text-align:left; }
-.golden { font-weight:600; } .golden.ok { color:var(--ok); } .golden.warn { color:var(--warn); } .golden.bad { color:var(--bad); }
-tr.detail td { background:var(--soft); }
-dl { display:grid; grid-template-columns:max-content 1fr; gap:4px 16px; margin:0; } dt { color:var(--muted); } dd { margin:0; word-break:break-word; }
+#status { min-height:20px; margin:4px 0 8px; color:var(--muted); font-size:13px; }
+.clear { display:flex; gap:8px; align-items:center; padding:12px 4px; color:var(--ok); font-weight:600; }
+.clear[hidden] { display:none; }
+table { width:100%; border-collapse:collapse; }
+th, td { text-align:left; padding:7px 10px; vertical-align:middle; overflow-wrap:anywhere; }
+thead th { font-size:12px; font-weight:600; color:var(--muted); border-bottom:1px solid var(--line); }
+tbody.group > tr.title th { padding:18px 10px 6px; font-size:12px; letter-spacing:.03em; text-transform:uppercase; color:var(--muted); font-weight:650; }
+tbody.group > tr.title th span { color:var(--fg); margin-left:6px; }
+tbody.group > tr.title .btn { margin-left:10px; padding:1px 8px; font-size:12px; text-transform:none; letter-spacing:0; }
+tr.row td { border-top:1px solid var(--line); } tr.row:hover td { background:var(--hover); }
+tr.row.open td { background:var(--soft); }
+tr.child td:first-child { padding-left:30px; }
+.name { font-weight:600; background:none; border:0; padding:0; cursor:pointer; text-align:left; }
+.parent { color:var(--muted); font-size:12px; display:block; }
+.muted { color:var(--muted); }
+td.when { white-space:nowrap; }
+td.branchcell { overflow-wrap:break-word; word-break:normal; }
+.branch.deviates { color:var(--bad); font-weight:600; }
+.pill { display:inline-flex; align-items:center; gap:5px; padding:2px 9px 2px 7px; border-radius:999px; font-weight:600; font-size:13px; white-space:nowrap; }
+.pill.golden { color:var(--ok); background:var(--ok-bg); } .pill.pending { color:var(--warn); background:var(--warn-bg); }
+.pill.bad { color:var(--bad); background:var(--bad-bg); } .pill.quiet { color:var(--muted); background:var(--soft); font-weight:500; padding-left:9px; }
+.i { width:14px; height:14px; flex:none; }
+.chev { transition:transform .15s; color:var(--muted); margin-right:4px; vertical-align:-2px; } .open .chev { transform:rotate(90deg); }
+.tags { display:flex; flex-wrap:wrap; gap:4px; }
+.tag { border:1px solid var(--line); border-radius:5px; padding:0 6px; font-size:13px; white-space:nowrap; }
+.tag.hot { border-color:var(--bad); color:var(--bad); }
+tr.detail td { padding:4px 10px 14px 30px; background:var(--soft); border-top:0; }
+.todo { display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:start; margin:6px 0 0; padding:0; list-style:none; }
+.todo li { display:contents; } .todo .what { padding:3px 0; }
+.todo code, .path { font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace; }
+.todo code { display:block; color:var(--muted); margin-top:2px; }
+.branchrow { display:flex; flex-wrap:wrap; gap:4px 10px; align-items:baseline; padding:1px 0; }
+.ok { color:var(--ok); } .warn { color:var(--warn); }
+.facts { display:grid; grid-template-columns:max-content 1fr; gap:3px 14px; margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; }
+.facts dt { color:var(--muted); } .facts dd { margin:0; }
+.note { color:var(--muted); font-size:12px; margin:6px 0 0; }
+a { color:var(--link); }
+footer { margin-top:20px; color:var(--muted); font-size:12px; }
 .sr { position:absolute; left:-9999px; }
 @media (max-width:720px) {
-  thead { display:none; } table, tbody, tr, td { display:block; width:100%; }
-  tr { border-bottom:1px solid var(--line); padding:6px 0; } td { border:0; padding:2px 10px; }
-  td[data-label]::before { content:attr(data-label) ": "; color:var(--muted); }
-  tr.child td:first-child { padding-left:28px; } tr.detail[hidden] { display:none; }
+  thead { display:none; } table, tbody, tr, td, th { display:block; width:100%; }
+  tr.row { padding:8px 0; } tr.row td { border:0; padding:2px 10px; }
+  td[data-label]::before { content:attr(data-label) ": "; color:var(--muted); font-size:12px; }
+  tr.child td:first-child { padding-left:26px; } tr.detail[hidden] { display:none; } tr.detail td { padding-left:12px; }
+  input[type=search] { max-width:none; margin-left:0; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition:none !important; animation:none !important; } }
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-check" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M5.2 8.2l1.9 1.9 3.7-4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.6V8l2.3 1.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 4.8v3.8M8 11.1h.01" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 16 16"><path d="M6 3.5L10.5 8 6 12.5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
 <main>
-  <h1>Repos</h1>
-  <p id="roots" class="muted">Scanning…</p>
-  <div class="bar">
-    <input id="q" type="search" placeholder="Search name, path or branch" aria-label="Search repos">
-    <span role="group" aria-label="Filter">
-      <button type="button" data-filter="all" aria-pressed="true">All</button>
-      <button type="button" data-filter="attention" aria-pressed="false">Needs attention</button>
-      <button type="button" data-filter="changed" aria-pressed="false">Changed</button>
-      <button type="button" data-filter="sync" aria-pressed="false">Sync needed</button>
-    </span>
-    <label class="muted">Sort <select id="sort" aria-label="Sort">
-      <option value="attention">Needs attention first</option><option value="name">Name</option><option value="recent">Last commit</option></select></label>
+  <div class="top">
+    <h1>Repos</h1>
+    <div class="actions">
+      <button type="button" class="btn" id="refresh" title="Re-read local git state">Refresh</button>
+      <button type="button" class="btn" id="fetch" title="git fetch --prune in each repo: updates remote-tracking refs only">Fetch</button>
+      <button type="button" class="btn" id="ci" title="Ask gh for the CI result on each default branch">GitHub</button>
+      <button type="button" class="btn" id="rescan" title="Look for repos again">Rescan</button>
+    </div>
   </div>
-  <div class="bar">
-    <button type="button" id="refresh">Refresh</button>
-    <button type="button" id="ci">Check GitHub</button>
-    <button type="button" id="fetch" title="Runs git fetch --prune in each repo; updates remote-tracking refs only">Fetch all</button>
-    <button type="button" id="rescan">Rescan</button>
+  <div class="filters">
+    <div class="chips" role="group" aria-label="Filter">
+      <button type="button" class="chip" data-filter="all" aria-pressed="true">All<b id="n-all">0</b></button>
+      <button type="button" class="chip" data-filter="bad" aria-pressed="false">Needs work<b id="n-bad">0</b></button>
+      <button type="button" class="chip" data-filter="pending" aria-pressed="false">Pending CI<b id="n-pending">0</b></button>
+      <button type="button" class="chip" data-filter="golden" aria-pressed="false">Golden<b id="n-golden">0</b></button>
+    </div>
+    <select id="sort" aria-label="Sort"><option value="clean">Closest to clean</option><option value="name">Name</option><option value="recent">Last commit</option></select>
+    <input id="q" type="search" placeholder="Search" aria-label="Search repos">
   </div>
-  <p id="status" class="muted" role="status" aria-live="polite"></p>
-  <table>
-    <caption class="sr">Git repositories and whether each is git-golden</caption>
-    <thead><tr><th scope="col">Repo</th><th scope="col">Branch</th><th scope="col">Working tree</th><th scope="col">Sync</th><th scope="col">Last commit</th><th scope="col">Golden</th></tr></thead>
-    <tbody id="rows"></tbody>
+  <div id="status" role="status" aria-live="polite"></div>
+  <div id="clear" class="clear" hidden><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Everything is clean.</div>
+  <table id="rows">
+    <caption class="sr">Git repositories grouped by whether each is git-golden</caption>
+    <thead><tr><th scope="col">Repo</th><th scope="col">Branch</th><th scope="col">Status</th><th scope="col">Outstanding</th><th scope="col">Last commit</th></tr></thead>
   </table>
+  <footer id="roots">Scanning…</footer>
 </main>
 <script>
 "use strict";
 const state = { scan: null, rows: new Map(), filter: "all", expanded: new Set(), refreshedAt: 0, busy: false };
+const GROUPS = [["bad", "Needs work"], ["pending", "Pending CI"], ["golden", "Golden"]];
 const $ = (id) => document.getElementById(id);
+const SVGNS = "http://www.w3.org/2000/svg";
 const h = (tag, attrs, ...kids) => {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs || {})) {
@@ -81,8 +128,15 @@ const h = (tag, attrs, ...kids) => {
   for (const kid of kids) if (kid != null) el.append(kid);
   return el;
 };
-const base = (p) => p.split("/").filter(Boolean).pop() || p;
+const icon = (name, cls) => { const s = document.createElementNS(SVGNS, "svg"); s.setAttribute("class", "i " + (cls || "")); s.setAttribute("aria-hidden", "true");
+  const u = document.createElementNS(SVGNS, "use"); u.setAttribute("href", "#i-" + name); s.append(u); return s; };
 const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+const home = (p) => p.replace(/^\/Users\/[^/]+/, "~");
+const base = (p) => p.split("/").filter(Boolean).pop() || p;
+function relPath(path) {
+  for (const root of (state.scan ? state.scan.roots : [])) if (path.startsWith(root + "/")) return path.slice(root.length + 1);
+  return home(path);
+}
 function ago(iso) {
   const s = (Date.now() - Date.parse(iso)) / 1000;
   if (!isFinite(s)) return "never";
@@ -90,6 +144,7 @@ function ago(iso) {
   for (const [limit, div, unit] of [[3600, 60, "minute"], [86400, 3600, "hour"], [2592000, 86400, "day"], [31536000, 2592000, "month"], [1e12, 31536000, "year"]])
     if (s < limit) return plural(Math.floor(s / div), unit) + " ago";
 }
+const q = (s) => /^[\w@%+=:,./-]+$/.test(s) ? s : "'" + s.replace(/'/g, "'\\''") + "'";
 async function api(path, options) {
   const r = await fetch(path, options);
   let body = null; try { body = await r.json(); } catch (_) {}
@@ -98,44 +153,95 @@ async function api(path, options) {
 }
 async function pool(items, size, fn) {
   const queue = items.slice();
-  await Promise.all(Array.from({ length: Math.min(size, queue.length) }, async () => {
-    while (queue.length) await fn(queue.shift());
-  }));
+  await Promise.all(Array.from({ length: Math.min(size, queue.length) }, async () => { while (queue.length) await fn(queue.shift()); }));
 }
 const say = (text) => { $("status").textContent = text; };
 
-function needsAttention(row) {
-  const s = row.status; if (!s) return false;
-  if (s.golden.status === "not golden") return true;
-  return s.is_worktree && (!s.dirty.is_clean || s.sync.ahead > 0 || s.sync.behind > 0);
+function tone(row) {
+  const s = row.status; if (!s) return null;
+  return { "golden": "golden", "golden pending CI": "pending", "not golden": "bad", "worktree": "quiet" }[s.golden.status];
 }
-const isChanged = (row) => !!row.status && !row.status.dirty.is_clean;
-const needsSync = (row) => !!row.status && (row.status.sync.ahead > 0 || row.status.sync.behind > 0);
+const outstanding = (row) => (row.status ? row.status.golden.items.length : 0);
+const needsWork = (row) => tone(row) === "bad" || (row.status && row.status.is_worktree && (!row.status.dirty.is_clean || row.status.sync.ahead > 0 || row.status.sync.behind > 0));
 
-function goldenCell(row) {
-  if (row.error) return h("span", { class: "golden bad", text: row.error });
-  const s = row.status; if (!s) return h("span", { class: "muted", text: "checking…" });
-  const g = s.golden, more = g.reasons.length > 1 ? ` (+${g.reasons.length - 1} more)` : "";
-  if (g.status === "golden") return h("span", { class: "golden ok", text: "✓ golden" });
-  if (g.status === "not golden") return h("span", { class: "golden bad", text: `✗ not golden: ${g.reasons[0]}${more}` });
-  if (g.status === "worktree") return h("span", { class: "muted", text: "worktree" });
-  return h("span", { class: "golden warn", text: "golden pending CI", title: g.notes.join("; ") });
+function pill(row) {
+  if (row.error) return h("span", { class: "pill bad" }, icon("alert"), row.error);
+  const t = tone(row);
+  if (!t) return h("span", { class: "muted", text: "checking…" });
+  const label = { golden: "Golden", pending: "Pending CI", bad: "Needs work", quiet: "Worktree" }[t];
+  const sym = { golden: "check", pending: "clock", bad: "alert" }[t];
+  return h("span", { class: "pill " + t, title: row.status.golden.notes.join("; ") }, sym ? icon(sym) : null, label);
+}
+function tags(row) {
+  const s = row.status; if (!s) return h("span");
+  const wrap = h("span", { class: "tags" });
+  for (const it of s.golden.items) {
+    const t = h("span", { class: "tag" + (it.kind === "ci" || it.kind === "branch" ? " hot" : ""), text: it.label });
+    if (it.kind === "sync") t.setAttribute("aria-label", it.label.replace("↑", "ahead ").replace("↓", "behind "));
+    wrap.append(t);
+  }
+  if (s.is_worktree) {
+    if (!s.dirty.is_clean) wrap.append(h("span", { class: "tag", text: plural(s.dirty.total, "change") }));
+    if (s.sync.ahead || s.sync.behind) wrap.append(h("span", { class: "tag", text: [s.sync.ahead ? "↑" + s.sync.ahead : "", s.sync.behind ? "↓" + s.sync.behind : ""].filter(Boolean).join(" ") }));
+  }
+  return wrap;
 }
 
-function detailRows(row, id) {
-  const s = row.status, items = [];
-  const add = (k, v) => items.push(h("dt", { text: k }), h("dd", {}, v));
-  if (!s) { add("Status", row.error || "checking…"); return items; }
+function commandRow(what, cmd, note) {
+  const li = h("li", {});
+  li.append(h("div", { class: "what" }, what, cmd ? h("code", { text: cmd }) : null, note ? h("div", { class: "note", text: note }) : null));
+  li.append(cmd ? h("button", { type: "button", class: "btn", "data-copy": cmd, text: "Copy" }) : h("span"));
+  return li;
+}
+function branchList(row, scope) {
+  const s = row.status, list = s.branch_details.filter((d) => d.scope === scope);
+  if (!list.length) return null;
+  const merged = list.filter((d) => d.merged === true), stray = list.filter((d) => d.merged !== true);
+  const holder = h("div", {});
+  for (const d of list) {
+    const verdict = d.merged === true ? h("span", { class: "ok", text: "merged, safe to delete" })
+      : d.merged === false ? h("span", { class: "warn", text: plural(d.unmerged, "commit") + " not on main" })
+      : h("span", { class: "muted", text: "cannot tell" });
+    holder.append(h("div", { class: "branchrow" }, h("span", { text: d.name }), verdict, h("span", { class: "muted", text: d.relative })));
+  }
+  const names = merged.map((d) => scope === "remote" ? d.name.replace(/^origin\//, "") : d.name);
+  const cmd = names.length ? (scope === "remote" ? "git push origin --delete " : "git branch -d ") + names.map(q).join(" ") : "";
+  const title = `${list.length} ${scope} ${list.length === 1 ? "branch" : "branches"} besides main`;
+  return commandRow(h("span", {}, h("strong", { text: title }), holder), cmd,
+    stray.length ? "Unmerged can still be squash-merged; git cannot tell, so check the pull request." : null);
+}
+function detailItems(row) {
+  const s = row.status, ul = h("ul", { class: "todo" }), item = (el) => { if (el) ul.append(el); };
+  for (const it of s.golden.items) {
+    if (it.kind === "branch") item(commandRow(`On ${s.branch}, not main`, "git switch main"));
+    else if (it.kind === "changes") item(commandRow(plural(s.dirty.total, "uncommitted change"), "git status", "Commit, stash or discard them."));
+    else if (it.kind === "local-branches") item(branchList(row, "local"));
+    else if (it.kind === "remote-branches") item(branchList(row, "remote"));
+    else if (it.kind === "worktrees") for (const w of s.other_worktrees) item(commandRow("Extra worktree " + home(w), "git worktree remove " + q(w)));
+    else if (it.kind === "sync") item(s.sync.has_upstream
+      ? commandRow(`Ahead ${s.sync.ahead}, behind ${s.sync.behind} of origin/main`, [s.sync.behind ? "git pull --ff-only" : "", s.sync.ahead ? "git push" : ""].filter(Boolean).join("   "))
+      : commandRow("main has no upstream", "git branch --set-upstream-to=origin/main main"));
+    else if (it.kind === "no-origin") item(commandRow("No origin remote", "git remote add origin <url>"));
+    else if (it.kind === "not-fetched") item(commandRow("origin/main not known yet", null, "Use Fetch."));
+    else if (it.kind === "ci") item(h("li", {}, h("div", { class: "what" }, "Latest CI run on main failed. ", s.github_repo ? h("a", { href: `https://github.com/${s.github_repo}/actions`, target: "_blank", rel: "noopener noreferrer", text: "Open Actions" }) : null), h("span")));
+  }
+  return ul;
+}
+function detailRow(row) {
+  const s = row.status, box = h("div", {});
+  if (!s) { box.append(h("div", { class: "muted", text: row.error || "checking…" })); return box; }
   const g = s.golden;
-  add("Verdict", g.status + (g.reasons.length ? ": " + g.reasons.join("; ") : g.notes.length ? ": " + g.notes.join("; ") : ""));
-  add("Path", h("span", {}, row.checkout.path + " ", h("button", { type: "button", "data-copy": row.checkout.path, text: "Copy" })));
-  add("Local branches", s.branches.join(", ") || "none");
-  add("Remote branches", s.has_origin ? (s.remote_branches.join(", ") || "none known") : "no origin remote");
-  if (s.other_worktrees.length) add("Other worktrees", s.other_worktrees.join(", "));
-  add("Last fetch", s.last_fetch_at ? ago(s.last_fetch_at) : "never fetched");
-  if (s.github_repo) add("GitHub", s.github_repo + (row.ci ? ` (CI on default branch: ${row.ci.state})` : " (CI not checked)"));
-  if (row.fetchError) add("Fetch", row.fetchError);
-  return items;
+  if (g.items.length) box.append(detailItems(row));
+  else box.append(h("div", { class: g.status === "golden" ? "ok" : "muted", text: g.status === "golden" ? "Nothing outstanding." : g.notes.join("; ") || "Nothing outstanding." }));
+  if (row.fetchError) box.append(h("p", { class: "note", text: "Fetch failed: " + row.fetchError }));
+  const facts = h("dl", { class: "facts" });
+  const fact = (k, v) => facts.append(h("dt", { text: k }), h("dd", {}, v));
+  fact("Path", h("span", {}, h("span", { class: "path", text: s.path }), " ", h("button", { type: "button", class: "btn", "data-copy": s.path, text: "Copy" })));
+  if (s.last_commit.subject) fact("Last commit", `${s.last_commit.hash} ${s.last_commit.subject}`);
+  fact("Last fetch", s.last_fetch_at ? ago(s.last_fetch_at) : "never");
+  if (s.github_repo) fact("GitHub", s.github_repo + (row.ci ? `, CI ${row.ci.state}` : ", CI not checked"));
+  box.append(facts);
+  return box;
 }
 
 function projects() {
@@ -145,69 +251,66 @@ function projects() {
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(row);
   }
-  return [...groups.values()].map((rows) => {
-    rows.sort((a, b) => (a.checkout.is_worktree - b.checkout.is_worktree) || a.checkout.path.localeCompare(b.checkout.path));
-    return rows;
-  });
+  return [...groups.values()].map((rows) => rows.sort((a, b) => (a.checkout.is_worktree - b.checkout.is_worktree) || a.checkout.path.localeCompare(b.checkout.path)));
 }
-function matches(row, q) {
-  if (q) {
-    const s = row.status, hay = [row.checkout.path, s ? s.branch : ""].join(" ").toLowerCase();
-    if (!hay.includes(q)) return false;
-  }
-  if (state.filter === "attention") return needsAttention(row);
-  if (state.filter === "changed") return isChanged(row);
-  if (state.filter === "sync") return needsSync(row);
-  return true;
+const groupTone = (rows) => tone(rows[0]) === "quiet" ? "golden" : (tone(rows[0]) || "pending");
+function matches(row, text) {
+  if (!text) return true;
+  const s = row.status;
+  return [row.checkout.path, s ? s.branch : ""].join(" ").toLowerCase().includes(text);
 }
 function render() {
-  const q = $("q").value.trim().toLowerCase(), sort = $("sort").value;
+  const text = $("q").value.trim().toLowerCase(), sort = $("sort").value;
   const focused = document.activeElement && document.activeElement.dataset ? document.activeElement.dataset.toggle : null;
-  let groups = projects().filter((rows) => rows.some((r) => matches(r, q)));
+  const all = projects(), counts = { all: all.length, bad: 0, pending: 0, golden: 0 };
+  for (const rows of all) counts[groupTone(rows)]++;
+  for (const k of Object.keys(counts)) $("n-" + k).textContent = counts[k];
+  $("clear").hidden = !(state.rows.size && counts.bad === 0 && counts.pending === 0);  // a row that is still being checked counts as pending
   const head = (rows) => rows[0];
-  const recent = (rows) => Date.parse((head(rows).status || { last_commit: {} }).last_commit.date) || 0;
-  groups.sort((a, b) => {
-    if (sort === "attention") { const d = rows_attention(b) - rows_attention(a); if (d) return d; }
-    if (sort === "recent") { const d = recent(b) - recent(a); if (d) return d; }
-    return head(a).checkout.path.localeCompare(head(b).checkout.path);
-  });
-  const body = $("rows"); body.replaceChildren();
-  let n = 0;
-  for (const rows of groups) for (const row of rows) {
-    const s = row.status, id = "d" + (++n), child = row.checkout.is_worktree && rows.length > 1;
-    const open = state.expanded.has(row.checkout.path);
-    const toggle = h("button", { type: "button", class: "toggle", "data-toggle": row.checkout.path, "aria-expanded": String(open), "aria-controls": id, text: base(row.checkout.path) });
-    const cells = [
-      h("td", { class: "repo" }, toggle, h("span", { class: "path", text: row.checkout.path.replace(/^\/Users\/[^/]+/, "~") })),
-      h("td", { "data-label": "Branch", text: s ? s.branch : "" }),
-      h("td", { "data-label": "Working tree", text: s ? (s.dirty.is_clean ? "clean" : `${s.dirty.total} changed`) : "" }),
-      h("td", { "data-label": "Sync", text: s ? (!s.sync.has_upstream ? "no upstream" : s.sync.ahead || s.sync.behind ? `ahead ${s.sync.ahead} behind ${s.sync.behind}` : "even") : "" }),
-      h("td", { "data-label": "Last commit", text: s && s.last_commit.subject ? `${s.last_commit.relative}: ${s.last_commit.subject}` : "" }),
-      h("td", { "data-label": "Golden" }, goldenCell(row)),
-    ];
-    body.append(h("tr", { class: child ? "child" : "" }, ...cells));
-    const detail = h("tr", { class: "detail", id, hidden: !open }, h("td", { colspan: "6" }, h("dl", {}, ...detailRows(row, id))));
-    body.append(detail);
+  const recent = (rows) => (head(rows).status && Date.parse(head(rows).status.last_commit.date)) || 0;
+  const order = (a, b) => (sort === "recent" ? recent(b) - recent(a) : sort === "clean" ? outstanding(head(a)) - outstanding(head(b)) : 0)
+    || head(a).checkout.path.localeCompare(head(b).checkout.path);
+  const body = $("rows"); body.querySelectorAll(":scope > tbody").forEach((el) => el.remove());
+  let n = 0, shown = 0;
+  for (const [key, label] of GROUPS) {
+    if (state.filter !== "all" && state.filter !== key) continue;
+    const members = all.filter((rows) => groupTone(rows) === key && rows.some((r) => matches(r, text))).sort(order);
+    if (!members.length) continue;
+    const tbody = h("tbody", { class: "group" }, h("tr", { class: "title" }, h("th", { colspan: "5", scope: "rowgroup" }, label, h("span", { text: String(members.length) }), key === "pending" ? h("button", { type: "button", class: "btn", "data-action": "ci", title: "Ask gh for the CI result on each default branch", text: "Check CI" }) : null)));
+    for (const rows of members) for (const row of rows) {
+      shown++;
+      const s = row.status, id = "d" + (++n), child = row.checkout.is_worktree && rows.length > 1, open = state.expanded.has(row.checkout.path);
+      const rel = relPath(row.checkout.path), slash = rel.lastIndexOf("/");
+      const deviates = s && s.branch !== "main" && !s.is_worktree;
+      const toggle = h("button", { type: "button", class: "name", "data-toggle": row.checkout.path, "aria-expanded": String(open), "aria-controls": id }, icon("chev", "chev"), base(row.checkout.path));
+      tbody.append(h("tr", { class: "row" + (child ? " child" : "") + (open ? " open" : "") },
+        h("td", {}, toggle, slash > 0 ? h("span", { class: "parent", text: rel.slice(0, slash) }) : null),
+        h("td", { "data-label": "Branch", class: "branchcell" }, h("span", { class: "branch" + (deviates ? " deviates" : " muted"), text: s ? s.branch : "" })),
+        h("td", { "data-label": "Status" }, pill(row)),
+        h("td", { "data-label": "Outstanding" }, tags(row)),
+        h("td", { "data-label": "Last commit", class: "muted when", text: s && s.last_commit.relative ? s.last_commit.relative : "", title: s ? s.last_commit.subject : "" })));
+      tbody.append(h("tr", { class: "detail", id, hidden: !open }, h("td", { colspan: "5" }, open ? detailRow(row) : null)));
+    }
+    body.append(tbody);
   }
-  if (!groups.length && state.scan) body.append(h("tr", {}, h("td", { colspan: "6", class: "muted", text: state.rows.size ? "No repos match." : "No git repositories found." })));
-  const attention = [...state.rows.values()].filter(needsAttention).length;
+  if (!shown && state.scan) body.append(h("tbody", {}, h("tr", {}, h("td", { colspan: "5", class: "muted", text: state.rows.size ? "No repos match." : "No git repositories found." }))));
+  const attention = [...state.rows.values()].filter(needsWork).length;
   document.title = (attention ? `(${attention}) ` : "") + "repo-root-tracker";
   if (focused) { const el = [...document.querySelectorAll("[data-toggle]")].find((b) => b.dataset.toggle === focused); if (el) el.focus(); }
 }
-const rows_attention = (rows) => rows.some(needsAttention) ? 1 : 0;
 let queued = false;
 const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } };
 
 function rootsLine(scan) {
-  const parts = [`Scanned ${scan.roots.map((r) => r.replace(/^\/Users\/[^/]+/, "~")).join(", ")} in ${scan.elapsed_seconds}s`];
-  if (scan.missing_roots.length) parts.push(`missing: ${scan.missing_roots.join(", ")}`);
+  const parts = [`Scanned ${scan.roots.map(home).join(", ")} in ${scan.elapsed_seconds}s`];
+  if (scan.missing_roots.length) parts.push(`missing: ${scan.missing_roots.map(home).join(", ")}`);
   if (scan.truncated) parts.push(`SCAN INCOMPLETE (${scan.truncated_reason}), so some repos may be missing`);
   else if (scan.deeper_not_searched) parts.push(`${plural(scan.deeper_not_searched, "folder")} deeper than ${scan.max_depth} levels not searched`);
   $("roots").textContent = parts.join(". ") + ".";
 }
 async function loadStatus(row) {
   try { row.status = await api("/api/repos/status?path=" + encodeURIComponent(row.checkout.path)); row.error = ""; }
-  catch (e) { row.status = null; row.error = e.code === 410 ? "gone from disk" : "error: " + e.message; }
+  catch (e) { row.status = null; row.error = e.code === 410 ? "Gone from disk" : "Error: " + e.message; }
   schedule();
 }
 async function load(scan) {
@@ -215,29 +318,29 @@ async function load(scan) {
   const next = new Map();
   for (const c of scan.checkouts) next.set(c.path, state.rows.get(c.path) || { checkout: c, status: null, error: "", ci: null, fetchError: "" });
   state.rows = next; render();
-  say(`Checking ${plural(next.size, "checkout")}…`);
+  say(`Checking ${next.size}…`);
   await pool([...next.values()], 6, loadStatus);
-  state.refreshedAt = Date.now();
-  say(`${plural(next.size, "checkout")} checked ${new Date().toLocaleTimeString()}.`);
+  state.refreshedAt = Date.now(); render();
+  say(`${plural(next.size, "repo")}, checked ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`);
 }
 async function busy(label, work) {
   if (state.busy) return; state.busy = true;
-  document.querySelectorAll(".bar button").forEach((b) => { b.disabled = true; });
+  document.querySelectorAll(".actions button").forEach((b) => { b.disabled = true; });
   try { await work(); } catch (e) { say(`${label} failed: ${e.message}`); }
-  finally { state.busy = false; document.querySelectorAll(".bar button").forEach((b) => { b.disabled = false; }); }
+  finally { state.busy = false; document.querySelectorAll(".actions button").forEach((b) => { b.disabled = false; }); }
 }
-const refresh = () => busy("Refresh", async () => { await pool([...state.rows.values()], 6, loadStatus); state.refreshedAt = Date.now(); say(`Refreshed ${new Date().toLocaleTimeString()}.`); });
+const refresh = () => busy("Refresh", async () => { await pool([...state.rows.values()], 6, loadStatus); state.refreshedAt = Date.now(); say(`Refreshed ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`); });
 const rescan = () => busy("Rescan", async () => load(await api("/api/scan", { method: "POST" })));
 const targets = (pred) => [...state.rows.values()].filter((r) => !r.checkout.is_worktree && r.status && pred(r.status));
 function checkGithub() {
-  return busy("Check GitHub", async () => {
+  return busy("GitHub check", async () => {
     const list = targets((s) => s.github_repo); let done = 0, failed = 0;
     await pool(list, 4, async (row) => {
       try { row.ci = (await api("/api/ci?path=" + encodeURIComponent(row.checkout.path) + "&refresh=1")).ci; await loadStatus(row); }
       catch (e) { failed++; }
       say(`Checking GitHub ${++done}/${list.length}…`);
     });
-    say(`GitHub checked for ${plural(list.length - failed, "repo")}${failed ? `, ${failed} failed` : ""}.`);
+    say(`GitHub checked for ${plural(list.length - failed, "repo")}${failed ? `, ${failed} failed` : ""}`);
   });
 }
 function fetchAll() {
@@ -248,7 +351,7 @@ function fetchAll() {
       catch (e) { failed++; row.fetchError = e.message; }
       say(`Fetching ${++done}/${list.length}…`); schedule();
     });
-    say(`Fetched ${plural(list.length - failed, "repo")}${failed ? `; ${failed} failed (see each row)` : ""}.`);
+    say(`Fetched ${plural(list.length - failed, "repo")}${failed ? `, ${failed} failed (open the row)` : ""}`);
   });
 }
 
@@ -265,6 +368,7 @@ document.querySelector('[aria-label="Filter"]').addEventListener("click", (e) =>
   schedule();
 });
 $("rows").addEventListener("click", (e) => {
+  if (e.target.closest("[data-action=ci]")) { checkGithub(); return; }
   const copy = e.target.closest("[data-copy]");
   if (copy) { navigator.clipboard.writeText(copy.dataset.copy).then(() => { copy.textContent = "Copied"; }, () => { copy.textContent = "Copy failed"; }); return; }
   const t = e.target.closest("[data-toggle]"); if (!t) return;

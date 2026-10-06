@@ -3,12 +3,18 @@
 A plain table. The aim is to be read in a second, not admired.
 
 - **Type and color:** the system font and the system light or dark scheme (`prefers-color-scheme`). No web fonts, no
-  images. Three status colors (green, amber, red) on top of words; every verdict is also spelled out
-  (`✓ golden`, `✗ not golden: ...`, `golden pending CI`).
-- **Layout:** one `<table>`, one row per checkout, linked worktrees indented under their project. A row expands
-  in place for details. Under 720 px the table becomes stacked cards so nothing scrolls sideways.
-- **Order:** repos that need attention first, then by name. Search, three filters and a sort are the only controls,
-  plus four buttons: Refresh (local git), Check GitHub, Fetch all, Rescan.
+  images; icons are small inline SVGs in one stroke weight. Three status colors (green, amber, red) on top of words.
+- **Layout:** one `<table>`, grouped by status (Needs work, Pending CI, Golden), linked worktrees indented under
+  their project. A row expands in place. Under 720 px the table becomes stacked cards so nothing scrolls sideways.
+- **Say little, show state:** the status is a pill (drawn icon and one or two words) and what is outstanding is a few
+  short chips, not sentences. The counts on the filter chips are the summary, so there is no separate headline block.
+  The branch is dimmed on `main` so only deviations carry color.
+- **Order:** within a group, repos with the fewest outstanding items first. Search, a sort and four buttons
+  (Refresh, Fetch, GitHub, Rescan) are the only controls.
+- **Feedback you can act on:** the expanded row lists each outstanding item with its fix command and a copy button.
+  Stray branches are marked merged (safe to delete) or unmerged, and the delete command covers only the merged ones.
+- **Honest praise:** "Everything is clean." appears only when every repo is golden, and a repo is never golden until CI
+  passed.
 - **Accessibility:** semantic table with a caption, real buttons with `aria-expanded` and `aria-pressed`, a polite
   live status line, visible focus, and no motion beyond what the browser does by default.
 - **Text from git is untrusted.** Names, branches and commit subjects are inserted with `textContent` and never as

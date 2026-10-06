@@ -1,7 +1,7 @@
 # repo-root-tracker
 
 A table of every git repository under a folder, and which of them are git-golden. It runs on your machine, needs
-no setup and no registration, and never changes a repository (the one exception is the explicit **Fetch all** button).
+no setup and no registration, and never changes a repository (the one exception is the explicit **Fetch** button).
 
 ```bash
 ./serve.sh        # starts the server on http://127.0.0.1:7842 and opens it
@@ -11,10 +11,17 @@ Python 3.11 or newer, standard library only, no build step.
 
 ## What you see
 
-One row per checkout: repo, branch, working tree, sync, last commit, and a **Golden** verdict. Linked worktrees sit
-under their project. Search by name, path or branch; filter to *Needs attention*, *Changed* or *Sync needed*;
-sort by attention, name or last commit. Select a row to see every reason, the full path, local and remote branches,
-other worktrees and when it was last fetched. The tab title shows how many repos need attention.
+Repos are grouped by what needs doing: **Needs work**, **Pending CI**, then **Golden**. Inside a group the repos
+closest to clean come first, so the quick wins are on top. Each row is the repo, its branch (dimmed on `main`, red
+anywhere else), a status pill, short chips for what is outstanding (`1 change`, `9 remote branches`, `↑2 ↓1`,
+`no origin`), and when it last changed. The counts on the filter chips are the summary. The tab title shows how many
+repos need attention, and "Everything is clean." appears only when every repo is golden.
+
+Select a row to see exactly what to do about each outstanding item, with a copy button for the command. For stray
+branches it says whether each one is **merged and safe to delete** or holds **N commits not on main**, and the
+delete command it offers covers only the merged ones. It judges that with `git cherry`, which sees through rebase
+merges. A squash merge leaves nothing git can follow, so such a branch reads as unmerged; check its pull request.
+The tool only shows and copies commands. It never runs them.
 
 ### git-golden
 
@@ -24,14 +31,14 @@ latest CI run on `main` succeeded. Open issues and pull requests never count.
 
 | Verdict | Meaning |
 | --- | --- |
-| `golden` | every condition holds, including a passing CI run on `main` |
-| `not golden: <reason>` | a condition fails; the row lists all of them |
-| `golden pending CI` | every local condition holds, but CI is unchecked, running or unknown. It is never shown as golden without CI |
-| `worktree` | a linked worktree; golden is judged on its project's main checkout |
+| `Golden` | every condition holds, including a passing CI run on `main` |
+| `Needs work` | a condition fails; the chips and the row detail list all of them |
+| `Pending CI` | every local condition holds, but CI is unchecked, running or unknown. It is never shown as golden without CI |
+| `Worktree` | a linked worktree; golden is judged on its project's main checkout |
 
 Remote branches and "even with origin" come from local refs, so they are only as fresh as the last fetch. Each row
-shows when that was. **Fetch all** runs `git fetch --prune` in each repo: it updates remote-tracking refs and never
-touches a working tree, branch or commit. **Check GitHub** asks `gh` for the CI state on the default branch (needs
+shows when that was. **Fetch** runs `git fetch --prune` in each repo: it updates remote-tracking refs and never
+touches a working tree, branch or commit. **GitHub** (or **Check CI** in the Pending CI heading) asks `gh` for the CI state on the default branch (needs
 `gh` signed in; without it the verdict stays `golden pending CI`).
 
 ## Which folders are scanned
@@ -51,7 +58,7 @@ not silently ignored. **Rescan** looks again.
 ## Local only
 
 The server binds `127.0.0.1` and refuses any request whose `Host` is not `localhost`, `127.0.0.1` or `[::1]`, and any
-cross-site POST. The page makes no external requests and ships under a strict content-security policy. There is no
+cross-site POST. The page makes no external requests (its one outbound link, "Open Actions" for failing CI, only opens when you click it) and ships under a strict content-security policy. There is no
 password mode or remote hosting.
 
 ## Tests

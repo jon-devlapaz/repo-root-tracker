@@ -145,3 +145,54 @@ def test_ci_is_none_when_there_is_no_github_remote(tmp_path):
     repo, _ = with_origin(tmp_path, "r")
     assert get_default_branch_ci(repo).state == "none"
     assert get_repo_status(repo).github_repo == ""
+
+
+def test_each_extra_branch_says_whether_git_can_show_it_is_merged(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "branch", "merged-local")  # same commit as main: nothing unmerged
+    git(repo, "switch", "-q", "-c", "unmerged-local")
+    commit(repo, "u.txt", message="only on this branch")
+    commit(repo, "v.txt", message="and another")
+    git(repo, "switch", "-q", "main")
+    git(repo, "push", "-q", "origin", "main:merged-remote", "unmerged-local")
+    details = {(d["scope"], d["name"]): d for d in get_repo_status(repo).branch_details}
+    assert set(details) == {("local", "merged-local"), ("local", "unmerged-local"), ("remote", "origin/merged-remote"), ("remote", "origin/unmerged-local")}
+    assert details[("local", "merged-local")]["merged"] is True and details[("local", "merged-local")]["unmerged"] == 0
+    assert details[("remote", "origin/merged-remote")]["merged"] is True
+    assert (details[("local", "unmerged-local")]["merged"], details[("local", "unmerged-local")]["unmerged"]) == (False, 2)
+    assert details[("remote", "origin/unmerged-local")]["unmerged"] == 2
+    assert all(d["last_commit_date"] and d["relative"] for d in details.values())
+
+
+def test_a_rebase_merged_branch_reads_as_merged_but_a_squash_merge_cannot_be_seen(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "rebased")
+    commit(repo, "r.txt", message="rebased work")
+    git(repo, "switch", "-q", "-c", "squashed", "main")
+    commit(repo, "s1.txt", message="squash me 1")
+    commit(repo, "s2.txt", message="squash me 2")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")  # so the cherry-pick below is a new commit, not the same one
+    git(repo, "cherry-pick", "rebased")  # the same patch lands on main as a new commit: a rebase merge
+    git(repo, "merge", "-q", "--squash", "squashed")
+    git(repo, "commit", "-q", "-m", "squash merge of squashed")
+    assert "rebased" not in git(repo, "branch", "--merged", "main")  # the case plain --merged gets wrong
+    details = {d["name"]: d for d in get_repo_status(repo).branch_details}
+    assert details["rebased"]["merged"] is True and details["rebased"]["unmerged"] == 0
+    assert details["squashed"]["merged"] is False and details["squashed"]["unmerged"] == 2  # honest limit: git cannot tell
+
+
+def test_branch_details_are_skipped_for_linked_worktrees_and_empty_when_there_are_no_extras(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    assert get_repo_status(repo).branch_details == []
+    git(repo, "worktree", "add", "-q", "-b", "side", str(tmp_path / "side"))
+    assert get_repo_status(tmp_path / "side").branch_details == []
+    assert [d["name"] for d in get_repo_status(repo).branch_details] == ["side"]
+
+
+def test_branch_details_are_capped(tmp_path):
+    from repo_root_tracker.status import MAX_BRANCH_DETAILS
+    repo, _ = with_origin(tmp_path, "r")
+    for i in range(MAX_BRANCH_DETAILS + 5):
+        git(repo, "branch", f"b{i:03}")
+    assert len(get_repo_status(repo).branch_details) == MAX_BRANCH_DETAILS
