@@ -1,0 +1,7 @@
+{
+  "item": "real-machine",
+  "result": "passed",
+  "evidence": "Ran scripts/check_real_machine.py on this machine against ~/dev/active (the script re-derives each local golden condition from plain git output with its own copy of the AGENTS.md definition, sharing no code with the tool). Result: ALL AGREE. scan: 19 checkouts in 0.141s, truncated=False, 2 folders beyond depth 4. 17 main checkouts compared on verdict and on each failing condition (e.g. sdlc-cockpit: branch; tink, tink-route, skill-eval-loop, tink-skills: remote branches; groveboard: branch (master); socratink, socratink-landing: branches and sync); discovery matched an independent os.walk, including this build's worktree. Verified the script fails (exit 1, 1 disagreement) when a golden rule is deliberately broken. Limits: CI is excluded (needs network), so 'golden' means every local condition; one machine, one moment (repos change).",
+  "candidate": "b2569b05bfa6b546c8162f24f3408445f247fb4f9c03ce859b92fa55e077bc97",
+  "time_ns": 1791258163119694000
+}
