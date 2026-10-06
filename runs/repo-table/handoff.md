@@ -48,3 +48,38 @@ None of these were failing. They tested features that no longer exist.
 Also deleted with their features: the helper and capture scripts `tests/bonsai_*.py`, `tests/capture_*.py`, `tests/check_pixel_bonsai.py`, `tests/pixel_bonsai_preview.py`, `tests/serve_bonsai_review.py`, `tests/organization_fake.py`, `tests/board_performance.js`, `tests/fixtures/bonsai-pixel/`, `scripts/embed_pixel_family.py`, `deploy/`, `src/repo_root_tracker/{auth,detail,history,organization}.py`, `src/repo_root_tracker/artwork/`.
 
 Kept as they were: `test_find_root.py`, `test_github_reliability.py`, `test_sdlc_install.py`.
+
+
+## Change after the approved brief: Jon's design feedback (chat, after trying it)
+
+Jon tried the first build: "its alright. feels wordy and not super UI helpful", and said what he wants: to feel good
+knowing a repo is clean and to get good feedback on what is outstanding. He asked for a design skill to punch it up
+and for research on how others do it. This deviates from the approved brief r1 (columns, filters, wording); it was
+directed in chat, not re-approved as a new brief.
+
+Research (read, not run): `gita` and `gitpane` compress status into symbols and aligned columns, dim `main` so only
+deviations carry color, and offer a "dirty first" sort; dashboard guidance puts the verdict and a summary first and
+the table second and reserves color for status; branch-cleanup tools (`git-trim`, `git-sweep`) separate branches that
+are merged from ones with unmerged work and warn that `git branch --merged` misses rebase and squash merges.
+
+Skill: this repo's `impeccable` design skill (installed in the main checkout, not in this worktree). I read its
+operate, critique, clarify, distill and craft-floor playbooks and applied them by hand. I did **not** run its launcher
+binary and I did not run its `critique` command, which needs that binary and isolated sub-agents. So this is the
+skill's guidance applied, not a full critique run.
+
+What changed: grouped by status with counts on the filter chips (no hero-metric block, per the skill's refusals); a
+status pill with a drawn SVG icon instead of sentences; short outstanding chips; branch dimmed on `main`; "closest to
+clean" sort; the explanation and a copyable fix command per item in the expanded row; stray branches marked merged
+(safe to delete) or unmerged via `git cherry`; a "Check CI" button in the Pending CI heading; and "Everything is
+clean." only when every repo is golden. Removed: the Working tree and Sync columns, the Changed and Sync-needed
+filters, and most sentence text.
+
+Bugs found while doing it, all fixed, all with tests: the "Everything is clean." banner showed while 10 repos needed
+work (a CSS `display:flex` overrode the `hidden` attribute); group `<tbody>`s nested inside another `<tbody>` crushed
+the column headings; times wrapped onto two lines. My "rebase-merged branch" test was passing without testing rebase
+detection at all (main had not moved, so the cherry-pick recreated the identical commit); it now proves the case that
+plain `git branch --merged` gets wrong.
+
+Limits: `git cherry` cannot see squash merges, so a squash-merged branch reads as unmerged (stated next to every list).
+The "Check CI" path was never run against real GitHub from this build. The copy buttons only copy; nothing runs a
+command.
