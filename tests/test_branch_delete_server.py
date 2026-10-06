@@ -112,10 +112,28 @@ def test_an_unwritable_log_blocks_the_delete(live):
     assert remote_branches(live) == {"main", "done", "wip"}
 
 
-def test_a_stale_sha_deletes_nothing(live):
+UNTOUCHED = {"main", "done", "wip"}
+
+
+def test_every_kind_of_refusal_deletes_nothing_and_writes_nothing(live, monkeypatch, tmp_path):
+    """One server, many bad requests: each is refused for its own reason, and afterwards nothing has moved or been logged."""
     status, body = live.ask("remote", "done", sha="0" * 40)
     assert status == 409 and "moved" in body["error"]
-    assert remote_branches(live) == {"main", "done", "wip"} and log_lines(live) == []
+    for branch in ("-D", "--force", "a..b", "", "main", "nope"):  # names git would take as options, malformed names, main, unknown
+        assert live.ask("remote", branch, sha="a" * 40)[0] == 409, branch
+    status, body = live.ask("remote", "wip")
+    assert status == 409 and "not on main" in body["error"]
+    assert live.ask("remote", "done", path=str(tmp_path))[0] == 404  # not a path the scan found
+    for raw in (b"not json", b"{}", b'{"path": 1, "scope": "x", "branch": "b", "sha": "s"}', b"[]"):
+        assert live("POST", "/api/branch/delete", body=raw)[0] == 400, raw
+    assert live("POST", "/api/branch/delete", {"Content-Type": "text/plain"}, body=b"{}")[0] == 400
+    for headers in ({"Host": "evil.example"}, {"Sec-Fetch-Site": "cross-site"}, {"Origin": "http://evil.example"}):
+        assert live.ask("remote", "done", headers=headers)[0] == 403, headers
+    monkeypatch.setattr(bd, "pull_requests", lambda s, b, c: [{"number": 3, "state": "OPEN", "headRefName": b, "headRefOid": "x"}])
+    status, body = live.ask("remote", "done")
+    assert status == 409 and "#3" in body["error"]
+    assert remote_branches(live) == UNTOUCHED and log_lines(live) == []
+    assert "done" in git(live.repo, "branch", "--format=%(refname:short)").split()
 
 
 def test_the_branch_moving_on_the_remote_after_the_page_looked_is_caught_by_the_lease(live, tmp_path):
@@ -128,44 +146,6 @@ def test_the_branch_moving_on_the_remote_after_the_page_looked_is_caught_by_the_
     assert status == 502
     assert "done" in remote_branches(live)
     assert [r[1] for r in log_lines(live)] == ["attempt", "FAILED"]
-
-
-@pytest.mark.parametrize("branch", ["-D", "--force", "a..b", "", "main", "nope"])
-def test_bad_or_protected_branch_names_delete_nothing(live, branch):
-    status, _ = live.ask("remote", branch, sha="a" * 40)
-    assert status == 409
-    assert remote_branches(live) == {"main", "done", "wip"}
-
-
-def test_unmerged_work_is_refused(live):
-    status, body = live.ask("remote", "wip")
-    assert status == 409 and "not on main" in body["error"] and "wip" in remote_branches(live)
-
-
-def test_an_open_pull_request_is_refused(live, monkeypatch):
-    monkeypatch.setattr(bd, "pull_requests", lambda s, b, c: [{"number": 3, "state": "OPEN", "headRefName": b, "headRefOid": "x"}])
-    status, body = live.ask("remote", "done")
-    assert status == 409 and "#3" in body["error"] and "done" in remote_branches(live)
-
-
-def test_a_path_the_scan_did_not_find_is_404(live, tmp_path):
-    status, _ = live.ask("remote", "done", path=str(tmp_path))
-    assert status == 404
-
-
-@pytest.mark.parametrize("body", [b"not json", b"{}", b'{"path": 1, "scope": "x", "branch": "b", "sha": "s"}', b"[]"])
-def test_malformed_requests_are_400(live, body):
-    assert live("POST", "/api/branch/delete", body=body)[0] == 400
-
-
-def test_the_wrong_content_type_is_400(live):
-    assert live("POST", "/api/branch/delete", {"Content-Type": "text/plain"}, body=b"{}")[0] == 400
-
-
-def test_a_wrong_host_a_cross_site_page_and_a_foreign_origin_are_refused(live):
-    for headers in ({"Host": "evil.example"}, {"Sec-Fetch-Site": "cross-site"}, {"Origin": "http://evil.example"}):
-        assert live.ask("remote", "done", headers=headers)[0] == 403, headers
-    assert remote_branches(live) == {"main", "done", "wip"}
 
 
 def test_a_phone_on_the_network_cannot_delete_or_even_ask_what_is_deletable(live, monkeypatch):

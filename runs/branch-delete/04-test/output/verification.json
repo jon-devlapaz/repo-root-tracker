@@ -1,0 +1,4 @@
+{
+  "result": "failed",
+  "error": "Checklist check failed: full-suite (output: runs/branch-delete/04-test/output/test-log.md)"
+}
