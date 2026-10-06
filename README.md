@@ -17,6 +17,12 @@ branch (dimmed on `main`, red anywhere else), short chips for what is outstandin
 `↑2 ↓1`, `no origin`), and when it last changed. The counts on the filter chips are the summary, and the tab title
 shows how many repos need work. "Everything is clean." appears only when every repo is golden.
 
+Open pull requests and issues show as quiet dashed chips (`2 PRs`, `3 issues`, `30+ issues` when there are more than
+the newest 30). Open a row to see them numbered with titles and links to GitHub. They are information only: your
+`AGENTS.md` tracks them separately, so they never change a repo's verdict. They are read with `gh` on load, together with
+the CI check (switch off with `--no-auto-ci`), and from this computer only; a phone sees what was last read. If `gh` cannot
+answer, the row says "unavailable", never zero.
+
 Select a row to see exactly what to do about each outstanding item, with a copy button for the command. Every command
 names its repository (`git -C <path> ...`), so pasting it into the wrong terminal cannot touch another repo. The tool
 only shows and copies commands. It never runs them.

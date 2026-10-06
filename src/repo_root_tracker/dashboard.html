@@ -54,6 +54,10 @@ td.when { white-space:nowrap; } td.branchcell { overflow-wrap:break-word; word-b
 .tags { display:flex; flex-wrap:wrap; gap:4px; }
 .tag { border:1px solid var(--line); border-radius:5px; padding:0 6px; font-size:13px; white-space:nowrap; }
 .tag.hot { border-color:var(--bad); color:var(--bad); }
+.tag.info { border-style:dashed; color:var(--muted); }
+.gh { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; }
+.gh h3 { margin:0 0 4px; font-size:12px; font-weight:650; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
+.gh ul { margin:0 0 8px; padding:0; list-style:none; } .gh li { padding:1px 0; } .gh .num { font-weight:600; margin-right:6px; }
 tr.detail td { padding:4px 10px 14px 30px; background:var(--soft); border-top:0; }
 .todo { display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:start; margin:6px 0 0; padding:0; list-style:none; }
 .todo li { display:contents; } .todo .what { padding:3px 0; }
@@ -196,6 +200,11 @@ function tags(row) {
     if (it.kind === "sync") t.setAttribute("aria-label", it.label.replace("↑", "ahead ").replace("↓", "behind "));
     wrap.append(t);
   }
+  if (!s.is_worktree && s.github) {
+    const count = (list, truncated, word) => `${list.length}${truncated ? "+" : ""} ${word}${list.length === 1 && !truncated ? "" : "s"}`;
+    if (s.github.prs.length) wrap.append(h("span", { class: "tag info", title: "Open pull requests (they do not affect the verdict)", text: count(s.github.prs, s.github.prs_truncated, "PR") }));
+    if (s.github.issues.length) wrap.append(h("span", { class: "tag info", title: "Open issues (they do not affect the verdict)", text: count(s.github.issues, s.github.issues_truncated, "issue") }));
+  }
   if (s.is_worktree) {
     if (!s.dirty.is_clean) wrap.append(h("span", { class: "tag", text: plural(s.dirty.total, "change") }));
     if (s.sync.ahead || s.sync.behind) wrap.append(h("span", { class: "tag", text: [s.sync.ahead ? "↑" + s.sync.ahead : "", s.sync.behind ? "↓" + s.sync.behind : ""].filter(Boolean).join(" ") }));
@@ -275,6 +284,30 @@ function ciFact(row) {
   if (!c) return s.github_repo + ", CI not checked";
   return `${s.github_repo}, CI ${c.state}, checked ${ago(c.checked_at)}` + (c.current ? "" : ", for a different commit than local main");
 }
+const safeUrl = (u) => (typeof u === "string" && u.startsWith("https://github.com/")) ? u : null;
+function githubSection(row) {
+  const g = row.status.github;
+  if (!g) return null;
+  const box = h("div", { class: "gh" });
+  if (!g.available) { box.append(h("p", { class: "note", text: "Open pull requests and issues are unavailable (gh missing or not signed in)." })); return box; }
+  const list = (title, items, known, truncated, extra) => {
+    if (!known) { box.append(h("h3", { text: title }), h("p", { class: "note", text: "Could not be read." })); return; }
+    box.append(h("h3", { text: `${title} (${items.length}${truncated ? "+" : ""})` }));
+    if (!items.length) { box.append(h("p", { class: "note", text: "None open." })); return; }
+    const ul = h("ul", {});
+    for (const it of items) {
+      const url = safeUrl(it.url), num = "#" + it.number;
+      ul.append(h("li", {}, url ? h("a", { class: "num", href: url, target: "_blank", rel: "noopener noreferrer", text: num }) : h("span", { class: "num", text: num }),
+        it.title, extra(it)));
+    }
+    box.append(ul);
+  };
+  list("Pull requests", g.prs, g.prs_known, g.prs_truncated, (it) => (it.draft ? h("span", { class: "muted", text: " (draft)" }) : null));
+  list("Issues", g.issues, g.issues_known, g.issues_truncated, () => null);
+  if (g.prs_truncated || g.issues_truncated) box.append(h("p", { class: "note", text: "Only the newest are shown." }));
+  box.append(h("p", { class: "note", text: `Checked ${ago(g.checked_at)}. These do not affect the verdict.` }));
+  return box;
+}
 function detailRow(row) {
   const s = row.status, box = h("div", {});
   if (!s) { box.append(h("div", { class: "muted", text: row.error || "checking…" })); return box; }
@@ -283,6 +316,7 @@ function detailRow(row) {
   else box.append(h("div", { class: g.status === "golden" ? "ok" : "muted", text: g.status === "golden" ? "Nothing outstanding." : g.notes.join("; ") || "Nothing outstanding." }));
   if (g.items.length && g.notes.length) box.append(h("p", { class: "note", text: g.notes.join("; ") }));
   if (row.fetchError) box.append(h("p", { class: "note", text: "Fetch failed: " + row.fetchError }));
+  const gh = githubSection(row); if (gh) box.append(gh);
   const facts = h("dl", { class: "facts" });
   const fact = (k, v) => facts.append(h("dt", { text: k }), h("dd", {}, v));
   fact("Path", h("span", {}, h("span", { class: "path", text: s.path }), " ", h("button", { type: "button", class: "btn", "data-copy": s.path, text: "Copy" })));
@@ -398,12 +432,15 @@ const targets = (pred) => [...state.rows.values()].filter((r) => !r.checkout.is_
 // already needs work is not sent over the network just to be told what we already know.
 function checkGithub(onlyClean) {
   return busy("GitHub check", async () => {
-    const list = targets((s) => s.github_repo && (onlyClean !== true || s.golden.status === "golden pending CI")); let done = 0, failed = 0;
+    const list = targets((s) => s.github_repo); let done = 0, failed = 0;
     if (!list.length) { say(summary()); return; }
     await pool(list, 4, async (row) => {
-      try { row.ci = (await api("/api/ci?path=" + encodeURIComponent(row.checkout.path) + "&refresh=1")).ci; await loadStatus(row); }
-      catch (e) { failed++; }
-      say(`Checking CI ${++done}/${list.length}…`);
+      const path = encodeURIComponent(row.checkout.path);
+      const wantsCI = onlyClean !== true || row.status.golden.status === "golden pending CI";
+      try { if (wantsCI) row.ci = (await api("/api/ci?path=" + path + "&refresh=1")).ci; } catch (e) { failed++; }
+      try { await api("/api/items?path=" + path + "&refresh=1"); } catch (e) { /* shown as unavailable by the next status */ }
+      await loadStatus(row);
+      say(`Checking GitHub ${++done}/${list.length}…`);
     });
     say(`GitHub checked for ${plural(list.length - failed, "repo")}${failed ? `, ${failed} failed` : ""}`);
   });

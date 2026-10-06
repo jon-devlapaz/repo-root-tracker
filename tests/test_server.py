@@ -57,8 +57,9 @@ def test_the_page_is_small_self_contained_and_locked_down(live):
     status, html, headers = live("GET", "/")
     assert status == 200 and html.startswith(b"<!doctype html>") and len(html) < 61440
     assert b"data:image" not in html
-    # Exactly two URLs may appear: the SVG namespace (a name, never fetched) and the one link a user can click for failing CI.
-    allowed = (b"http://www.w3.org/2000/svg", b"https://github.com/${s.github_repo}/actions")
+    # Exactly three URL strings may appear: the SVG namespace (a name, never fetched), the link a user can click for failing CI,
+    # and the prefix a link must have before it is made clickable (a safety check, never fetched).
+    allowed = (b"http://www.w3.org/2000/svg", b"https://github.com/${s.github_repo}/actions", b"https://github.com/")
     leftover = html
     for known in allowed:
         assert known in html, known

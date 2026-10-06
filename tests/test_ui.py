@@ -7,25 +7,65 @@ from pathlib import Path
 
 import pytest
 from gitfix import commit, git, init, with_origin
-from playwright import sync_api as playwright
+import atexit
+import types
+
+from playwright import sync_api as _real_playwright
+
+_SHARED = {}
+
+
+class _Browser:
+    """The one real browser, shared by every test. Each test still gets its own pages and contexts; close() leaves it running."""
+
+    def __init__(self, real):
+        self._real = real
+
+    def __getattr__(self, name):
+        return getattr(self._real, name)
+
+    def close(self):
+        pass
+
+
+def _shared_browser():
+    if "browser" not in _SHARED:
+        _SHARED["pw"] = _real_playwright.sync_playwright().start()
+        _SHARED["browser"] = _SHARED["pw"].chromium.launch()
+        atexit.register(lambda: (_SHARED["browser"].close(), _SHARED["pw"].stop()))
+    return _Browser(_SHARED["browser"])
+
+
+class _SyncPlaywright:
+    chromium = types.SimpleNamespace(launch=lambda **_: _shared_browser())
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *exc):
+        return False
+
+
+playwright = types.SimpleNamespace(sync_playwright=_SyncPlaywright)
 
 from repo_root_tracker import server as srv
 from repo_root_tracker import status as status_module
-from repo_root_tracker.github import CiState
+from repo_root_tracker.github import CiState, OpenItems
 
 
 def start(root, monkeypatch, ci="passing", auto_ci=False):
     head = lambda p: git(Path(p), "rev-parse", "refs/heads/main")  # a real CI result names the commit it ran on
     monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: CiState(state=ci, repo="o/r", head_sha=head(p), checked_at="2026-10-06T10:00:00+00:00"))
     monkeypatch.setattr(status_module, "_github_remote", lambda p: "o/r")  # pretend each origin is on GitHub; no network is used
+    monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: OpenItems(repo="o/r", available=True, prs_known=True, issues_known=True,
+                                                                              checked_at="2026-10-06T10:00:00+00:00"))
     server = srv.make_server(0, [str(root)], auto_ci=auto_ci)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     return server, f"http://127.0.0.1:{server.server_address[1]}/"
 
 
-@pytest.fixture()
-def world(tmp_path, monkeypatch):
-    root = tmp_path / "root"
+def build_world(root):
+    """The shared starting point: four real repos with real bare remotes."""
     alpha, bare = with_origin(root, "alpha")  # every local golden condition holds
     beta, _ = with_origin(root, "beta")
     (beta / "file.txt").write_text("edited\n")  # one uncommitted change
@@ -40,6 +80,22 @@ def world(tmp_path, monkeypatch):
     delta = init(root / "delta")  # no origin, an extra local branch and an uncommitted file: three things outstanding
     git(delta, "branch", "extra")
     (delta / "scratch.txt").write_text("x\n")
+
+
+@pytest.fixture(scope="session")
+def world_template(tmp_path_factory):
+    root = tmp_path_factory.mktemp("world-template") / "root"
+    build_world(root)
+    return root
+
+
+@pytest.fixture()
+def world(tmp_path, monkeypatch, world_template):
+    root = tmp_path / "root"
+    shutil.copytree(world_template, root, symlinks=True)  # a private copy per test, so tests can never affect each other
+    for name in ("alpha", "beta", "gamma"):  # the copies must push to their own copy of the remote, not the template's
+        git(root / name, "remote", "set-url", "origin", str(root / f"{name}-origin.git"))
+    alpha, bare = root / "alpha", root / "alpha-origin.git"
     server, url = start(root, monkeypatch)
     yield {"url": url, "root": root, "alpha": alpha, "bare": bare, "tmp": tmp_path}
     server.shutdown()
@@ -606,3 +662,67 @@ def test_ci_is_checked_automatically_for_clean_repos_only_and_never_for_the_othe
     finally:
         server.shutdown()
         server.server_close()
+
+
+
+def items(prs=(), issues=(), **extra):
+    mk = lambda n, t: {"number": n, "title": t, "url": f"https://github.com/o/r/pull/{n}", "draft": False, "branch": f"b{n}"}
+    return OpenItems(repo="o/r", available=True, prs_known=True, issues_known=True, checked_at="2026-10-06T10:00:00+00:00",
+                     prs=[mk(n, t) for n, t in prs],
+                     issues=[{"number": n, "title": t, "url": f"https://github.com/o/r/issues/{n}"} for n, t in issues], **extra)
+
+
+def test_open_pull_requests_and_issues_are_counted_numbered_and_never_change_the_verdict(page, world, monkeypatch):
+    monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: items(
+        prs=[(12, "Add Tron"), (9, "Fix scan <b>x</b>")], issues=[(45, "closure docs"), (46, "status text"), (47, "delivery warning")]))
+    beta_before = pill(page, "beta")
+    page.click("#ci")
+    page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+    assert tags(page, "alpha") == ["2 PRs", "3 issues"]  # quiet extra chips, nothing else changed
+    assert (pill(page, "alpha"), pill(page, "beta")) == ("Golden", beta_before)  # CI passed, so Golden; the 5 open items changed nothing
+    assert row(page, "alpha").locator(".tag.info").count() == 2 and row(page, "alpha").locator(".tag.hot").count() == 0
+    page.locator("button.name", has_text="alpha").click()
+    detail = page.locator("tr.detail:not([hidden]) .gh")
+    text = detail.inner_text().lower()
+    assert "pull requests (2)" in text and "#12" in text and "add tron" in text and "issues (3)" in text and "#47" in text
+    assert "do not affect the verdict" in text
+    links = detail.locator("a").evaluate_all("els => els.map(e => [e.textContent, e.href, e.target, e.rel])")
+    assert ["#12", "https://github.com/o/r/pull/12", "_blank", "noopener noreferrer"] in links
+    assert detail.locator("b").count() == 0  # a title is text, never markup
+
+
+def test_singular_and_truncated_counts(page, monkeypatch):
+    monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: items(prs=[(1, "one")], issues=[(n, "i") for n in range(30)], issues_truncated=True))
+    page.click("#ci")
+    page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+    assert tags(page, "alpha") == ["1 PR", "30+ issues"]
+    page.locator("button.name", has_text="alpha").click()
+    assert "Only the newest are shown." in page.locator("tr.detail:not([hidden]) .gh").inner_text()
+
+
+def test_a_repo_with_nothing_open_shows_no_chips_and_says_none_open(page):
+    page.click("#ci")
+    page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+    assert tags(page, "alpha") == []
+    page.locator("button.name", has_text="alpha").click()
+    assert page.locator("tr.detail:not([hidden]) .gh").inner_text().count("None open.") == 2
+
+
+def test_when_gh_cannot_answer_it_says_unavailable_instead_of_zero(page, monkeypatch):
+    monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: OpenItems(repo="o/r", available=False, checked_at="2026-10-06T10:00:00+00:00"))
+    page.click("#ci")
+    page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+    assert tags(page, "alpha") == []
+    page.locator("button.name", has_text="alpha").click()
+    assert "unavailable" in page.locator("tr.detail:not([hidden]) .gh").inner_text()
+
+
+def test_a_link_that_is_not_github_is_shown_as_plain_text(page, monkeypatch):
+    bad = items(prs=[(5, "sneaky")])
+    bad.prs[0]["url"] = "javascript:alert(1)"
+    monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: bad)
+    page.click("#ci")
+    page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+    page.locator("button.name", has_text="alpha").click()
+    detail = page.locator("tr.detail:not([hidden]) .gh")
+    assert "#5" in detail.inner_text() and detail.locator("a").count() == 0

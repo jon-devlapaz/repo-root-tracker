@@ -333,6 +333,58 @@ class CiState:
 
 _ci_cache: dict[str, tuple[float, CiState]] = {}
 
+ITEM_LIMIT = 30
+
+
+@dataclass
+class OpenItems:
+    """Open pull requests and issues, for display only: they never change a repo's golden verdict."""
+
+    repo: str = ""
+    available: bool = False          # False: no GitHub remote, or gh could not answer at all
+    prs: list[dict] = field(default_factory=list)
+    issues: list[dict] = field(default_factory=list)
+    prs_known: bool = False          # a failed call is "unknown", never "zero"
+    issues_known: bool = False
+    prs_truncated: bool = False
+    issues_truncated: bool = False
+    checked_at: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+_items_cache: dict[str, tuple[float, OpenItems]] = {}
+
+
+def get_open_items(path: str | Path, *, refresh: bool = False) -> OpenItems:
+    """Two `gh` calls: open pull requests and open issues, newest ITEM_LIMIT of each."""
+    repo_path = Path(path).expanduser().resolve()
+    slug = _github_remote(repo_path)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if slug is None:
+        return OpenItems(checked_at=now_iso)
+    with _cache_guard:
+        lock = _locks.setdefault(f"items:{slug}", threading.Lock())
+    with lock:
+        hit = _items_cache.get(slug)
+        if hit and not refresh and time.monotonic() - hit[0] < CACHE_TTL_SECONDS:
+            return hit[1]
+        target = ("--limit", str(ITEM_LIMIT + 1), "--repo", f"github.com/{slug}")
+        prs_raw = _gh("pr", "list", "--state", "open", "--json", "number,title,url,isDraft,headRefName", *target, cwd=repo_path)
+        issues_raw = _gh("issue", "list", "--state", "open", "--json", "number,title,url", *target, cwd=repo_path)
+        info = OpenItems(
+            repo=slug, available=prs_raw is not None or issues_raw is not None, checked_at=now_iso,
+            prs_known=prs_raw is not None, issues_known=issues_raw is not None,
+            prs=[{"number": p.get("number", 0), "title": p.get("title", ""), "url": p.get("url", ""), "draft": bool(p.get("isDraft")),
+                  "branch": p.get("headRefName", "")} for p in (prs_raw or [])[:ITEM_LIMIT]],
+            issues=[{"number": i.get("number", 0), "title": i.get("title", ""), "url": i.get("url", "")} for i in (issues_raw or [])[:ITEM_LIMIT]],
+            prs_truncated=prs_raw is not None and len(prs_raw) > ITEM_LIMIT,
+            issues_truncated=issues_raw is not None and len(issues_raw) > ITEM_LIMIT,
+        )
+        _items_cache[slug] = (time.monotonic(), info)
+        return info
+
 
 def get_default_branch_ci(path: str | Path, *, refresh: bool = False) -> CiState:
     """One lightweight CI lookup (default branch and its workflow runs); no PR, issue or merge counts."""
@@ -358,3 +410,4 @@ def get_default_branch_ci(path: str | Path, *, refresh: bool = False) -> CiState
 def clear_cache() -> None:
     _cache.clear()
     _ci_cache.clear()
+    _items_cache.clear()

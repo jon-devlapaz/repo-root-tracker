@@ -14,7 +14,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
 from . import NotARepositoryError
-from .github import get_default_branch_ci
+from .github import get_default_branch_ci, get_open_items
 from .scan import Scan, default_roots, scan
 from .status import GitNotAvailableError, fetch_origin, get_repo_status
 
@@ -32,6 +32,7 @@ _lan_hosts: set[str] = set()     # Host names accepted in LAN mode: this machine
 ROOTS: list[str] = []
 _scan_lock = threading.Lock()
 _scan: Scan | None = None
+_items_last: dict[str, dict] = {}  # path -> the last open pull requests and issues, for display only
 _ci_last: dict[str, dict] = {}  # path -> {"state", "head_sha", "checked_at"}: the last CI check, with the commit it was for
 
 
@@ -147,7 +148,7 @@ class Handler(BaseHTTPRequestHandler):
         try:
             status = get_repo_status(path)
             state, remembered = self._ci_for(path, status)
-            self._json(200, {**status.to_dict(ci=state), "ci": remembered})
+            self._json(200, {**status.to_dict(ci=state), "ci": remembered, "github": _items_last.get(path)})
         except NotARepositoryError as e:
             self._json(410, {"error": str(e), "gone": True})
         except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
@@ -166,6 +167,16 @@ class Handler(BaseHTTPRequestHandler):
             path = self._checked_path(query)
             if path:
                 self._status_response(path)
+        elif split.path == "/api/items":
+            path = self._checked_path(query)
+            if not path:
+                return
+            if self._peer() != "loopback":
+                self._json(403, {"error": "this runs with your GitHub login, so only this computer may start it"})
+                return
+            items = get_open_items(path, refresh=query.get("refresh") == ["1"])
+            _items_last[path] = items.to_dict()
+            self._json(200, {"items": _items_last[path]})
         elif split.path == "/api/ci":
             path = self._checked_path(query)
             if not path:
@@ -228,6 +239,7 @@ def make_server(port: int = 7842, roots: list[str] | None = None, lan: bool = Fa
     ROOTS, _scan, LAN, AUTO_CI = list(roots or default_roots()), None, lan, auto_ci
     _lan_hosts = ({*lan_addresses(), *lan_hostnames()} if lan else set())
     _ci_last.clear()
+    _items_last.clear()
     return ThreadingHTTPServer(("0.0.0.0" if lan else "127.0.0.1", port), Handler)
 
 
