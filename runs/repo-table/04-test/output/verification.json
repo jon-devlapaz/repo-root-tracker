@@ -1,0 +1,27 @@
+{
+  "result": "passed",
+  "candidate": {
+    "head": "f059e7b17c8c3d3cbe8d281711014a74a56e0b8b",
+    "tree": "b6d3195cf9cf82063689ff0276c85700b2cc6abe35d8be48fd49e2685c310f28"
+  },
+  "inputs": "5d938eeeaffe105005d32c5451b6416ec4c3f07df84d22cb614c241f9af91a23",
+  "policy": "4ab3ce2dfcd16f0e17d4d8e0a36f598854ac880908d3e5d344dcd61940817848",
+  "test_lock": null,
+  "checklist": "5a306cd885a130b32cf647c8f63392325b6cf31652c8038d9544402b5beed2d0",
+  "manual_marks": {
+    "real-machine": "16b5484239c17f766499605728fa77edf61930facc3652c4d87b878ed4a77676",
+    "jon-simple": "ff5beba84c18326cbfa28b45f776801500802b098c3529df29039e04baf46ab3"
+  },
+  "checklist_items": {
+    "scan": "proven",
+    "golden": "proven",
+    "status": "proven",
+    "server": "proven",
+    "ui": "proven",
+    "page-weight": "proven",
+    "full-suite": "proven",
+    "real-machine": "attested",
+    "jon-simple": "attested"
+  },
+  "log": "af2f513a1c449ecf55856cd721e951af786012f9e737b4ff2734cfc1a29c2c20"
+}

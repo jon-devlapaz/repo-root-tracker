@@ -252,26 +252,55 @@ def test_gh_transport_failure_uses_existing_timeout_and_error_path(tmp_path, err
     assert info.errors and info.workflows.errors
 
 
-def test_api_github_exposes_health_and_keeps_existing_fields(tmp_path):
-    from repo_root_tracker import server
+def ci_for(tmp_path, gh, refresh=True):
+    from repo_root_tracker.github import get_default_branch_ci
 
-    gh = Gh()
-    handler = server.Handler.__new__(server.Handler)
-    handler.headers = {'Host': 'localhost'}
-    handler.path = '/api/github?path=' + str(tmp_path) + '&refresh=1'
     with patch('repo_root_tracker.github._github_remote', return_value='owner/repo'), \
-         patch('repo_root_tracker.github._gh', side_effect=gh), \
-         patch('repo_root_tracker.server.load_repos', return_value=[{'path': str(tmp_path)}]), \
-         patch.object(handler, '_json') as respond:
-        handler.do_GET()
-    code, data = respond.call_args.args
-    assert code == 200
-    assert data['default_branch'] == 'trunk'
-    assert data['workflows']['state'] == 'failing'
-    assert data['workflows']['head_sha'] == HEAD
-    assert data['workflows']['runs'][0]['url'].endswith('/actions/runs/1')
-    assert data['prs'] == [] and data['issues'] == [] and data['errors'] == []
-    assert data['has_github'] and not data['gh_unavailable']
+         patch('repo_root_tracker.github._gh', side_effect=gh):
+        return get_default_branch_ci(tmp_path, refresh=refresh)
+
+
+@pytest.mark.parametrize('gh, state', [
+    (lambda: Gh(), 'failing'),
+    (lambda: Gh(current=[run(conclusion='success')]), 'passing'),
+    (lambda: Gh(current=[run(status='in_progress', conclusion='')]), 'pending'),
+    (lambda: Gh(current=[], older=[run(conclusion='success', sha=OLD)]), 'unknown'),  # stale: nothing ran on the current commit
+])
+def test_default_branch_ci_state_maps_the_workflow_health(tmp_path, gh, state):
+    gh = gh()
+    ci = ci_for(tmp_path, gh)
+    assert ci.state == state and ci.default_branch == 'trunk' and ci.repo == 'owner/repo'
+    # CI only: no pull request, issue or merged-PR calls (those are what the old detail view needed)
+    assert gh.calls and all(args[0] == 'api' for args in gh.calls), gh.calls
+
+
+def test_default_branch_ci_is_cached_until_refreshed(tmp_path):
+    gh = Gh()
+    ci_for(tmp_path, gh)
+    first = len(gh.calls)
+    assert ci_for(tmp_path, gh, refresh=False).state == 'failing' and len(gh.calls) == first
+    gh.current = [run(conclusion='success')]
+    assert ci_for(tmp_path, gh, refresh=False).state == 'failing'
+    assert ci_for(tmp_path, gh, refresh=True).state == 'passing'
+
+
+@pytest.mark.parametrize('error', ['timeout', 'missing', 'invalid-json', 'denied'])
+def test_default_branch_ci_is_unknown_never_green_when_gh_fails(tmp_path, error):
+    import subprocess
+    from repo_root_tracker.github import get_default_branch_ci
+
+    def process(args, **kwargs):
+        if args[0] == 'git':
+            return subprocess.CompletedProcess(args, 0, 'https://github.com/owner/repo.git', '')
+        if error == 'timeout':
+            raise subprocess.TimeoutExpired(args, 30)
+        if error == 'missing':
+            raise FileNotFoundError()
+        return subprocess.CompletedProcess(args, int(error == 'denied'), '{invalid', '')
+
+    with patch('repo_root_tracker.github.subprocess.run', side_effect=process):
+        ci = get_default_branch_ci(tmp_path, refresh=True)
+    assert ci.state == 'unknown' and ci.errors
 
 
 def test_malformed_workflow_inventory_cannot_claim_all_passing(tmp_path):

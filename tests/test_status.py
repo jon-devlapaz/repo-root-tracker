@@ -1,239 +1,313 @@
-"""Tests for repo_root_tracker.status — v2 dashboard signals."""
+"""Status facts and the golden verdict, against real repositories and a real bare remote."""
 
-from __future__ import annotations
-
-import json
-import subprocess
-import threading
+import os
 import time
-import urllib.error
-import urllib.parse
-import urllib.request
-from pathlib import Path
 
 import pytest
+from gitfix import commit, git, init, with_origin
 
-from repo_root_tracker import server as srv
-from repo_root_tracker.status import (
-    GitNotAvailableError,
-    get_repo_status,
-)
-
-
-def git(repo: Path, *args: str) -> str:
-    result = subprocess.run(
-        ["git", "-C", str(repo), *args], check=True, capture_output=True, text=True
-    )
-    return result.stdout.strip()
+from repo_root_tracker import NotARepositoryError
+from repo_root_tracker.github import get_default_branch_ci
+from repo_root_tracker.status import fetch_origin, get_repo_status
 
 
-@pytest.fixture()
-def repo(tmp_path: Path) -> Path:
-    r = tmp_path / "repo"
-    r.mkdir()
-    subprocess.run(["git", "init", str(r)], check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-C", str(r), "config", "user.email", "t@t.t"],
-        check=True, capture_output=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(r), "config", "user.name", "t"],
-        check=True, capture_output=True,
-    )
-    (r / "a.txt").write_text("hello")
-    subprocess.run(["git", "-C", str(r), "add", "-A"], check=True, capture_output=True)
-    subprocess.run(
-        ["git", "-C", str(r), "commit", "-m", "first"], check=True, capture_output=True
-    )
-    return r
-
-
-# ---------------------------------------------------------------------------
-# Branch + last commit (AC-2)
-# ---------------------------------------------------------------------------
-
-def test_branch_and_last_commit(repo: Path) -> None:
+def test_a_fresh_pushed_main_has_every_local_golden_fact(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
     s = get_repo_status(repo)
-    assert s.branch in ("master", "main")
-    assert s.last_commit.subject == "first"
-    assert len(s.last_commit.hash) == 7
-    assert s.last_commit.relative != ""
+    assert (s.branch, s.dirty.is_clean, s.dirty.total) == ("main", True, 0)
+    assert (s.sync.has_upstream, s.sync.ahead, s.sync.behind) == (True, 0, 0)
+    assert (s.has_origin, s.remote_branches, s.branches, s.other_worktrees) == (True, ["origin/main"], ["main"], [])
+    assert (s.is_worktree, s.last_commit.subject) == (False, "first")
+    assert s.golden().status == "golden pending CI"
+    assert s.golden("passing").status == "golden"
+    assert s.golden("failing").status == "not golden"
 
 
-def test_clean_repo_is_clean(repo: Path) -> None:
+def test_to_dict_carries_the_verdict_and_the_dirty_total(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    (repo / "new.txt").write_text("u")
+    (repo / "file.txt").write_text("changed\n")
+    data = get_repo_status(repo).to_dict(ci="passing")
+    assert data["dirty"]["total"] == 2 and not data["dirty"]["is_clean"]
+    assert data["golden"]["status"] == "not golden" and data["golden"]["headline"] == "2 uncommitted changes"
+
+
+def test_an_extra_remote_branch_makes_it_not_golden(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "push", "-q", "origin", "main:feature")
+    git(repo, "fetch", "-q")
     s = get_repo_status(repo)
-    assert s.dirty.is_clean is True
-    assert s.dirty.modified == 0
-    assert s.dirty.untracked == 0
+    assert s.remote_branches == ["origin/feature", "origin/main"]
+    assert s.golden("passing").reasons == ["other remote branch: origin/feature"]
 
 
-# ---------------------------------------------------------------------------
-# Dirty state (AC-1)
-# ---------------------------------------------------------------------------
-
-def test_modified_and_untracked_counts(repo: Path) -> None:
-    (repo / "a.txt").write_text("changed")
-    (repo / "new.txt").write_text("untracked")
+def test_an_extra_local_branch_and_being_off_main(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "work")
     s = get_repo_status(repo)
-    assert s.dirty.is_clean is False
-    assert s.dirty.modified == 1
-    assert s.dirty.untracked == 1
+    assert s.branch == "work" and s.branches == ["main", "work"]
+    assert s.golden("passing").reasons[0] == "on work, not main"
 
 
-def test_staged_counts(repo: Path) -> None:
-    (repo / "b.txt").write_text("staged")
-    subprocess.run(["git", "-C", str(repo), "add", "b.txt"],
-                   check=True, capture_output=True)
+def test_ahead_and_behind_come_from_the_upstream(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    commit(repo, "a.txt", message="local only")
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "b.txt", message="remote only")
+    git(other, "push", "-q", "origin", "main")
+    git(repo, "fetch", "-q")
     s = get_repo_status(repo)
-    assert s.dirty.staged == 1
-    assert s.dirty.is_clean is False
+    assert (s.sync.ahead, s.sync.behind) == (1, 1)
+    assert "not even with origin/main (ahead 1, behind 1)" in s.golden("passing").reasons
 
 
-# ---------------------------------------------------------------------------
-# Sync (AC-3)
-# ---------------------------------------------------------------------------
-
-def test_no_upstream(repo: Path) -> None:
+def test_no_origin_and_no_upstream(tmp_path):
+    repo = init(tmp_path / "solo")
     s = get_repo_status(repo)
-    assert s.sync.has_upstream is False
+    assert (s.has_origin, s.remote_branches, s.sync.has_upstream) == (False, [], False)
+    assert s.golden("passing").reasons == ["no origin remote"]
 
 
-def test_ahead_of_upstream(tmp_path: Path, repo: Path) -> None:
-    # Create a bare remote, push, then commit locally
-    remote = tmp_path / "remote.git"
-    subprocess.run(["git", "init", "--bare", str(remote)],
-                   check=True, capture_output=True)
-    branch = git(repo, "rev-parse", "--abbrev-ref", "HEAD")
-    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", str(remote)],
-                   check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(repo), "push", "-u", "origin", branch],
-                   check=True, capture_output=True)
-    (repo / "c.txt").write_text("ahead")
-    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(repo), "commit", "-m", "ahead"],
-                   check=True, capture_output=True)
-    s = get_repo_status(repo)
-    assert s.sync.has_upstream is True
-    assert s.sync.ahead == 1
-    assert s.sync.behind == 0
+def test_extra_worktrees_are_counted_for_the_main_checkout_and_the_worktree_is_not_judged(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "worktree", "add", "-q", "-b", "side", str(tmp_path / "side"))
+    main, side = get_repo_status(repo), get_repo_status(tmp_path / "side")
+    assert [os.path.realpath(w) for w in main.other_worktrees] == [os.path.realpath(tmp_path / "side")]
+    assert "1 extra worktree" in main.golden("passing").reasons
+    assert side.is_worktree and side.project_path == main.project_path == str(repo.resolve())
+    assert side.golden().status == "worktree"
 
 
-# ---------------------------------------------------------------------------
-# Stale branches (AC-4)
-# ---------------------------------------------------------------------------
-
-def test_no_stale_branches_on_fresh_repo(repo: Path) -> None:
-    s = get_repo_status(repo)
-    assert s.stale_branches == []
-
-
-def test_stale_branch_detected(repo: Path) -> None:
-    # Create a branch and backdate its commit
-    subprocess.run(["git", "-C", str(repo), "checkout", "-b", "old-feature"],
-                   check=True, capture_output=True)
-    (repo / "old.txt").write_text("old")
-    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True, capture_output=True)
-    env = {"GIT_AUTHOR_DATE": "2020-01-01T00:00:00",
-           "GIT_COMMITTER_DATE": "2020-01-01T00:00:00"}
-    import os
-    full_env = {**os.environ, **env}
-    subprocess.run(["git", "-C", str(repo), "commit", "-m", "old"],
-                   check=True, capture_output=True, env=full_env)
-    subprocess.run(["git", "-C", str(repo), "checkout", "-"],
-                   check=True, capture_output=True)
-    s = get_repo_status(repo)
-    assert any(b.name == "old-feature" for b in s.stale_branches)
+def test_a_repo_with_no_commits_does_not_crash(tmp_path):
+    import subprocess
+    bare = tmp_path / "empty"
+    subprocess.run(["git", "init", "-q", str(bare)], check=True, capture_output=True)
+    s = get_repo_status(bare)
+    assert s.branch and s.last_commit.subject == ""
 
 
-# ---------------------------------------------------------------------------
-# Status endpoint
-# ---------------------------------------------------------------------------
-
-@pytest.fixture()
-def live_server(tmp_path: Path, monkeypatch):
-    from repo_root_tracker.server import Handler
-
-    cfg = tmp_path / "config"
-    cfg.mkdir()
-    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
-    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
-
-    import http.server
-
-    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 18743), Handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    time.sleep(0.3)
-    yield "http://127.0.0.1:18743"
-    httpd.shutdown()
-
-
-def test_status_endpoint_tracked(live_server: str, repo: Path) -> None:
-    # Register first (urllib.request already imported at module top)
-    req = urllib.request.Request(
-        live_server + "/api/repos",
-        data=json.dumps({"path": str(repo)}).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=5) as r:
-        assert r.status == 201
-
-    url = live_server + "/api/repos/status?path=" + urllib.parse.quote(str(repo))
-    with urllib.request.urlopen(url, timeout=5) as r:
-        assert r.status == 200
-        data = json.loads(r.read().decode())
-    assert data["branch"] in ("master", "main")
-    assert data["last_commit"]["subject"] == "first"
-    assert "dirty" in data
-    assert "sync" in data
-    assert "stale_branches" in data
-
-
-def test_status_endpoint_untracked_404(live_server: str, tmp_path: Path) -> None:
-    url = live_server + "/api/repos/status?path=" + urllib.parse.quote(str(tmp_path))
-    with pytest.raises(urllib.error.HTTPError) as exc_info:
-        urllib.request.urlopen(url, timeout=5)
-    assert exc_info.value.code == 404
-
-
-# ---------------------------------------------------------------------------
-# Loud failures: missing directory must raise, never return fake-clean data
-# ---------------------------------------------------------------------------
-
-def test_status_missing_dir_raises(tmp_path: Path) -> None:
-    from repo_root_tracker import NotARepositoryError
+def test_a_missing_path_is_an_error_not_a_clean_repo(tmp_path):
     with pytest.raises(NotARepositoryError):
-        get_repo_status(tmp_path / "does-not-exist")
+        get_repo_status(tmp_path / "gone")
 
 
-# ---------------------------------------------------------------------------
-# Vitals: age, commit count, recent activity, branches
-# ---------------------------------------------------------------------------
+def test_reading_status_never_writes_to_the_repository(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    (repo / "file.txt").touch()  # stat-dirty index, the case where `git status` would normally rewrite it
+    time.sleep(1.1)
+    index = repo / ".git" / "index"
+    before = (index.stat().st_mtime_ns, index.read_bytes())
+    for _ in range(3):
+        get_repo_status(repo)
+    assert (index.stat().st_mtime_ns, index.read_bytes()) == before
+    assert not (repo / ".git" / "index.lock").exists()
 
-def test_vitals_on_a_fresh_repo(repo: Path) -> None:
+
+def test_fetch_updates_remote_refs_and_only_remote_refs(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "b.txt", message="upstream moved")
+    git(other, "push", "-q", "origin", "main")
+    git(other, "push", "-q", "origin", "main:extra")
+    (repo / "file.txt").write_text("my edit\n")
+    head, branches, tree = git(repo, "rev-parse", "HEAD"), git(repo, "branch", "--list"), (repo / "file.txt").read_text()
+    assert get_repo_status(repo).sync.behind == 0
+    fetch_origin(repo)
+    after = get_repo_status(repo)
+    assert after.sync.behind == 1 and "origin/extra" in after.remote_branches
+    assert after.last_fetch_at
+    assert (git(repo, "rev-parse", "HEAD"), git(repo, "branch", "--list"), (repo / "file.txt").read_text()) == (head, branches, tree)
+
+
+def test_fetch_prunes_deleted_remote_branches(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    git(repo, "push", "-q", "origin", "main:gone")
+    fetch_origin(repo)
+    assert "origin/gone" in get_repo_status(repo).remote_branches
+    other = tmp_path / "other"  # deleted from a different clone: this checkout's tracking ref only goes away by pruning
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    git(other, "push", "-q", "origin", "--delete", "gone")
+    assert "origin/gone" in get_repo_status(repo).remote_branches
+    fetch_origin(repo)
+    assert "origin/gone" not in get_repo_status(repo).remote_branches
+
+
+def test_fetch_failure_is_an_error_and_never_hangs(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    git(repo, "remote", "set-url", "origin", str(tmp_path / "no-such-remote"))
+    with pytest.raises(RuntimeError):
+        fetch_origin(repo)
+
+
+def test_ci_is_none_when_there_is_no_github_remote(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    assert get_default_branch_ci(repo).state == "none"
+    assert get_repo_status(repo).github_repo == ""
+
+
+def test_each_extra_branch_says_whether_git_can_show_it_is_merged(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "branch", "merged-local")  # same commit as main: nothing unmerged
+    git(repo, "switch", "-q", "-c", "unmerged-local")
+    commit(repo, "u.txt", message="only on this branch")
+    commit(repo, "v.txt", message="and another")
+    git(repo, "switch", "-q", "main")
+    git(repo, "push", "-q", "origin", "main:merged-remote", "unmerged-local")
+    details = {(d["scope"], d["name"]): d for d in get_repo_status(repo).branch_details}
+    assert set(details) == {("local", "merged-local"), ("local", "unmerged-local"), ("remote", "origin/merged-remote"), ("remote", "origin/unmerged-local")}
+    assert details[("local", "merged-local")]["merged"] is True and details[("local", "merged-local")]["unmerged"] == 0
+    assert details[("remote", "origin/merged-remote")]["merged"] is True
+    assert (details[("local", "unmerged-local")]["merged"], details[("local", "unmerged-local")]["unmerged"]) == (False, 2)
+    assert details[("remote", "origin/unmerged-local")]["unmerged"] == 2
+    assert all(d["last_commit_date"] and d["relative"] for d in details.values())
+
+
+def test_a_rebase_merged_branch_reads_as_merged_but_a_squash_merge_cannot_be_seen(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "rebased")
+    commit(repo, "r.txt", message="rebased work")
+    git(repo, "switch", "-q", "-c", "squashed", "main")
+    commit(repo, "s1.txt", message="squash me 1")
+    commit(repo, "s2.txt", message="squash me 2")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")  # so the cherry-pick below is a new commit, not the same one
+    git(repo, "cherry-pick", "rebased")  # the same patch lands on main as a new commit: a rebase merge
+    git(repo, "merge", "-q", "--squash", "squashed")
+    git(repo, "commit", "-q", "-m", "squash merge of squashed")
+    assert "rebased" not in git(repo, "branch", "--merged", "main")  # the case plain --merged gets wrong
+    details = {d["name"]: d for d in get_repo_status(repo).branch_details}
+    assert details["rebased"]["merged"] is True and details["rebased"]["unmerged"] == 0
+    assert details["squashed"]["merged"] is False and details["squashed"]["unmerged"] == 2  # honest limit: git cannot tell
+
+
+def test_branch_details_are_skipped_for_linked_worktrees_and_empty_when_there_are_no_extras(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    assert get_repo_status(repo).branch_details == []
+    git(repo, "worktree", "add", "-q", "-b", "side", str(tmp_path / "side"))
+    assert get_repo_status(tmp_path / "side").branch_details == []
+    assert [d["name"] for d in get_repo_status(repo).branch_details] == ["side"]
+
+
+def test_branch_details_are_capped(tmp_path):
+    from repo_root_tracker.status import MAX_BRANCH_DETAILS
+    repo, _ = with_origin(tmp_path, "r")
+    for i in range(MAX_BRANCH_DETAILS + 5):
+        git(repo, "branch", f"b{i:03}")
+    assert len(get_repo_status(repo).branch_details) == MAX_BRANCH_DETAILS
+
+
+# ---- findings from the independent critique: each case below was reproduced there with temporary repos ---------------
+
+def branch(status, scope, name):
+    return next(d for d in status.branch_details if d["scope"] == scope and d["name"] == name)
+
+
+def test_a_local_branch_named_like_a_remote_one_cannot_hijack_the_judgment(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "feat")
+    commit(repo, "u.txt", message="unique work")
+    git(repo, "push", "-q", "origin", "feat")
+    git(repo, "switch", "-q", "main")
+    git(repo, "branch", "-D", "feat")
+    git(repo, "branch", "origin/feat", "main")  # a LOCAL ref called origin/feat: `origin/feat` is now ambiguous
     s = get_repo_status(repo)
-    assert s.commit_count == 1
-    assert s.activity_30d == 1
-    assert s.first_commit_date.startswith("20")
-    assert s.branches == [s.branch]
+    assert "origin/feat" in s.branches  # shown as what it is, not as heads/origin/feat
+    remote, local = branch(s, "remote", "origin/feat"), branch(s, "local", "origin/feat")
+    assert (remote["merged"], remote["unmerged"]) == (False, 1), remote  # the real remote branch holds unique work
+    assert local["merged"] is True  # the lookalike local branch is just main
+    assert remote["sha"] == git(repo, "rev-parse", "refs/remotes/origin/feat")
 
 
-def test_vitals_count_commits_and_branches(repo: Path) -> None:
-    (repo / "b.txt").write_text("more")
-    git(repo, "add", "-A")
-    git(repo, "commit", "-m", "second")
-    git(repo, "branch", "feature/x")
+def test_every_extra_branch_records_its_exact_commit_for_a_lease_guarded_delete(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "push", "-q", "origin", "main:old")
+    git(repo, "branch", "keep")
     s = get_repo_status(repo)
-    assert s.commit_count == 2
-    assert s.activity_30d == 2
-    assert sorted(s.branches) == sorted([s.branch, "feature/x"])
+    assert branch(s, "remote", "origin/old")["sha"] == git(repo, "rev-parse", "refs/remotes/origin/old")
+    assert branch(s, "local", "keep")["sha"] == git(repo, "rev-parse", "refs/heads/keep")
 
 
-def test_vitals_survive_a_repo_with_no_commits(tmp_path: Path) -> None:
-    r = tmp_path / "empty"
-    r.mkdir()
-    subprocess.run(["git", "init", str(r)], check=True, capture_output=True)
-    s = get_repo_status(r)
-    assert (s.commit_count, s.activity_30d, s.first_commit_date, s.branches) == (0, 0, "", [])
-    assert "commit_count" in s.to_dict()
+def test_a_merge_commit_that_smuggles_in_a_change_is_not_called_merged(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "side")
+    commit(repo, "s.txt", message="side work")
+    git(repo, "switch", "-q", "-c", "evilbr", "main")
+    git(repo, "merge", "-q", "--no-commit", "--no-ff", "side")
+    (repo / "extra.txt").write_text("not on main\n")
+    git(repo, "add", "extra.txt")
+    git(repo, "commit", "-q", "-m", "merge side, and also add extra")
+    git(repo, "switch", "-q", "main")
+    git(repo, "merge", "-q", "--ff-only", "side")  # main has `side`, but not `extra`
+    assert "extra.txt" not in git(repo, "ls-tree", "-r", "--name-only", "main")
+    evil = branch(get_repo_status(repo), "local", "evilbr")
+    assert evil["unmerged"] == 0  # git cherry does not look at merge commits
+    assert evil["merged"] is None, evil  # so the tool must say it cannot tell, never "safe to delete"
+
+
+def test_a_change_main_applied_and_later_reverted_still_counts_as_merged_by_patch(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "switch", "-q", "-c", "reapply")
+    commit(repo, "x.txt", "x\n", message="add x")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")  # so the cherry-pick is a different commit, not the identical one
+    git(repo, "cherry-pick", "reapply")
+    git(repo, "revert", "--no-edit", "HEAD")
+    assert not (repo / "x.txt").exists()
+    entry = branch(get_repo_status(repo), "local", "reapply")
+    assert entry["unmerged"] == 0 and entry["ancestor"] is False
+    # Judgment call: main applied this exact change and later reverted it, so the work was merged and its history stays on
+    # main. Deleting the branch loses nothing that history does not hold, so it is "merged by patch" (git still needs -D).
+    assert entry["merged"] is True, entry
+
+
+def test_ancestor_and_patch_equivalent_merges_are_told_apart(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    git(repo, "branch", "plain")  # an ancestor of main
+    git(repo, "switch", "-q", "-c", "rebased")
+    commit(repo, "r.txt", message="rebased work")
+    git(repo, "switch", "-q", "main")
+    commit(repo, "moved.txt", message="main moved on")
+    git(repo, "cherry-pick", "rebased")
+    s = get_repo_status(repo)
+    plain, rebased = branch(s, "local", "plain"), branch(s, "local", "rebased")
+    assert (plain["merged"], plain["ancestor"]) == (True, True)
+    assert (rebased["merged"], rebased["ancestor"]) == (True, False)  # git needs -D for this one
+
+
+def test_main_is_compared_with_origin_main_not_with_whatever_it_tracks(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    upstream = tmp_path / "up.git"
+    import subprocess
+    subprocess.run(["git", "init", "-q", "--bare", "-b", "main", str(upstream)], check=True, capture_output=True)
+    git(repo, "remote", "add", "upstream", str(upstream))
+    git(repo, "push", "-q", "upstream", "main")
+    git(repo, "branch", "--set-upstream-to=upstream/main", "main")  # a fork: main tracks upstream, not origin
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "n.txt", message="origin moved")
+    git(other, "push", "-q", "origin", "main")
+    git(repo, "fetch", "-q", "origin")
+    s = get_repo_status(repo)
+    assert (s.sync.has_upstream, s.sync.ahead, s.sync.behind) == (True, 0, 0)  # what HEAD...@{u} says: "even"
+    assert (s.main_sync["ahead"], s.main_sync["behind"], s.main_sync["tracks_origin_main"]) == (0, 1, False)
+    reasons = s.golden("passing").reasons
+    assert "not even with origin/main (ahead 0, behind 1)" in reasons and "main does not track origin/main" in reasons
+
+
+def test_main_is_judged_against_origin_main_even_while_another_branch_is_checked_out(tmp_path):
+    repo, bare = with_origin(tmp_path, "r")
+    other = tmp_path / "other"
+    git(tmp_path, "clone", "-q", str(bare), str(other))
+    commit(other, "n.txt", message="origin moved")
+    git(other, "push", "-q", "origin", "main")
+    git(repo, "fetch", "-q", "origin")
+    git(repo, "switch", "-q", "-c", "work")
+    reasons = get_repo_status(repo).golden("passing").reasons
+    assert "not even with origin/main (ahead 0, behind 1)" in reasons
+
+
+def test_the_main_commit_is_reported_so_a_ci_result_can_be_tied_to_it(tmp_path):
+    repo, _ = with_origin(tmp_path, "r")
+    assert get_repo_status(repo).main_sha == git(repo, "rev-parse", "refs/heads/main")

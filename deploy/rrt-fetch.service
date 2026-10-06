@@ -1,8 +1,0 @@
-[Unit]
-Description=Fetch all repos tracked by repo-root-tracker
-
-[Service]
-Type=oneshot
-User=rrt
-Environment=RRT_CONFIG_DIR=/var/lib/rrt/config
-ExecStart=/opt/repo-root-tracker/deploy/fetch-all.sh
