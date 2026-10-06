@@ -83,3 +83,25 @@ plain `git branch --merged` gets wrong.
 Limits: `git cherry` cannot see squash merges, so a squash-merged branch reads as unmerged (stated next to every list).
 The "Check CI" path was never run against real GitHub from this build. The copy buttons only copy; nothing runs a
 command.
+
+
+## Change after the approved brief: phone access on the same wifi (Jon, chat)
+
+The approved brief said "Localhost only" and Jon confirmed removing the password mode and Pi hosting. After trying the
+page he asked to reach it from his iPhone SE on the same network. I offered three ways (opt-in `--lan` with a secret
+token, opt-in `--lan` with no token, a private network such as Tailscale) and Jon chose **`--lan` with no token**. This
+reverses part of the brief's "Localhost only" section by his direction; it was not re-approved as a new brief.
+
+What I built around that choice, so that "no token" is as safe as it can be: it is off unless `--lan` is passed (also
+`RRT_LAN=1 ./serve.sh`); only private-network client addresses are served (explicit list: 10/8, 172.16/12, 192.168/16,
+169.254/16, IPv6 local; not Python's `is_private`, which also accepts reserved documentation ranges, found by a test);
+the `Host` header must be this machine's own address or name (DNS rebinding stays refused); POSTs (Fetch, Rescan) are
+accepted only from the loopback client, so a phone is read-only, and the page tells it so and disables those buttons.
+
+Known risk Jon accepted: anyone on that private network (guest wifi, a shared office) can read repo paths, branch names
+and commit messages while `--lan` is running. There is no password. The terminal prints a warning at start.
+
+Not verified from this build: **a real phone, and the real network path.** My shell cannot reach any off-loopback
+address (not even the router), and this Mac's firewall is on with `python3.13` not in its allow list, so connections to
+the wifi address timed out here. The access rules are tested with a simulated phone (9 mutants caught); whether macOS
+lets the connection through, and how the page looks on an actual iPhone SE, is for Jon to confirm.
