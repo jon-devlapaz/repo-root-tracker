@@ -168,45 +168,34 @@ def test_cache_bounds_calls(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 @pytest.fixture()
-def live_server(tmp_path: Path, monkeypatch):
-    from repo_root_tracker.server import Handler
+def live_server(tmp_path: Path):
+    """The real server over a tiny scanned tree, on a free loopback port."""
+    server = srv.make_server(0, [str(tmp_path / "scan")])
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    yield f"http://127.0.0.1:{server.server_address[1]}"
+    server.shutdown()
+    server.server_close()
 
-    cfg = tmp_path / "config"
-    cfg.mkdir()
-    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
-    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
 
-    import http.server
-
-    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 18745), Handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    time.sleep(0.3)
-    yield "http://127.0.0.1:18745"
-    httpd.shutdown()
+def _repo(path: Path, origin: str | None = None) -> Path:
+    path.mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(path)], check=True, capture_output=True)
+    if origin:
+        subprocess.run(["git", "-C", str(path), "remote", "add", "origin", origin], check=True, capture_output=True)
+    return path
 
 
 def test_endpoint_no_remote(live_server: str, tmp_path: Path) -> None:
-    repo = tmp_path / "repo"
-    repo.mkdir()
-    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
-    req = urllib.request.Request(
-        live_server + "/api/repos",
-        data=json.dumps({"path": str(repo)}).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=5):
-        pass
-    url = live_server + "/api/github?path=" + urllib.parse.quote(str(repo))
+    repo = _repo(tmp_path / "scan" / "repo")
+    url = live_server + "/api/ci?path=" + urllib.parse.quote(str(repo.resolve()))
     with urllib.request.urlopen(url, timeout=5) as r:
         assert r.status == 200
         data = json.loads(r.read().decode())
-    assert data["has_github"] is False
+    assert data["ci"]["state"] == "none" and data["ci"]["repo"] == ""
 
 
 def test_endpoint_untracked_404(live_server: str, tmp_path: Path) -> None:
-    url = live_server + "/api/github?path=" + urllib.parse.quote(str(tmp_path))
+    url = live_server + "/api/ci?path=" + urllib.parse.quote(str(tmp_path))
     with pytest.raises(urllib.error.HTTPError) as e:
         urllib.request.urlopen(url, timeout=5)
     assert e.value.code == 404
@@ -267,7 +256,7 @@ def test_live_profile_is_opt_in_and_never_silently_green() -> None:
 
 
 def test_endpoint_live_github(live_server: str, tmp_path: Path) -> None:
-    """Live read-only check of /api/github against the sandbox repo you name (see above)."""
+    """Live read-only check of /api/ci against the sandbox repo you name (see above)."""
     import os
 
     decision, slug, problem = live_profile(dict(os.environ), _gh_authenticated)
@@ -275,27 +264,13 @@ def test_endpoint_live_github(live_server: str, tmp_path: Path) -> None:
         pytest.skip(problem)
     if decision == "fail":
         pytest.fail(problem)
-    repo = tmp_path / "sandbox"
-    repo.mkdir()
-    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(repo), "remote", "add", "origin", f"https://github.com/{slug}.git"], check=True, capture_output=True)
-    req = urllib.request.Request(
-        live_server + "/api/repos",
-        data=json.dumps({"path": str(repo)}).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=5):
-        pass
-    url = live_server + "/api/github?path=" + urllib.parse.quote(str(repo)) + "&refresh=1"
+    repo = _repo(tmp_path / "scan" / "sandbox", f"https://github.com/{slug}.git")
+    url = live_server + "/api/ci?refresh=1&path=" + urllib.parse.quote(str(repo.resolve()))
     with urllib.request.urlopen(url, timeout=30) as r:
         body = r.read().decode()
-    data = json.loads(body)
-    assert data["has_github"] is True, data.get("errors")
-    assert data["repo"] == slug
-    assert isinstance(data["prs"], list) and isinstance(data["issues"], list)   # never a particular count
-    assert not data.get("gh_unavailable") and not data.get("errors"), data.get("errors")
-    assert data["checked_at"]
+    ci = json.loads(body)["ci"]
+    assert ci["repo"] == slug and ci["checked_at"]
+    assert ci["state"] in ("passing", "failing", "pending", "unknown"), ci            # never a particular result
     for secret in (os.environ.get("GH_TOKEN"), os.environ.get("GITHUB_TOKEN")):
         if secret and secret in body:                                            # secret-safe: fixed message, no values
-            pytest.fail("a credential appeared in the /api/github response", pytrace=False)
+            pytest.fail("a credential appeared in the /api/ci response", pytrace=False)

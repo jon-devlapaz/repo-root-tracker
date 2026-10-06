@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "repo-root-tracker"
 version = "0.1.0"
-description = "Find the git repository root by walking up from a given path"
+description = "A simple table of every git repository under a folder, and which are git-golden"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.11"
@@ -32,3 +32,8 @@ repo-root-tracker-web = "repo_root_tracker.server:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/repo_root_tracker"]
+
+[tool.pytest.ini_options]
+# Always test this checkout's source, never an editable install that points at another checkout.
+pythonpath = ["src"]
+testpaths = ["tests"]

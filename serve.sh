@@ -20,17 +20,17 @@ if ! python3 -c "import repo_root_tracker.server" 2>/dev/null; then
 fi
 
 # Start the server if nothing is answering on the port
-if curl -sf -o /dev/null "${URL}api/repos" 2>/dev/null; then
+if curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null; then
   echo "Dashboard already running on :${PORT}"
 else
   echo "Starting dashboard on :${PORT} ..."
   nohup python3 -m repo_root_tracker.server --port "${PORT}" \
     >/tmp/repo-root-tracker.log 2>&1 &
   for _ in $(seq 1 40); do
-    curl -sf -o /dev/null "${URL}api/repos" 2>/dev/null && break
+    curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null && break
     sleep 0.25
   done
-  curl -sf -o /dev/null "${URL}api/repos" 2>/dev/null \
+  curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null \
     || { echo "Server failed to start — see /tmp/repo-root-tracker.log"; exit 1; }
   echo "Server started (log: /tmp/repo-root-tracker.log)"
 fi

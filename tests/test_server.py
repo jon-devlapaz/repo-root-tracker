@@ -1,257 +1,161 @@
-"""Tests for the repo-root-tracker web dashboard server."""
+"""The localhost server: scan-then-status flow, only scanned paths are queryable, loopback only, removed endpoints gone."""
 
-from __future__ import annotations
-
+import http.client
 import json
-import os
-import subprocess
 import threading
-import time
-import urllib.request
 from pathlib import Path
 
 import pytest
+from gitfix import commit, git, init, with_origin
 
 from repo_root_tracker import server as srv
-from repo_root_tracker.server import Handler, load_repos, save_repos, validate_repo
+from repo_root_tracker.github import CiState
 
 
 @pytest.fixture()
-def isolated_config(tmp_path: Path, monkeypatch):
-    """Point the server's config dir at a temp directory for test isolation."""
-    cfg = tmp_path / "config"
-    cfg.mkdir()
-    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
-    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
-    yield cfg
+def tree(tmp_path):
+    root = tmp_path / "root"
+    alpha, _ = with_origin(root, "alpha")
+    init(root / "beta")
+    return root, alpha
 
-
-def test_validate_repo_valid(tmp_path: Path) -> None:
-    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
-    result = validate_repo(str(tmp_path))
-    assert result["valid"] is True
-    assert result["root"] == str(tmp_path.resolve())
-
-
-def test_validate_repo_from_subdirectory(tmp_path: Path) -> None:
-    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
-    subdir = tmp_path / "nested"
-    subdir.mkdir()
-    result = validate_repo(str(subdir))
-    assert result["valid"] is True
-    assert result["root"] == str(tmp_path.resolve())
-
-
-def test_validate_repo_invalid(tmp_path: Path) -> None:
-    result = validate_repo(str(tmp_path))
-    assert result["valid"] is False
-    assert "error" in result
-
-
-def test_load_repos_missing_file(isolated_config: Path) -> None:
-    assert load_repos() == []
-
-
-def test_save_and_load_roundtrip(isolated_config: Path) -> None:
-    repos = [{"path": "/tmp/a"}, {"path": "/tmp/b"}]
-    save_repos(repos)
-    assert load_repos() == repos
-
-
-def test_config_dir_created_on_save(tmp_path: Path, monkeypatch) -> None:
-    cfg = tmp_path / "newdir"
-    monkeypatch.setattr(srv, "CONFIG_DIR", cfg)
-    monkeypatch.setattr(srv, "REPOS_FILE", cfg / "repos.json")
-    save_repos([{"path": "/tmp/x"}])
-    assert cfg.is_dir()
-    assert (cfg / "repos.json").is_file()
-
-
-# ---------------------------------------------------------------------------
-# Live-server integration test
-# ---------------------------------------------------------------------------
 
 @pytest.fixture()
-def live_server(isolated_config: Path):
-    """Start the dashboard server on a test port in a background thread."""
-    import http.server
+def live(tree):
+    root, alpha = tree
+    server = srv.make_server(0, [str(root)])
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    port = server.server_address[1]
 
-    httpd = http.server.ThreadingHTTPServer(("127.0.0.1", 18742), Handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    thread.start()
-    time.sleep(0.3)
-    yield "http://127.0.0.1:18742"
-    httpd.shutdown()
-
-
-def _get(url: str):
-    with urllib.request.urlopen(url, timeout=5) as r:
-        return r.status, r.read().decode()
-
-
-def _post(url: str, payload: dict):
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=5) as r:
-            return r.status, json.loads(r.read().decode())
-    except urllib.error.HTTPError as e:
-        return e.code, json.loads(e.read().decode())
-
-
-def test_dashboard_html_served(live_server: str) -> None:
-    status, body = _get(live_server + "/")
-    assert status == 200
-    assert "repo-root-tracker" in body
-    assert "<style>" in body
-
-
-def test_repos_api_crud(live_server: str, tmp_path: Path) -> None:
-    # Start empty
-    status, _ = _get(live_server + "/api/repos")
-    assert status == 200
-
-    # Reject non-repo
-    code, data = _post(live_server + "/api/repos", {"path": str(tmp_path)})
-    assert code == 400
-    assert "valid" in data
-
-    # Accept a real repo
-    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
-    code, data = _post(live_server + "/api/repos", {"path": str(tmp_path)})
-    assert code == 201
-    assert data["path"] == str(tmp_path.resolve())
-
-    # List shows it
-    status, body = _get(live_server + "/api/repos")
-    assert status == 200
-    assert str(tmp_path.resolve()) in body
-
-    # Duplicate rejected
-    code, _ = _post(live_server + "/api/repos", {"path": str(tmp_path)})
-    assert code == 409
-
-    # Delete works
-    req = urllib.request.Request(
-        live_server + "/api/repos",
-        data=json.dumps({"path": str(tmp_path.resolve())}).encode(),
-        headers={"Content-Type": "application/json"},
-        method="DELETE",
-    )
-    with urllib.request.urlopen(req, timeout=5) as r:
-        assert r.status == 200
-
-    # Gone
-    status, body = _get(live_server + "/api/repos")
-    assert str(tmp_path.resolve()) not in body
-
-
-def test_validate_endpoint(live_server: str, tmp_path: Path) -> None:
-    code, data = _post(live_server + "/api/repos/validate", {"path": str(tmp_path)})
-    assert code == 200
-    assert data["valid"] is False
-
-    subprocess.run(["git", "init", str(tmp_path)], check=True, capture_output=True)
-    code, data = _post(live_server + "/api/repos/validate", {"path": str(tmp_path)})
-    assert code == 200
-    assert data["valid"] is True
-
-
-def test_deleted_repo_returns_410_gone(live_server: str, tmp_path: Path) -> None:
-    import shutil
-
-    repo = tmp_path / "gone"
-    repo.mkdir()
-    subprocess.run(["git", "init", str(repo)], check=True, capture_output=True)
-    req = urllib.request.Request(
-        live_server + "/api/repos",
-        data=json.dumps({"path": str(repo)}).encode(),
-        headers={"Content-Type": "application/json"},
-        method="POST",
-    )
-    with urllib.request.urlopen(req, timeout=5):
-        pass
-    shutil.rmtree(repo)
-
-    for endpoint in ("/api/repos/status?path=", "/api/repo?path="):
-        url = live_server + endpoint + urllib.parse.quote(str(repo.resolve()))
+    def call(method, path, headers=None, body=None):
+        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=20)
+        conn.request(method, path, body=body, headers=headers or {})
+        response = conn.getresponse()
+        raw = response.read()
+        conn.close()
         try:
-            urllib.request.urlopen(url, timeout=5)
-            raise AssertionError(f"{endpoint} should not return 2xx for deleted repo")
-        except urllib.error.HTTPError as e:
-            assert e.code == 410, f"{endpoint} returned {e.code}, want 410"
-            body = json.loads(e.read().decode())
-            assert body.get("gone") is True
+            data = json.loads(raw)
+        except ValueError:
+            data = raw
+        return response.status, data, dict(response.getheaders())
+
+    call.port, call.server, call.root, call.alpha = port, server, root, alpha
+    yield call
+    server.shutdown()
+    server.server_close()
 
 
-def test_malformed_repos_entries_filtered(isolated_config: Path) -> None:
-    from repo_root_tracker.server import REPOS_FILE, load_repos
-    REPOS_FILE.write_text(json.dumps([
-        {"path": "/tmp/ok"},
-        {"foo": 1},
-        "not-a-dict",
-        {"path": ""},
-        {"path": None},
-        42,
-    ]))
-    assert load_repos() == [{"path": "/tmp/ok"}]
+def real(path: Path) -> str:
+    return str(path.resolve())
 
 
-def test_malformed_repos_file_shapes(isolated_config: Path) -> None:
-    from repo_root_tracker.server import REPOS_FILE, load_repos
-    REPOS_FILE.write_text(json.dumps({"path": "/tmp/nope"}))
-    assert load_repos() == []
-    REPOS_FILE.write_text("{broken json")
-    assert load_repos() == []
+def test_binds_loopback_only(live):
+    assert live.server.server_address[0] == "127.0.0.1"
 
 
-def test_dashboard_home_value_is_json_encoded_and_guard_preserved(live_server, monkeypatch):
-    monkeypatch.setattr(srv.Path, 'home', lambda: Path("/Users/it's-home"))
-    status, body = _get(live_server + '/')
-    assert status == 200
-    assert 'const HOME_DIR = "/Users/it\'s-home";' in body
-    assert "HOME_DIR !== '__HOME__'" in body
+def test_the_page_is_small_self_contained_and_locked_down(live):
+    status, html, headers = live("GET", "/")
+    assert status == 200 and html.startswith(b"<!doctype html>") and len(html) < 61440
+    assert b"data:image" not in html and b"http://" not in html and b"https://" not in html
+    assert "default-src 'none'" in headers["Content-Security-Policy"] and "connect-src 'self'" in headers["Content-Security-Policy"]
+    assert headers["X-Frame-Options"] == "DENY" and headers["Cache-Control"] == "no-store"
 
 
-def test_non_git_directory_is_not_reported_as_clean(live_server, tmp_path):
-    save_repos([{'path': str(tmp_path)}])
-    url = live_server + '/api/repos/status?path=' + urllib.parse.quote(str(tmp_path))
-    with pytest.raises(urllib.error.HTTPError) as error:
-        urllib.request.urlopen(url, timeout=5)
-    assert error.value.code == 503
-    assert 'error' in json.loads(error.value.read())
+def test_scan_then_status_flow(live):
+    status, scan, _ = live("GET", "/api/scan")
+    assert status == 200 and not scan["truncated"]
+    paths = sorted(c["path"] for c in scan["checkouts"])
+    assert paths == sorted([real(live.alpha), real(live.root / "beta")])
+    status, alpha, _ = live("GET", "/api/repos/status?path=" + real(live.alpha))
+    assert status == 200 and alpha["branch"] == "main" and alpha["golden"]["status"] == "golden pending CI"
+    status, beta, _ = live("GET", "/api/repos/status?path=" + real(live.root / "beta"))
+    assert beta["golden"]["status"] == "not golden" and beta["golden"]["headline"] == "no origin remote"
 
 
-def test_github_refresh_is_explicit(live_server, tmp_path, monkeypatch):
-    from repo_root_tracker.github import GithubInfo
-    save_repos([{'path': str(tmp_path)}])
-    calls = []
-
-    def github(path, *, refresh=False):
-        calls.append(refresh)
-        return GithubInfo()
-
-    monkeypatch.setattr(srv, 'get_github_info', github)
-    url = live_server + '/api/github?path=' + urllib.parse.quote(str(tmp_path))
-    assert _get(url)[0] == 200
-    assert _get(url + '&refresh=1')[0] == 200
-    assert calls == [False, True]
+def test_only_paths_the_scan_found_can_be_queried(live):
+    for path in ("/etc", "/", str(live.root.parent), real(live.alpha) + "/..", "relative"):
+        for route in ("/api/repos/status", "/api/ci"):
+            assert live("GET", f"{route}?path={path}")[0] == 404, (route, path)
+        assert live("POST", f"/api/fetch?path={path}")[0] == 404
+    assert live("GET", "/api/repos/status")[0] == 400 and live("GET", "/api/repos/status?path=")[0] == 400
 
 
-def test_repo_list_carries_project_identity_for_worktrees(tmp_path: Path) -> None:
-    main = tmp_path / "main"
-    wt = tmp_path / "wt"
-    env = {"GIT_AUTHOR_NAME": "t", "GIT_AUTHOR_EMAIL": "t@t", "GIT_COMMITTER_NAME": "t", "GIT_COMMITTER_EMAIL": "t@t"}
-    subprocess.run(["git", "init", "-b", "main", str(main)], check=True, capture_output=True)
-    subprocess.run(["git", "-C", str(main), "commit", "--allow-empty", "-m", "x"], check=True, capture_output=True, env={**os.environ, **env})
-    subprocess.run(["git", "-C", str(main), "worktree", "add", "-b", "feat", str(wt)], check=True, capture_output=True)
-    listed = srv.repos_with_identity([{"path": str(main)}, {"path": str(wt)}, {"path": str(tmp_path / "gone")}])
-    by_path = {item["path"]: item for item in listed}
-    assert by_path[str(main)]["project_id"] == by_path[str(wt)]["project_id"]
-    assert by_path[str(main)]["is_worktree"] is False and by_path[str(wt)]["is_worktree"] is True
-    assert by_path[str(wt)]["project_path"] == str(main.resolve())
-    assert "project_id" not in by_path[str(tmp_path / "gone")]
+def test_hosts_other_than_loopback_are_refused(live):
+    for host in ("evil.example", "evil.example:7842", "127.0.0.1.evil.example", "0.0.0.0"):
+        assert live("GET", "/api/scan", {"Host": host})[0] == 403, host
+    for host in (f"127.0.0.1:{live.port}", f"localhost:{live.port}", "localhost", f"[::1]:{live.port}"):
+        assert live("GET", "/api/scan", {"Host": host})[0] == 200, host
+
+
+def test_cross_site_posts_are_refused_and_local_ones_allowed(live):
+    assert live("POST", "/api/scan", {"Origin": "https://evil.example"})[0] == 403
+    assert live("POST", "/api/scan", {"Origin": f"http://127.0.0.1:{live.port}"})[0] == 200
+    assert live("POST", "/api/scan")[0] == 200
+    assert live("OPTIONS", "/api/scan")[0] == 405
+
+
+def test_the_old_registration_organization_and_detail_endpoints_are_gone(live):
+    for method, path in [("GET", "/api/repos"), ("POST", "/api/repos"), ("DELETE", "/api/repos"), ("PUT", "/api/organization"),
+                         ("GET", "/api/organization"), ("GET", "/api/activity"), ("GET", "/api/repo"), ("GET", "/api/github"),
+                         ("GET", "/api/commit"), ("GET", "/api/working-diff"), ("GET", "/login"), ("POST", "/login")]:
+        assert live(method, path)[0] in (404, 501), (method, path)
+
+
+def test_rescan_picks_up_a_new_repo_and_the_old_scan_is_replaced(live, tree):
+    root, _ = tree
+    assert len(live("GET", "/api/scan")[1]["checkouts"]) == 2
+    init(root / "gamma")
+    assert len(live("GET", "/api/scan")[1]["checkouts"]) == 2  # cached until asked
+    status, scan, _ = live("POST", "/api/scan")
+    assert status == 200 and len(scan["checkouts"]) == 3
+    assert live("GET", "/api/repos/status?path=" + real(root / "gamma"))[0] == 200
+
+
+def test_a_repo_deleted_after_the_scan_is_gone_not_clean(live):
+    import shutil
+    live("GET", "/api/scan")
+    shutil.rmtree(live.root / "beta")
+    status, body, _ = live("GET", "/api/repos/status?path=" + real(live.root / "beta"))
+    assert status == 410 and body["gone"] is True
+
+
+def test_ci_state_feeds_the_golden_verdict_on_later_status_calls(live, monkeypatch):
+    live("GET", "/api/scan")
+    path = real(live.alpha)
+    for state, expected in (("passing", "golden"), ("failing", "not golden"), ("pending", "golden pending CI")):
+        monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False, s=state: CiState(state=s, repo="o/r"))
+        status, body, _ = live("GET", f"/api/ci?path={path}&refresh=1")
+        assert status == 200 and body["ci"]["state"] == state
+        assert live("GET", "/api/repos/status?path=" + path)[1]["golden"]["status"] == expected
+
+
+def test_fetch_updates_remote_refs_and_returns_fresh_status(live):
+    live("GET", "/api/scan")
+    other = live.root.parent / "other-clone"  # a different clone, so this checkout cannot already know about it
+    git(live.root, "clone", "-q", git(live.alpha, "remote", "get-url", "origin"), str(other))
+    git(other, "push", "-q", "origin", "main:extra")
+    path = real(live.alpha)
+    assert "origin/extra" not in live("GET", "/api/repos/status?path=" + path)[1]["remote_branches"]
+    status, body, _ = live("POST", "/api/fetch?path=" + path)
+    assert status == 200 and "origin/extra" in body["remote_branches"]
+    assert body["golden"]["headline"] == "other remote branch: origin/extra"
+
+
+def test_fetch_failure_is_reported_not_hidden(live):
+    live("GET", "/api/scan")
+    git(live.alpha, "remote", "set-url", "origin", str(live.root / "nowhere"))
+    status, body, _ = live("POST", "/api/fetch?path=" + real(live.alpha))
+    assert status == 503 and "fetch failed" in body["error"]
+
+
+def test_missing_root_is_reported_on_the_scan(tmp_path):
+    server = srv.make_server(0, [str(tmp_path / "nope")])
+    try:
+        assert srv.current_scan().missing_roots == [str(tmp_path / "nope")] and srv.current_scan().checkouts == []
+    finally:
+        server.server_close()
+
+
+def test_no_password_or_remote_access_settings_exist_anymore():
+    for name in ("PUBLIC_HOSTS", "PASSWORD_HASH", "SESSION_SECRET", "configure_remote", "REPOS_FILE", "CONFIG_DIR"):
+        assert not hasattr(srv, name), name

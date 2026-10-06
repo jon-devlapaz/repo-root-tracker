@@ -316,5 +316,43 @@ def get_github_info(path: str | Path, *, refresh: bool = False) -> GithubInfo:
         return info
 
 
+@dataclass
+class CiState:
+    """Whether the latest CI run on the default branch's current commit succeeded."""
+
+    state: str = "unknown"  # passing | failing | pending | unknown | none (no GitHub remote)
+    default_branch: str = ""
+    repo: str = ""
+    errors: list[str] = field(default_factory=list)
+    checked_at: str = ""
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+_ci_cache: dict[str, tuple[float, CiState]] = {}
+
+
+def get_default_branch_ci(path: str | Path, *, refresh: bool = False) -> CiState:
+    """One lightweight CI lookup (default branch and its workflow runs); no PR, issue or merge counts."""
+    repo_path = Path(path).expanduser().resolve()
+    slug = _github_remote(repo_path)
+    now_iso = datetime.now(timezone.utc).isoformat()
+    if slug is None:
+        return CiState(state="none", checked_at=now_iso)
+    with _cache_guard:
+        lock = _locks.setdefault(f"ci:{slug}", threading.Lock())
+    with lock:
+        hit = _ci_cache.get(slug)
+        if hit and not refresh and time.monotonic() - hit[0] < CACHE_TTL_SECONDS:
+            return hit[1]
+        branch, health, _access = _workflow_health(slug, repo_path)
+        state = health.state if health.state in ("passing", "failing", "pending") else "unknown"
+        info = CiState(state=state, default_branch=branch, repo=slug, errors=list(health.errors), checked_at=now_iso)
+        _ci_cache[slug] = (time.monotonic(), info)
+        return info
+
+
 def clear_cache() -> None:
     _cache.clear()
+    _ci_cache.clear()
