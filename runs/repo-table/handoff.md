@@ -105,3 +105,49 @@ Not verified from this build: **a real phone, and the real network path.** My sh
 address (not even the router), and this Mac's firewall is on with `python3.13` not in its allow list, so connections to
 the wifi address timed out here. The access rules are tested with a simulated phone (9 mutants caught); whether macOS
 lets the connection through, and how the page looks on an actual iPhone SE, is for Jon to confirm.
+
+
+## Independent critique and what I changed (Jon: "have a subagent critique it for design and function", then "yes")
+
+A fresh-context reviewer read the code, drove the page in a real browser, and built temporary repositories to reproduce
+problems. I did not take its claims on trust: each safety finding became a failing test first, using its repro, then a fix.
+
+**Function, fixed and tested (all reproduced):**
+1. A local branch named `origin/feat` shadowed the remote one, so the wrong ref was judged. Now every ref is read and judged
+   by its full name.
+2. Remote refs go stale: a branch pushed to after the last fetch still read "safe to delete", and the old command deleted
+   the new work. Deletes are now `--force-with-lease=<branch>:<commit>`, and the page says the remote state is "as of last
+   fetch". A test runs the copied command for real and confirms it is refused after the branch moves.
+3. `git cherry` skips merge commits, so a merge commit carrying its own change read as merged. A non-ancestor branch is now
+   merged only if it also has no merge commits that main lacks. (My first fix compared merge results with main's tree; it
+   made almost every old branch "cannot tell" on a living repo, which I saw in a screenshot, so I replaced it.)
+4. `git branch -d` refuses patch-merged branches. They now get their own labelled `-D` command; ancestors keep `-d`.
+5. "Even with origin/main" now compares local `main` with `origin/main`, whatever is checked out and whatever `main` tracks
+   (a fork tracking `upstream/main` could read Golden while `origin/main` was ahead). "Not tracking origin/main" is its own item.
+6. Copied commands now name their repository (`git -C <path>`), the diverged case gets a valid `&&` command, not two glued together.
+7. A CI result is tied to the commit it was checked for; after local main moves it is "stale", and a stale failing result is
+   not reported as failing.
+8. Error rows now land under Needs work; a project with no main checkout of its own (a bare layout) is judged by its worktree.
+9. `/api/ci` runs `gh` with the owner's login, so only the computer running the tool may start it (phones cannot), and any
+   request a browser marks `Sec-Fetch-Site: cross-site` is refused.
+
+**One judgment call, for Jon to overrule:** a branch whose patch main applied and *later reverted* is still called merged by
+patch. The reviewer called this "should fix". I kept it because the work was merged and its history stays on main, so
+deleting the branch loses nothing that history does not hold. It still needs `-D`, and a test pins the decision.
+
+**Design, changed:** CI is now checked automatically on load for repos that are otherwise clean (never for repos that need
+work), so Golden is visible without a click; switch off with `--no-auto-ci`. The status column is gone (the group heading
+says it once) in favour of a small icon with the words in its accessible name; the redundant branch chip is gone and the
+checked-out branch is no longer also counted as a stray branch; "not fetched" is told apart from "origin has no main"
+(a `master` repo); merged branches are summarized in one line and unmerged ones listed; the phone cards lost their labels
+and now fit about five repos per screen with 44 px tap targets; counts now agree (projects everywhere, a cap of 40 branches
+is disclosed as "showing 40 of N"); control and selected-filter borders reach 3:1 contrast.
+
+**Not done, on purpose:** about 200 lines of dead PR/issue code in `github.py` (the reviewer and my earlier note both flag
+it) because deleting it also deletes tests of it and was not part of what Jon approved. A fix for the stale
+`origin/HEAD` label oddities was not needed after the "no origin/main" change.
+
+**Mutation checks on this round:** 19 deliberate bugs in the new logic (merge-commit check, full ref names, sync rules,
+commit-tied CI, loopback-only CI, cross-site refusal, lease guard, repo-scoped commands, error grouping, auto-CI scope,
+`-D` labelling, unmerged-as-merged, branch cap note, diverged command, tap target, generated phone labels). All caught;
+one needed a stronger test first (CSS-generated labels are invisible to text checks).
