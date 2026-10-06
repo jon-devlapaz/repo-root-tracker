@@ -1,0 +1,8 @@
+{
+  "inputs": "5d938eeeaffe105005d32c5451b6416ec4c3f07df84d22cb614c241f9af91a23",
+  "decision": "approved",
+  "has_checklist": true,
+  "reviewer": "Jon",
+  "source": "Chat approval in this session: \"approved, yes to fetch, scan ~/dev/active, confirm removals\"",
+  "reason": "Accepted repo-table brief r1 with the four decisions settled: Fetch all included, default scan root ~/dev/active, deploy/auth/organization removals confirmed"
+}

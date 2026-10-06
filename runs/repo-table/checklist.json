@@ -1,0 +1,137 @@
+{
+  "schema": 1,
+  "items": [
+    {
+      "id": "scan",
+      "description": "Repos are found by scanning, with caps and a visible truncation notice.",
+      "verify": "Fake-tree tests cover nested repos, linked worktrees, symlink loops, skipped directories, depth cap, truncation.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_scan.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "golden",
+      "description": "Golden status is a pure function matching the AGENTS.md definition.",
+      "verify": "Truth-table tests for each condition and for golden, not golden and golden pending CI.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_golden.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "status",
+      "description": "Status reports remote branches and extra worktrees.",
+      "verify": "Temporary-repo tests, including a bare remote.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_status.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "server",
+      "description": "Localhost-only server with scan-then-status API.",
+      "verify": "Tests cover 127.0.0.1 bind, Host rejection, 404 for unscanned paths, removed endpoints.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_server.py"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "ui",
+      "description": "The table UI works with fixture repos.",
+      "verify": "Browser smoke: rows, search, filters, expansion, golden text without color, 390 px width, keyboard.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests/test_ui.py"
+        ],
+        "timeout_seconds": 180
+      }
+    },
+    {
+      "id": "page-weight",
+      "description": "The page is small and self-contained.",
+      "verify": "dashboard.html is under 60 KB with no data:image and no external URLs.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-c",
+          "import re,pathlib;p=pathlib.Path('src/repo_root_tracker/dashboard.html');s=p.read_text();assert len(s.encode())<61440,len(s.encode());assert 'data:image' not in s;assert not re.search(r'(src|href)=[\"\\']https?://',s)"
+        ],
+        "timeout_seconds": 20
+      }
+    },
+    {
+      "id": "full-suite",
+      "description": "The whole suite is fast and green.",
+      "verify": "All tests pass in under 120 seconds.",
+      "check": {
+        "argv": [
+          "python3",
+          "-B",
+          "-m",
+          "pytest",
+          "-q",
+          "-p",
+          "no:cacheprovider",
+          "tests"
+        ],
+        "timeout_seconds": 120
+      }
+    },
+    {
+      "id": "real-machine",
+      "description": "On this machine, the page's golden verdicts agree with independent git commands for every repo found.",
+      "verify": "Run the real-machine comparison script; mark only with its output summary, including any disagreement."
+    },
+    {
+      "id": "jon-simple",
+      "description": "Jon opens the page and says whether it is simple, fast and complete enough.",
+      "verify": "Mark only with Jon's actual observation; do not infer it."
+    }
+  ]
+}
