@@ -1,0 +1,7 @@
+{
+  "item": "mutations",
+  "result": "passed",
+  "evidence": "scripts/mutation_check_branch_delete.py: 13/13 deliberate bugs caught (sha, open-PR, current-branch, default-branch, gh-failure, closed-PR tip, closed-PR-local, POST loopback, verdicts loopback, attempt never logged, attempt after delete, lease removed, unscanned path). Rerunnable.",
+  "candidate": "4d813d7c8d4f0f90a70dad975e6725894178b526b26fdb94aa855352d139e53b",
+  "time_ns": 1791309756931384000
+}

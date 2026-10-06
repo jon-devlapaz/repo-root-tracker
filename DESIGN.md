@@ -12,7 +12,8 @@ A plain table. The aim is to be read in a second, not admired.
 - **Order:** within a group, repos with the fewest outstanding items first. Search, a sort and four buttons
   (Refresh, Fetch, GitHub, Rescan) are the only controls.
 - **Feedback you can act on:** the expanded row lists each outstanding item with its fix command and a copy button.
-  Stray branches are marked merged (safe to delete) or unmerged, and the delete command covers only the merged ones.
+  Stray branches are marked merged (safe to delete) or unmerged. Only branches the server says may go get a Delete
+  button (a confirm dialog with Cancel focused) beside the copyable command; there is no bulk delete.
 - **Honest praise:** "Everything is clean." appears only when every repo is golden, and a repo is never golden until CI
   passed.
 - **Accessibility:** semantic table with a caption, real buttons with `aria-expanded` and `aria-pressed`, a polite

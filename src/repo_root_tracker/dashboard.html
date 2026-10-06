@@ -55,6 +55,16 @@ td.when { white-space:nowrap; } td.branchcell { overflow-wrap:break-word; word-b
 .tag { border:1px solid var(--line); border-radius:5px; padding:0 6px; font-size:13px; white-space:nowrap; }
 .tag.hot { border-color:var(--bad); color:var(--bad); }
 .tag.info { border-style:dashed; color:var(--muted); }
+.delrow { display:flex; flex-wrap:wrap; gap:4px 10px; align-items:center; padding:2px 0; }
+.btn.danger { border-color:var(--bad); color:var(--bad); padding:1px 8px; font-size:13px; }
+.btn.danger:hover { background:var(--bad-bg); }
+dialog { max-width:min(460px, calc(100vw - 32px)); background:var(--bg); color:var(--fg); border:1px solid var(--edge); border-radius:10px; padding:18px 20px; }
+dialog::backdrop { background:rgba(0,0,0,.45); }
+dialog h2 { margin:0 0 8px; font-size:16px; } dialog dl { margin:8px 0; } dialog dt { color:var(--muted); font-size:12px; margin-top:6px; }
+dialog dd { margin:0; } dialog .warn-box { margin:10px 0; padding:6px 10px; border:1px solid var(--warn); background:var(--warn-bg); color:var(--warn); border-radius:6px; font-size:13px; }
+dialog .buttons { display:flex; gap:8px; justify-content:flex-end; margin-top:14px; }
+#result { margin:4px 0 8px; padding:8px 12px; border:1px solid var(--ok); background:var(--ok-bg); border-radius:6px; font-size:13px; }
+#result[hidden] { display:none; } #result code { display:block; margin:4px 0; user-select:all; }
 .gh { margin:12px 0 0; padding-top:10px; border-top:1px solid var(--line); font-size:13px; }
 .gh h3 { margin:0 0 4px; font-size:12px; font-weight:650; color:var(--muted); text-transform:uppercase; letter-spacing:.03em; }
 .gh ul { margin:0 0 8px; padding:0; list-style:none; } .gh li { padding:1px 0; } .gh .num { font-weight:600; margin-right:6px; }
@@ -115,6 +125,8 @@ footer { margin-top:20px; color:var(--muted); font-size:12px; }
     <input id="q" type="search" placeholder="Search" aria-label="Search repos">
   </div>
   <div id="status" role="status" aria-live="polite"></div>
+  <div id="result" role="status" hidden></div>
+  <dialog id="confirm" aria-labelledby="confirm-title"></dialog>
   <div id="clear" class="clear" hidden><svg class="i" aria-hidden="true"><use href="#i-check"/></svg>Everything is clean.</div>
   <table id="rows">
     <caption class="sr">Git repositories grouped by whether each is git-golden</caption>
@@ -230,6 +242,17 @@ function branchLines(row, scope) {
   if (merged.length) holder.append(h("div", { class: "branchrow" }, h("span", { class: "ok", text: `${merged.length} merged, safe to delete:` }), h("span", { text: merged.map((d) => d.name).join(", ") })));
   return { list, merged, other, holder };
 }
+// A Delete button only where the server, asked just now, said the branch may go. The server asks again when you confirm.
+function deleteRows(row, scope) {
+  const out = [];
+  for (const d of row.status.branch_details.filter((x) => x.scope === scope)) {
+    const name = d.name.replace(/^origin\//, ""), v = row.verdicts && row.verdicts[scope + ":" + name];
+    if (!v || !v.ok) continue;
+    out.push(h("div", { class: "delrow" }, h("span", { text: d.name }), h("span", { class: "muted", text: `${v.reason}, ${d.relative}` }),
+      h("button", { type: "button", class: "btn danger", "data-del": scope + ":" + name, "data-path": row.checkout.path, "aria-label": `Delete ${scope} branch ${d.name}`, text: "Delete" })));
+  }
+  return out.length ? h("div", {}, ...out) : null;
+}
 function remoteBranches(row) {
   const s = row.status, { list, merged, other, holder } = branchLines(row, "remote");
   if (!list.length) return null;
@@ -241,13 +264,13 @@ function remoteBranches(row) {
   const total = s.branch_details_total;
   const notes = [`Judged from the last fetch (${s.last_fetch_at ? ago(s.last_fetch_at) : "never fetched"}). A delete is refused if the branch has moved since.`];
   if (other.length) notes.push("Unmerged can still be squash-merged; git cannot tell, so check the pull request.");
-  return commandRow(h("span", {}, h("strong", { text: plural(list.length, "remote branch").replace("branchs", "branches") + " besides main" }), holder), cmds.join("\n"), notes.join(" "));
+  return commandRow(h("span", {}, h("strong", { text: plural(list.length, "remote branch").replace("branchs", "branches") + " besides main" }), holder, deleteRows(row, "remote")), cmds.join("\n"), notes.join(" "));
 }
 function localBranches(row) {
   const { list, merged, other, holder } = branchLines(row, "local");
   if (!list.length) return [];
   const byAncestor = merged.filter((d) => d.ancestor).map((d) => d.name), byPatch = merged.filter((d) => !d.ancestor).map((d) => d.name);
-  const out = [commandRow(h("span", {}, h("strong", { text: plural(list.length, "local branch").replace("branchs", "branches") + " besides main" }), holder),
+  const out = [commandRow(h("span", {}, h("strong", { text: plural(list.length, "local branch").replace("branchs", "branches") + " besides main" }), holder, deleteRows(row, "local")),
     byAncestor.length ? git(row, "branch -d " + byAncestor.map(q).join(" ")) : "",
     other.length ? "Unmerged can still be squash-merged; git cannot tell, so check the pull request." : null)];
   if (byPatch.length) out.push(commandRow(`${byPatch.join(", ")}: merged by patch, so git insists on -D`, git(row, "branch -D " + byPatch.map(q).join(" ")), "Every commit has an equivalent patch on main and the branch has no merge commits of its own."));
@@ -308,7 +331,15 @@ function githubSection(row) {
   box.append(h("p", { class: "note", text: `Checked ${ago(g.checked_at)}. These do not affect the verdict.` }));
   return box;
 }
+async function ensureVerdicts(row) {
+  if (row.vstate || !row.status || !row.status.branch_details.length || !state.scan || state.scan.writable === false) return;
+  row.vstate = "loading";
+  try { row.verdicts = (await api("/api/branch/verdicts?path=" + encodeURIComponent(row.checkout.path))).verdicts; row.vstate = "done"; }
+  catch (e) { row.verdicts = null; row.vstate = "done"; }
+  schedule();
+}
 function detailRow(row) {
+  ensureVerdicts(row);
   const s = row.status, box = h("div", {});
   if (!s) { box.append(h("div", { class: "muted", text: row.error || "checking…" })); return box; }
   const g = s.golden;
@@ -400,6 +431,7 @@ function rootsLine(scan) {
   $("roots").textContent = parts.join(". ") + ".";
 }
 async function loadStatus(row) {
+  row.vstate = undefined;  // what may be deleted is asked again whenever the status is read again
   try { row.status = await api("/api/repos/status?path=" + encodeURIComponent(row.checkout.path)); row.error = ""; if (row.status.ci) row.ci = row.status.ci; }
   catch (e) { row.status = null; row.error = e.code === 410 ? "Gone from disk" : "Error: " + e.message; }
   schedule();
@@ -449,12 +481,48 @@ function fetchAll() {
   return busy("Fetch", async () => {
     const list = targets((s) => s.has_origin); let done = 0, failed = 0;
     await pool(list, 4, async (row) => {
-      try { row.status = await api("/api/fetch?path=" + encodeURIComponent(row.checkout.path), { method: "POST" }); row.fetchError = ""; }
+      try { row.status = await api("/api/fetch?path=" + encodeURIComponent(row.checkout.path), { method: "POST" }); row.fetchError = ""; row.vstate = undefined; }
       catch (e) { failed++; row.fetchError = e.message; }
       say(`Fetching ${++done}/${list.length}…`); schedule();
     });
     say(`Fetched ${plural(list.length - failed, "repo")}${failed ? `, ${failed} failed (open the row)` : ""}`);
   });
+}
+
+// ---- deleting a branch: a button, a dialog that says exactly what goes, and the server's own check at the end ----
+const dlg = $("confirm");
+const closeDialog = () => { if (dlg.open) dlg.close(); };
+function showResult(nodes) { const box = $("result"); box.replaceChildren(...nodes); box.hidden = false; }
+function askDelete(row, key) {
+  const [scope, ...rest] = key.split(":"), name = rest.join(":"), v = row.verdicts[key];
+  const d = row.status.branch_details.find((x) => x.scope === scope && x.name.replace(/^origin\//, "") === name);
+  if (!v || !d) return;
+  const fact = (k, val) => [h("dt", { text: k }), h("dd", {}, val)];
+  const err = h("p", { class: "bad", role: "alert", hidden: true });
+  const go = h("button", { type: "button", class: "btn danger", text: "Delete branch" });
+  const cancel = h("button", { type: "button", class: "btn", autofocus: true, text: "Cancel" });
+  cancel.addEventListener("click", closeDialog);
+  go.addEventListener("click", async () => {
+    go.disabled = cancel.disabled = true; err.hidden = true;
+    try {
+      const r = await api("/api/branch/delete", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ path: row.checkout.path, scope, branch: name, sha: v.sha }) });
+      closeDialog();
+      const undo = h("code", { text: r.recovery });
+      showResult([h("strong", { text: `Deleted ${scope} branch ${name}` }), ` (${r.sha}), ${r.why}. To bring it back:`, undo,
+        h("button", { type: "button", class: "btn", "data-copy": r.recovery, text: "Copy" }), " ", h("button", { type: "button", class: "btn", "data-dismiss": "1", text: "Dismiss" })]);
+      say(`Deleted ${name}`); row.vstate = undefined; await loadStatus(row);
+    } catch (e) {
+      err.textContent = e.message; err.hidden = false; cancel.textContent = "Close"; cancel.disabled = false;
+    }
+  });
+  dlg.replaceChildren(h("h2", { id: "confirm-title", text: `Delete ${scope} branch ${name}?` }),
+    h("dl", {}, ...fact("Repo", home(row.status.path)), ...fact("Branch", `${scope === "remote" ? "origin/" : ""}${name} at ${v.sha.slice(0, 10)}, ${d.relative}`),
+      ...fact("Why it may go", v.reason), ...fact("Judged from", row.status.last_fetch_at ? "the fetch " + ago(row.status.last_fetch_at) : "no fetch yet")),
+    v.kind === "closed-pr" ? h("p", { class: "warn-box", text: "This branch was never merged. Its commits stay on GitHub with the closed pull request, but the branch name goes." }) : null,
+    h("p", { class: "note", text: "This asks the server to check again before anything is deleted. A copy of what was deleted is written to ~/.local/share/repo-root-tracker/deleted-branches.log." }),
+    err, h("div", { class: "buttons" }, cancel, go));
+  dlg.showModal();
 }
 
 $("q").addEventListener("input", schedule);
@@ -471,10 +539,17 @@ document.querySelector('[aria-label="Filter"]').addEventListener("click", (e) =>
 });
 $("rows").addEventListener("click", (e) => {
   if (e.target.closest("[data-action=ci]")) { checkGithub(); return; }
+  const del = e.target.closest("[data-del]");
+  if (del) { const row = state.rows.get(del.dataset.path); if (row && row.verdicts) askDelete(row, del.dataset.del); return; }
   const copy = e.target.closest("[data-copy]");
   if (copy) { navigator.clipboard.writeText(copy.dataset.copy).then(() => { copy.textContent = "Copied"; }, () => { copy.textContent = "Copy failed"; }); return; }
   const t = e.target.closest("[data-toggle]"); if (!t) return;
   const p = t.dataset.toggle; state.expanded.has(p) ? state.expanded.delete(p) : state.expanded.add(p); render();
+});
+$("result").addEventListener("click", (e) => {
+  if (e.target.closest("[data-dismiss]")) { $("result").hidden = true; return; }
+  const copy = e.target.closest("[data-copy]");
+  if (copy) navigator.clipboard.writeText(copy.dataset.copy).then(() => { copy.textContent = "Copied"; }, () => { copy.textContent = "Copy failed"; });
 });
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden && state.rows.size && Date.now() - state.refreshedAt > 60000) refresh();

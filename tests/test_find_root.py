@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -9,6 +10,9 @@ from pathlib import Path
 import pytest
 
 from repo_root_tracker import NotARepositoryError, find_root
+
+# The child process must import this checkout, not whichever copy an editable install happens to point at.
+ENV = {**os.environ, "PYTHONPATH": str(Path(__file__).resolve().parent.parent / "src")}
 
 
 # ---------------------------------------------------------------------------
@@ -53,6 +57,7 @@ def test_cli_from_repo_root(tmp_path: Path) -> None:
     git_init(tmp_path)
     result = subprocess.run(
         [sys.executable, "-m", "repo_root_tracker"],
+        env=ENV,
         cwd=tmp_path,
         capture_output=True,
         text=True,
@@ -67,6 +72,7 @@ def test_cli_from_subdirectory(tmp_path: Path) -> None:
     subdir.mkdir()
     result = subprocess.run(
         [sys.executable, "-m", "repo_root_tracker"],
+        env=ENV,
         cwd=subdir,
         capture_output=True,
         text=True,
@@ -87,6 +93,7 @@ def test_find_root_raises_outside_repo(tmp_path: Path) -> None:
 def test_cli_exits_nonzero_outside_repo(tmp_path: Path) -> None:
     result = subprocess.run(
         [sys.executable, "-m", "repo_root_tracker"],
+        env=ENV,
         cwd=tmp_path,
         capture_output=True,
         text=True,

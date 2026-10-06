@@ -13,7 +13,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 
-from . import NotARepositoryError
+from . import NotARepositoryError, branch_delete
 from .github import get_default_branch_ci, get_open_items
 from .scan import Scan, default_roots, scan
 from .status import GitNotAvailableError, fetch_origin, get_repo_status
@@ -187,8 +187,52 @@ class Handler(BaseHTTPRequestHandler):
             ci = get_default_branch_ci(path, refresh=query.get("refresh") == ["1"])
             _ci_last[path] = {"state": ci.state, "head_sha": ci.head_sha, "checked_at": ci.checked_at}
             self._json(200, {"ci": ci.to_dict()})
+        elif split.path == "/api/branch/verdicts":
+            path = self._checked_path(query)
+            if not path:
+                return
+            if self._peer() != "loopback":
+                self._json(403, {"error": "deleting is only offered on this computer"})
+                return
+            try:
+                self._json(200, {"verdicts": branch_delete.verdicts(path)})
+            except NotARepositoryError as e:
+                self._json(410, {"error": str(e), "gone": True})
+            except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
+                self._json(503, {"error": str(e)})
         else:
             self.send_error(404)
+
+    def _delete_branch(self) -> None:
+        try:
+            length = int(self.headers.get("Content-Length") or 0)
+            if not 0 < length <= 4096 or not (self.headers.get("Content-Type") or "").startswith("application/json"):
+                raise ValueError
+            body = json.loads(self.rfile.read(length))
+            path, scope, branch, sha = (body[k] for k in ("path", "scope", "branch", "sha"))
+            if not all(isinstance(v, str) for v in (path, scope, branch, sha)):
+                raise ValueError
+        except (ValueError, KeyError, TypeError):
+            self._json(400, {"error": "expected JSON with path, scope, branch and sha"})
+            return
+        if path not in current_scan().paths():
+            self._json(404, {"error": "not found by the scan"})
+            return
+        try:
+            result = branch_delete.delete(path, scope, branch, sha)
+        except branch_delete.Refused as e:
+            self._json(e.code, {"error": e.reason, "refused": True})
+            return
+        except branch_delete.Failed as e:
+            self._json(502, {"error": f"git said no: {e}"})
+            return
+        except NotARepositoryError as e:
+            self._json(410, {"error": str(e), "gone": True})
+            return
+        except (GitNotAvailableError, RuntimeError, subprocess.TimeoutExpired) as e:
+            self._json(503, {"error": str(e)})
+            return
+        self._json(200, result)
 
     def do_POST(self) -> None:
         if not self._admit():
@@ -196,6 +240,8 @@ class Handler(BaseHTTPRequestHandler):
         split = urlsplit(self.path)
         if split.path == "/api/scan":
             self._json(200, self._scan_response(refresh=True))
+        elif split.path == "/api/branch/delete":
+            self._delete_branch()
         elif split.path == "/api/fetch":
             path = self._checked_path(parse_qs(split.query))
             if not path:
