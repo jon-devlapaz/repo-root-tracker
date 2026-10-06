@@ -13,11 +13,8 @@ URL="http://127.0.0.1:${PORT}/"
 SCRIPT_PATH="$(python3 -c "import os,sys; print(os.path.realpath(sys.argv[1]))" "$0")"
 REPO_ROOT="$(dirname "${SCRIPT_PATH}")"
 
-# Install the package if Python can't see it yet
-if ! python3 -c "import repo_root_tracker.server" 2>/dev/null; then
-  echo "Installing repo-root-tracker..."
-  pip install -e "${REPO_ROOT}" -q
-fi
+# Always run this checkout's own source (standard library only, nothing to install), even if another copy is installed.
+export PYTHONPATH="${REPO_ROOT}/src${PYTHONPATH:+:${PYTHONPATH}}"
 
 # Start the server if nothing is answering on the port
 if curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null; then
