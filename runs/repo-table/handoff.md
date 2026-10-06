@@ -151,3 +151,22 @@ it) because deleting it also deletes tests of it and was not part of what Jon ap
 commit-tied CI, loopback-only CI, cross-site refusal, lease guard, repo-scoped commands, error grouping, auto-CI scope,
 `-D` labelling, unmerged-as-merged, branch cap note, diverged command, tap target, generated phone labels). All caught;
 one needed a stronger test first (CSS-generated labels are invisible to text checks).
+
+
+## Change after the approved brief: open PRs and issues (Jon: "can it number the gh issues and PR's?")
+
+I read this as: show the open pull requests and issues for each repo, with counts and numbers. Added: quiet dashed chips
+(`2 PRs`, `3 issues`, `30+` past the newest 30) and, in the expanded row, a numbered list with titles, draft state and
+links to GitHub. Two choices I made that Jon can reverse: they are informational only and never change the golden verdict
+(`AGENTS.md` says open issues and PRs are tracked separately), and they are read automatically on load from the Mac with
+the CI check (the same `--no-auto-ci` switch) because they use his `gh` login; a phone sees what was last read and cannot
+start a lookup. A failed `gh` call shows "unavailable" or "could not be read", never zero. Links are made clickable only if
+they start with `https://github.com/`; titles are inserted as text. This revives a small, tested slice of what was dead PR
+and issue code (it is a new two-call function, not the old five-call one, which is still unused).
+
+Mutation checks: 10 deliberate bugs (a failed call read as zero, phones starting lookups, any link clickable, zero-count
+chips, missing "+", titles as markup, PRs styled as problems, ...), all caught after fixing one of my own mutants that
+changed nothing.
+
+Not verified: real GitHub. The two `gh` calls are covered with a stand-in for `gh`; the `gh pr list` / `gh issue list` JSON
+field names (`number,title,url,isDraft,headRefName`) come from the existing, previously-working call in this file.
