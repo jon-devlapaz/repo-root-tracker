@@ -112,3 +112,7 @@ RRT_LIVE_GITHUB=1 RRT_LIVE_GITHUB_REPO=<owner>/<name> python3 -m pytest tests/te
 ## Also in this package
 
 `python3 -m repo_root_tracker` prints the git root of the current directory (`find_root`).
+
+## License
+
+MIT. See [LICENSE](LICENSE).
