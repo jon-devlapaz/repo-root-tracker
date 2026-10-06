@@ -1,0 +1,7 @@
+{
+  "item": "jon-simple",
+  "result": "passed",
+  "evidence": "Jon tried it over several rounds and said, in chat: first build 'its alright. feels wordy and not super UI helpful'; after the redesign 'It's pretty good'; after the open PR and issue numbers, 'it's good, write the retro and open the PR'. Each round he asked for a change (less wordy and more useful feedback; phone access on the same wifi; open PR and issue numbers), and those are recorded in handoff.md. Limits: he did not say whether he opened it on his iPhone SE or whether the automatic CI and PR/issue lookups worked against his real GitHub account, so this says nothing about either; he did not say 'simple' or 'fast' in those words.",
+  "candidate": "2e350677791b6ed32aa052788c0a6cee150b927cc7c5b6e7c9ebb0fb7da600d7",
+  "time_ns": 1791301557116842000
+}
