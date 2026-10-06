@@ -1,7 +1,7 @@
 # repo-root-tracker
 
 A table of every git repository under a folder, and which of them are git-golden. It runs on your machine, needs
-no setup and no registration, and never changes a repository (the one exception is the explicit **Fetch** button).
+no setup and no registration, and changes a repository only when you press **Fetch** or confirm deleting a branch.
 
 ```bash
 ./serve.sh        # starts the server on http://127.0.0.1:7842 and opens it
@@ -33,6 +33,21 @@ equivalent patch on `main` (`git cherry` sees through rebase merges) and it has 
 carry changes `git cherry` never inspects. A change `main` applied and later reverted still counts as merged: it was
 merged and its history stays on `main`. Git cannot see squash merges, so such a branch reads as unmerged; check its pull
 request. Branches judged by patch need `git branch -D`, so they get their own labelled command.
+
+### Deleting a branch
+
+Next to a branch that may be deleted there is a **Delete** button. It opens a dialog naming the repo, the branch, its
+commit, and why it may go; **Cancel** has the focus, so Enter alone deletes nothing. A branch may go when it is
+proven merged into `main`, or (remote branches only) when its pull request was closed without merging and the branch
+has no commits newer than that pull request. Those commits stay on GitHub at `refs/pull/<n>/head`.
+
+The server decides, not the page, and checks again when you confirm. It refuses: `main`, `master` and the default
+branch; the checked-out branch or one held by any worktree; a branch with an open pull request; a branch that moved
+since the page looked (the remote delete is lease-guarded); and anything it cannot check, such as `gh` being
+unavailable. Every attempt is appended to `~/.local/share/repo-root-tracker/deleted-branches.log` with the commit
+sha before anything is deleted, and if that log cannot be written, nothing is deleted. After a delete the page shows
+the command that brings the branch back. There is no "delete all" button. Deleting only works from the computer
+running the tool: a phone in `--lan` mode sees no buttons.
 
 Remote branches are judged from the last fetch, which the row shows. Each remote delete is lease-guarded
 (`--force-with-lease=<branch>:<commit>`): if someone pushed to the branch after your last fetch, git refuses instead of

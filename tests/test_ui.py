@@ -48,6 +48,7 @@ class _SyncPlaywright:
 
 playwright = types.SimpleNamespace(sync_playwright=_SyncPlaywright)
 
+from repo_root_tracker import branch_delete as bd
 from repo_root_tracker import server as srv
 from repo_root_tracker import status as status_module
 from repo_root_tracker.github import CiState, OpenItems
@@ -57,6 +58,7 @@ def start(root, monkeypatch, ci="passing", auto_ci=False):
     head = lambda p: git(Path(p), "rev-parse", "refs/heads/main")  # a real CI result names the commit it ran on
     monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: CiState(state=ci, repo="o/r", head_sha=head(p), checked_at="2026-10-06T10:00:00+00:00"))
     monkeypatch.setattr(status_module, "_github_remote", lambda p: "o/r")  # pretend each origin is on GitHub; no network is used
+    monkeypatch.setattr(bd, "pull_requests", lambda slug, branch, cwd: [])  # and no pull request exists anywhere
     monkeypatch.setattr(srv, "get_open_items", lambda p, refresh=False: OpenItems(repo="o/r", available=True, prs_known=True, issues_known=True,
                                                                               checked_at="2026-10-06T10:00:00+00:00"))
     server = srv.make_server(0, [str(root)], auto_ci=auto_ci)

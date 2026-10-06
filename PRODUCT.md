@@ -14,9 +14,11 @@ on the same private network look (read-only, no password); it is off by default.
 3. **Honest about what it knows.** Remote branches and "even with origin" are only as fresh as the last fetch, and
    each row says when that was. CI that cannot be judged is `golden pending CI`, never golden. A scan that hit a cap
    says so.
-4. **Read-only.** It never changes a working tree, branch or commit. Git is run without optional locks so reading
-   status does not rewrite the index. The single exception is the explicit **Fetch all** button, which updates
-   remote-tracking refs only.
+4. **Read-only, with two explicit exceptions.** It never changes a working tree or commit. Git is run without optional
+   locks so reading status does not rewrite the index. The exceptions are the **Fetch all** button, which updates
+   remote-tracking refs only, and a per-branch **Delete** button for branches the server proves merged (or whose pull
+   request was closed unmerged). Deleting is confirmed in a dialog, re-checked by the server, logged before it
+   happens, loopback-only, and never offered in bulk.
 5. **Local and self-contained.** Standard library only, one small page, no build step, no external requests.
 
 ## Scope

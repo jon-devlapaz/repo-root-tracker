@@ -1,0 +1,32 @@
+# branch-delete: build handoff
+
+Built from the approved brief (r1, Jon's chat approval: "approved, build it"; the three proposed decisions accepted as written).
+
+## Not done, and why
+
+- **Jon has not tried the confirm flow.** `jon-confirm-flow` is his call and is left pending; I do not fill it in.
+- **No live deletion was made on a real checkout or real remote**, by design (brief item 8). `scripts/check_branch_delete.py` uses disposable clones of two real repositories whose pushes go to a local bare repository, and compares the real checkouts' refs before and after. Its only network use is GitHub reads through `gh pr list`.
+- **Squash-merged branches still read as unmerged**, so they get no button. That is the existing limit of the merge check; the brief left it out of scope. A merged pull request found through `gh` could prove it later.
+
+## Interpretations and deviations (for review)
+
+1. **Verdicts are asked per repo when its row is expanded**, through `GET /api/branch/verdicts` (loopback only), not at page load. It makes one `gh pr list --head <branch>` call per candidate branch, as the brief said. Nothing is asked for a repo whose row is closed, so page load gains no `gh` traffic.
+2. **A repo with no GitHub remote never calls `gh`.** The brief says "gh unavailable refuses"; a repo with no GitHub remote has no pull requests to find, so it is judged on the merge proof alone. A repo that does have a GitHub remote and cannot reach `gh` is refused.
+3. **Closed-PR deletion is remote-only and tip-exact.** A closed unmerged pull request makes only the remote branch deletable, and only while the branch tip equals the commit that pull request had (`headRefOid`). A local branch is never deleted this way, because `-D` would drop commits that may exist nowhere else. If every pull request for the name is closed and the tip moved on, the reason says "commits newer than closed pull request #N".
+4. **Branch names are checked before the repository is read** (`valid_name`: no leading dash, `git check-ref-format`), so a hostile name never reaches git as an option. The delete itself passes `--` for local branches.
+5. **The remote-tracking ref is forgotten after a remote delete** (`update-ref -d`, with the old value as a guard), so the page does not keep showing a branch that is gone until the next fetch.
+6. **The log gets an `attempt` line before anything is deleted** and a `deleted` or `FAILED` line after. The format is the existing tab-separated one. If the log cannot be opened or the attempt line cannot be written and synced, nothing is deleted.
+7. **Branches beyond the first 40 listed are not deletable from the page** (the status already caps the list); the server says so.
+8. **Existing copyable commands stay.** The Delete buttons sit beside them; read-only viewers still see the commands.
+
+## Findings
+
+- **Mutation checks** (`scripts/mutation_check_branch_delete.py`, rerunnable): 13 deliberate bugs in the safety rules, all caught: sha check, open-PR check, current-branch check, default-branch check, gh failure treated as "no pull requests", closed-PR tip check, closed PR allowed for local branches, loopback check on POST, loopback check on the verdicts endpoint, attempt never logged, attempt logged after the delete, lease removed from the remote delete, unscanned path allowed. The first run of the log-order mutation was invalid (it left a syntax error and counted as a survivor); the script now refuses a mutation that breaks the code instead of its behaviour.
+- **Real-machine check on disposable clones** of `skill-eval-loop` and `socratink`: the merged branch was judged deletable, deleted, logged with its sha, and restored by the recovery command at the same sha; a branch named after a real open pull request (`#4` and the stabilize-invited-beta PR) was refused and stayed; the real checkouts' refs were identical before and after. It first failed once on `socratink` for a reason in the harness: the clone of a clone inherited `origin/HEAD` pointing at the PR branch, so the refusal came from the default-branch rule rather than the open-PR rule. The harness now points `origin/HEAD` at `main`.
+- **Two older tests were already broken on this machine**, unrelated to this change: `test_find_root.py::test_cli_from_repo_root` and `::test_cli_from_subdirectory` ran `python -m repo_root_tracker` in a child process, which imported whatever copy the editable install pointed at. That install pointed at the `repo-root-tracker-repo-table` worktree, which no longer exists, so they failed on `main` as well. The child processes now get this checkout's `src` on `PYTHONPATH`. (The third such test, "exits nonzero outside a repo", had been passing for the wrong reason, since an import error also exits nonzero.) The editable install itself is still stale; reinstalling it is yours to do.
+- **Suite time.** The old suite took 74 s when I measured it for the repo-table run and 98 s today on the same code, because this machine is under load (load average 3 to 6, `fseventsd` at 58% CPU). The new tests add about 30 s under that load. I cut them from 60 to 52 tests by sharing one status read across the read-only verdict rules, copying a prebuilt repository (`tests/conftest.py`) instead of rebuilding one per test, and checking names before reading the repository. Timing is in the verify receipt.
+- **A flaky existing test** under load: `test_ui.py::test_the_tab_count_and_the_chips_count_the_same_thing` failed once in a full run and passed alone and on rerun. I did not change it.
+
+## Test files
+
+New: `tests/test_branch_delete.py` (verdict rules), `tests/test_branch_delete_server.py` (endpoint, refusals, log, recovery), `tests/test_ui_delete.py` (button, dialog, read-only, 390 px), `tests/conftest.py` (shared repo template). Changed: `tests/test_ui.py` (stubs `gh` so expanding a row never calls GitHub), `tests/test_find_root.py` (child-process path, above). No test was removed or weakened.
