@@ -378,3 +378,36 @@ def test_branch_names_with_shell_characters_are_quoted_in_copied_commands(world)
         assert "git branch -d 'it'\\''s$odd;rm'" in commands, commands
         assert shlex.split("git branch -d 'it'\\''s$odd;rm'") == ["git", "branch", "-d", "it's$odd;rm"]  # one argument, nothing runs
         browser.close()
+
+
+def test_on_a_phone_over_the_network_fetch_and_rescan_are_off_and_say_why(tmp_path, monkeypatch):
+    root = tmp_path / "root"
+    with_origin(root, "alpha")
+    monkeypatch.setattr(srv, "lan_addresses", lambda: [])
+    monkeypatch.setattr(srv, "lan_hostnames", lambda: set())
+    monkeypatch.setattr(status_module, "_github_remote", lambda p: "o/r")
+    monkeypatch.setattr(srv, "get_default_branch_ci", lambda p, refresh=False: CiState(state="passing", repo="o/r"))
+    server = srv.make_server(0, [str(root)], lan=True)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    monkeypatch.setattr(srv.Handler, "_peer", lambda self: "private")  # this browser plays a phone on the wifi
+    try:
+        with playwright.sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = open_page(browser, f"http://127.0.0.1:{server.server_address[1]}/", 1)
+            assert page.locator("#fetch").is_disabled() and page.locator("#rescan").is_disabled()
+            assert page.locator("#refresh").is_enabled() and page.locator("#ci").is_enabled()
+            assert "Only works on the computer running" in page.locator("#fetch").get_attribute("title")
+            assert "Read-only on this device" in page.locator("#roots").inner_text()
+            page.click("#refresh")  # a busy cycle must not re-enable the locked buttons
+            page.wait_for_function("document.body.innerText.includes('Refreshed')")
+            assert page.locator("#fetch").is_disabled() and page.locator("#rescan").is_disabled()
+            assert page.errors == []
+            browser.close()
+    finally:
+        server.shutdown()
+        server.server_close()
+
+
+def test_on_the_machine_itself_nothing_is_locked(page):
+    assert page.locator("#fetch").is_enabled() and page.locator("#rescan").is_enabled()
+    assert "Read-only" not in page.locator("#roots").inner_text()

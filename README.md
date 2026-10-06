@@ -55,11 +55,24 @@ hidden and build folders (`node_modules`, `.venv`, `dist`, `build`, `target`, `.
 50,000 entries or five seconds and says **SCAN INCOMPLETE** if it does. Folders beyond the depth limit are counted,
 not silently ignored. **Rescan** looks again.
 
-## Local only
+## Local only, and an opt-in phone view
 
-The server binds `127.0.0.1` and refuses any request whose `Host` is not `localhost`, `127.0.0.1` or `[::1]`, and any
-cross-site POST. The page makes no external requests (its one outbound link, "Open Actions" for failing CI, only opens when you click it) and ships under a strict content-security policy. There is no
-password mode or remote hosting.
+By default the server binds `127.0.0.1` and refuses any request whose `Host` is not `localhost`, `127.0.0.1` or `[::1]`,
+and any cross-site POST. The page makes no external requests (its one outbound link, "Open Actions" for failing CI, only
+opens when you click it) and ships under a strict content-security policy. There is no password mode or remote hosting.
+
+To look at it from your phone on the same wifi, start it with `--lan`:
+
+```bash
+RRT_LAN=1 ./serve.sh        # or: python3 -m repo_root_tracker.server --lan
+```
+
+It prints the address to open (`http://<your-mac's-address>:7842/` and `http://<your-mac>.local:7842/`). LAN mode is
+**read-only and has no password**: anyone on that private network can see repo paths, branch names and commit messages.
+What still protects it: it is off unless you ask; only clients on private network ranges (10.x, 172.16-31.x,
+192.168.x, link-local) are served, so a port forwarded from the internet is refused; the `Host` must be this
+machine's own address or name; and **Fetch** and **Rescan** only work from the computer running it, so a phone can look
+but never change anything. macOS may ask you to allow incoming connections for Python the first time.
 
 ## Tests
 

@@ -4,6 +4,7 @@
 #
 # Usage: ./serve.sh            (uses port 7842)
 #        RRT_PORT=9000 ./serve.sh
+#        RRT_LAN=1 ./serve.sh   (also reachable from your phone on the same wifi; read-only, no password)
 set -euo pipefail
 
 PORT="${RRT_PORT:-7842}"
@@ -21,7 +22,7 @@ if curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null; then
   echo "Dashboard already running on :${PORT}"
 else
   echo "Starting dashboard on :${PORT} ..."
-  nohup python3 -m repo_root_tracker.server --port "${PORT}" \
+  nohup python3 -m repo_root_tracker.server --port "${PORT}" ${RRT_LAN:+--lan} \
     >/tmp/repo-root-tracker.log 2>&1 &
   for _ in $(seq 1 40); do
     curl -sf -o /dev/null "${URL}api/scan" 2>/dev/null && break

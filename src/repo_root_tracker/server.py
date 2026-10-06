@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import ipaddress
 import json
+import socket
 import subprocess
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -20,6 +22,11 @@ LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
 CSP = ("default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; "
        "base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
 
+PRIVATE_NETWORKS = tuple(ipaddress.ip_network(n) for n in (
+    "10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16",   # RFC 1918: home and office networks
+    "169.254.0.0/16", "fe80::/10", "fc00::/7"))          # link-local and IPv6 local
+LAN = False                      # opt-in with --lan; off means loopback only
+_lan_hosts: set[str] = set()     # Host names accepted in LAN mode: this machine's own addresses and names
 ROOTS: list[str] = []
 _scan_lock = threading.Lock()
 _scan: Scan | None = None
@@ -35,24 +42,70 @@ def current_scan(*, refresh: bool = False) -> Scan:
         return _scan
 
 
+def lan_addresses() -> list[str]:
+    """This machine's own non-loopback IPv4 addresses. The UDP connect sends nothing; it only picks the outgoing interface."""
+    found: set[str] = set()
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as probe:
+            probe.connect(("10.255.255.255", 1))
+            found.add(probe.getsockname()[0])
+    except OSError:
+        pass
+    try:
+        found.update(info[4][0] for info in socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET))
+    except OSError:
+        pass
+    return sorted(ip for ip in found if not ip.startswith("127."))
+
+
+def lan_hostnames() -> set[str]:
+    name = socket.gethostname().lower()
+    short = name.removesuffix(".local")
+    return {name, short, f"{short}.local"}
+
+
+def peer_class(ip: str) -> str:
+    """'loopback', 'private' (home or office network) or 'public' for a client address."""
+    try:
+        address = ipaddress.ip_address(ip)
+    except ValueError:
+        return "public"
+    if address.is_loopback:
+        return "loopback"
+    # An explicit list, not ipaddress.is_private, which also accepts the reserved documentation ranges.
+    return "private" if any(address in network for network in PRIVATE_NETWORKS) else "public"
+
+
 def _host_is_local(header: str | None) -> bool:
-    return (urlsplit(f"//{header or ''}").hostname or "") in LOCAL_HOSTS
+    host = urlsplit(f"//{header or ''}").hostname or ""
+    return host in LOCAL_HOSTS or (LAN and host.lower() in _lan_hosts)
 
 
 class Handler(BaseHTTPRequestHandler):
     server_version = "repo-root-tracker"
 
+    def _peer(self) -> str:
+        return peer_class(self.client_address[0])
+
     def _admit(self) -> bool:
-        """Localhost only: refuse any Host that is not a loopback name, and any cross-site POST."""
+        """Loopback only by default. In LAN mode, also private-network peers asking for this machine by its own name or
+        address, read-only. Anything else, and any cross-site POST, is refused."""
+        peer = self._peer()
+        if peer == "public" or (peer == "private" and not LAN):
+            self.send_error(403)
+            return False
         if not _host_is_local(self.headers.get("Host")):
             self.send_error(403)
             return False
         if self.command == "POST":
             origin = self.headers.get("Origin")
-            if origin and not _host_is_local(urlsplit(origin).netloc):
-                self.send_error(403)
+            if peer != "loopback" or (origin and not _host_is_local(urlsplit(origin).netloc)):
+                self.send_error(403)  # only the machine running the tool may fetch or rescan
                 return False
         return True
+
+    def _scan_response(self, refresh: bool = False) -> dict:
+        return {**current_scan(refresh=refresh).to_dict(), "writable": self._peer() == "loopback"}
 
     def end_headers(self) -> None:
         self.send_header("X-Content-Type-Options", "nosniff")
@@ -91,7 +144,7 @@ class Handler(BaseHTTPRequestHandler):
         if split.path in ("/", "/index.html"):
             self._send(200, ASSET.read_bytes(), "text/html; charset=utf-8")
         elif split.path == "/api/scan":
-            self._json(200, current_scan().to_dict())
+            self._json(200, self._scan_response())
         elif split.path == "/api/repos/status":
             path = self._checked_path(query)
             if path:
@@ -111,7 +164,7 @@ class Handler(BaseHTTPRequestHandler):
             return
         split = urlsplit(self.path)
         if split.path == "/api/scan":
-            self._json(200, current_scan(refresh=True).to_dict())
+            self._json(200, self._scan_response(refresh=True))
         elif split.path == "/api/fetch":
             path = self._checked_path(parse_qs(split.query))
             if not path:
@@ -143,17 +196,25 @@ class Handler(BaseHTTPRequestHandler):
         pass
 
 
-def make_server(port: int = 7842, roots: list[str] | None = None) -> ThreadingHTTPServer:
-    """A server bound to loopback only. Port 0 picks a free port."""
-    global ROOTS, _scan
-    ROOTS, _scan = list(roots or default_roots()), None
+def make_server(port: int = 7842, roots: list[str] | None = None, lan: bool = False) -> ThreadingHTTPServer:
+    """Loopback only unless `lan`. Port 0 picks a free port."""
+    global ROOTS, _scan, LAN, _lan_hosts
+    ROOTS, _scan, LAN = list(roots or default_roots()), None, lan
+    _lan_hosts = ({*lan_addresses(), *lan_hostnames()} if lan else set())
     _ci_last.clear()
-    return ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    return ThreadingHTTPServer(("0.0.0.0" if lan else "127.0.0.1", port), Handler)
 
 
-def serve(port: int = 7842, roots: list[str] | None = None) -> None:
-    server = make_server(port, roots)
-    print(f"http://127.0.0.1:{server.server_address[1]}/", flush=True)
+def serve(port: int = 7842, roots: list[str] | None = None, lan: bool = False) -> None:
+    server = make_server(port, roots, lan)
+    bound = server.server_address[1]
+    print(f"http://127.0.0.1:{bound}/", flush=True)
+    if lan:
+        for address in lan_addresses():
+            print(f"http://{address}:{bound}/   <- open this on your phone (same wifi)", flush=True)
+        print(f"http://{socket.gethostname().lower().removesuffix('.local')}.local:{bound}/", flush=True)
+        print("LAN mode: anyone on this private network can view repo paths, branches and commit messages. "
+              "There is no password. Fetch and Rescan only work from this machine.", flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
@@ -167,8 +228,10 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=7842)
     parser.add_argument("--root", action="append", dest="roots", metavar="PATH",
                         help="folder to scan (repeatable). Default: RRT_ROOTS, else ~/dev/active")
+    parser.add_argument("--lan", action="store_true",
+                        help="also serve devices on your private network (read-only, no password); default is this machine only")
     args = parser.parse_args()
-    serve(args.port, args.roots)
+    serve(args.port, args.roots, args.lan)
 
 
 if __name__ == "__main__":

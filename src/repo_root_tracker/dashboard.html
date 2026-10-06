@@ -301,8 +301,17 @@ function render() {
 let queued = false;
 const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } };
 
+function lockWrites(scan) {
+  const locked = scan.writable === false;
+  for (const id of ["fetch", "rescan"]) {
+    const b = $(id); b.dataset.locked = locked ? "1" : ""; b.disabled = locked;
+    if (locked) b.title = "Only works on the computer running repo-root-tracker";
+  }
+}
 function rootsLine(scan) {
+  lockWrites(scan);
   const parts = [`Scanned ${scan.roots.map(home).join(", ")} in ${scan.elapsed_seconds}s`];
+  if (scan.writable === false) parts.push("Read-only on this device: Fetch and Rescan work on the computer running this");
   if (scan.missing_roots.length) parts.push(`missing: ${scan.missing_roots.map(home).join(", ")}`);
   if (scan.truncated) parts.push(`SCAN INCOMPLETE (${scan.truncated_reason}), so some repos may be missing`);
   else if (scan.deeper_not_searched) parts.push(`${plural(scan.deeper_not_searched, "folder")} deeper than ${scan.max_depth} levels not searched`);
@@ -327,7 +336,7 @@ async function busy(label, work) {
   if (state.busy) return; state.busy = true;
   document.querySelectorAll(".actions button").forEach((b) => { b.disabled = true; });
   try { await work(); } catch (e) { say(`${label} failed: ${e.message}`); }
-  finally { state.busy = false; document.querySelectorAll(".actions button").forEach((b) => { b.disabled = false; }); }
+  finally { state.busy = false; document.querySelectorAll(".actions button").forEach((b) => { b.disabled = !!b.dataset.locked; }); }
 }
 const refresh = () => busy("Refresh", async () => { await pool([...state.rows.values()], 6, loadStatus); state.refreshedAt = Date.now(); say(`Refreshed ${new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`); });
 const rescan = () => busy("Rescan", async () => load(await api("/api/scan", { method: "POST" })));

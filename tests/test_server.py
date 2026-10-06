@@ -167,3 +167,85 @@ def test_missing_root_is_reported_on_the_scan(tmp_path):
 def test_no_password_or_remote_access_settings_exist_anymore():
     for name in ("PUBLIC_HOSTS", "PASSWORD_HASH", "SESSION_SECRET", "configure_remote", "REPOS_FILE", "CONFIG_DIR"):
         assert not hasattr(srv, name), name
+
+
+# ---- LAN mode: opt-in, private networks only, read-only for everyone but this machine --------------------------------
+
+def test_peer_classes():
+    for ip, expected in [("127.0.0.1", "loopback"), ("::1", "loopback"), ("192.168.1.20", "private"), ("10.1.2.3", "private"),
+                         ("172.16.0.9", "private"), ("172.31.255.1", "private"), ("172.32.0.1", "public"), ("169.254.3.3", "private"), ("fd12::1", "private"), ("8.8.8.8", "public"), ("203.0.113.9", "public"), ("192.0.2.1", "public"),
+                         ("100.64.0.1", "public"), ("not-an-ip", "public")]:
+        assert srv.peer_class(ip) == expected, ip
+
+
+def test_lan_mode_is_off_by_default_and_binds_loopback(live):
+    assert srv.LAN is False and live.server.server_address[0] == "127.0.0.1"
+    assert live("GET", "/api/scan")[1]["writable"] is True
+
+
+@pytest.fixture()
+def lan(tree, monkeypatch):
+    root, alpha = tree
+    monkeypatch.setattr(srv, "lan_addresses", lambda: ["192.168.9.9"])
+    monkeypatch.setattr(srv, "lan_hostnames", lambda: {"thismac", "thismac.local"})
+    server = srv.make_server(0, [str(root)], lan=True)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    port = server.server_address[1]
+    peer = {"ip": "192.168.9.20"}
+    monkeypatch.setattr(srv.Handler, "_peer", lambda self: srv.peer_class(peer["ip"]))  # a phone on the wifi, simulated
+
+    def call(method, path, headers=None):
+        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=20)
+        conn.request(method, path, headers=headers or {})
+        response = conn.getresponse()
+        raw = response.read()
+        conn.close()
+        try:
+            return response.status, json.loads(raw)
+        except ValueError:
+            return response.status, raw
+
+    call.peer, call.server, call.alpha, call.port = peer, server, alpha, port
+    yield call
+    server.shutdown()
+    server.server_close()
+
+
+def test_lan_mode_binds_all_interfaces_and_is_announced(lan):
+    assert lan.server.server_address[0] == "0.0.0.0" and srv.LAN is True
+
+
+def test_a_phone_on_the_wifi_can_read_but_is_told_it_is_read_only(lan):
+    status, scan = lan("GET", "/api/scan", {"Host": "192.168.9.9:7842"})
+    assert status == 200 and scan["writable"] is False and len(scan["checkouts"]) == 2
+    path = real(lan.alpha)
+    for host in ("192.168.9.9:7842", "thismac.local:7842", "thismac"):
+        assert lan("GET", "/api/repos/status?path=" + path, {"Host": host})[0] == 200, host
+    assert lan("GET", "/", {"Host": "thismac.local"})[0] == 200
+
+
+def test_a_phone_cannot_fetch_or_rescan_even_with_a_local_looking_origin(lan):
+    path = real(lan.alpha)
+    for request in (("POST", "/api/scan"), ("POST", "/api/fetch?path=" + path)):
+        assert lan(*request, {"Host": "192.168.9.9:7842"})[0] == 403
+        assert lan(*request, {"Host": "192.168.9.9:7842", "Origin": "http://192.168.9.9:7842"})[0] == 403
+
+
+def test_the_machine_itself_can_still_fetch_and_rescan_in_lan_mode(lan):
+    lan.peer["ip"] = "127.0.0.1"
+    assert lan("POST", "/api/scan", {"Host": f"localhost:{lan.port}"})[1]["writable"] is True
+    assert lan("POST", "/api/fetch?path=" + real(lan.alpha), {"Host": f"127.0.0.1:{lan.port}"})[0] == 200
+
+
+def test_lan_mode_still_refuses_unknown_hosts_and_public_peers(lan):
+    for host in ("evil.example", "evil.example:7842", "192.168.9.10", "thismac.evil.example"):
+        assert lan("GET", "/api/scan", {"Host": host})[0] == 403, host  # DNS rebinding and other addresses stay refused
+    for ip in ("8.8.8.8", "203.0.113.5"):
+        lan.peer["ip"] = ip
+        assert lan("GET", "/api/scan", {"Host": "192.168.9.9:7842"})[0] == 403, ip  # a forwarded port from the internet is refused
+
+
+def test_without_lan_mode_a_private_peer_is_refused_even_with_the_right_name(live, monkeypatch):
+    monkeypatch.setattr(srv.Handler, "_peer", lambda self: "private")
+    assert live("GET", "/api/scan", {"Host": "192.168.9.9"})[0] == 403
+    assert live("GET", "/api/scan")[0] == 403

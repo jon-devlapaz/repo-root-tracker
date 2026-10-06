@@ -5,7 +5,8 @@ A single developer keeps many git repositories under a folder and wants one answ
 repo-root-tracker scans a folder, shows every checkout in a table, and says why each one that is not golden is not.
 
 ## Users
-One developer, on their own machine, on localhost. No accounts, no sharing, no remote hosting.
+One developer, on their own machine, on localhost. No accounts and no remote hosting. An opt-in `--lan` mode lets their phone
+on the same private network look (read-only, no password); it is off by default.
 
 ## Principles
 1. **It just works.** Opening it needs no setup, no registration and no configuration. It finds the repos.
