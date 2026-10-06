@@ -14,8 +14,8 @@ Obtaining file:///Users/jondev/dev/active/tools/repo-root-tracker-repo-table
 Building wheels for collected packages: repo-root-tracker
   Building editable for repo-root-tracker (pyproject.toml): started
   Building editable for repo-root-tracker (pyproject.toml): finished with status 'done'
-  Created wheel for repo-root-tracker: filename=repo_root_tracker-0.1.0-py3-none-any.whl size=4818 sha256=158323e68d6f470a99c81aecdb2c1a86795faa190be9a67fcf7252afbcb4bcdc
-  Stored in directory: /private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pip-ephem-wheel-cache-wjfcjp8t/wheels/0c/fe/2a/909081eccd1a04be61ae0b7bccfc84befca0caec90a7608130
+  Created wheel for repo-root-tracker: filename=repo_root_tracker-0.1.0-py3-none-any.whl size=5712 sha256=2790079aa90abb6c978b096d9ac8a94f4dd27c7e3a3ab71b45f4f85de45e604a
+  Stored in directory: /private/var/folders/sk/r2ns7lvn2ygcsj7bhd0mvnyw0000gn/T/pip-ephem-wheel-cache-77na3pms/wheels/0c/fe/2a/909081eccd1a04be61ae0b7bccfc84befca0caec90a7608130
 Successfully built repo-root-tracker
 Installing collected packages: repo-root-tracker
   Attempting uninstall: repo-root-tracker
@@ -280,12 +280,12 @@ tests/test_ui.py::test_a_repo_with_nothing_open_shows_no_chips_and_says_none_ope
 tests/test_ui.py::test_when_gh_cannot_answer_it_says_unavailable_instead_of_zero PASSED [ 99%]
 tests/test_ui.py::test_a_link_that_is_not_github_is_shown_as_plain_text PASSED [100%]
 
-================== 245 passed, 1 skipped in 77.06s (0:01:17) ===================
+================== 245 passed, 1 skipped in 77.20s (0:01:17) ===================
 
 # checklist item scan
 $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_scan.py"]
 ................                                                         [100%]
-16 passed in 1.96s
+16 passed in 1.98s
 
 # checklist item golden
 $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_golden.py"]
@@ -295,17 +295,17 @@ $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_
 # checklist item status
 $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_status.py"]
 ..........................                                               [100%]
-26 passed in 12.72s
+26 passed in 12.46s
 
 # checklist item server
 $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_server.py"]
 ..........................                                               [100%]
-26 passed in 18.56s
+26 passed in 18.57s
 
 # checklist item ui
 $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests/test_ui.py"]
 ...........................................                              [100%]
-43 passed in 39.03s
+43 passed in 38.93s
 
 # checklist item page-weight
 $ ["python3", "-B", "-c", "import re,pathlib;p=pathlib.Path('src/repo_root_tracker/dashboard.html');s=p.read_text();assert len(s.encode())<61440,len(s.encode());assert 'data:image' not in s;assert not re.search(r'(src|href)=[\"\\']https?://',s)"]
@@ -316,4 +316,4 @@ $ ["python3", "-B", "-m", "pytest", "-q", "-p", "no:cacheprovider", "tests"]
 ............s........................................................... [ 58%]
 ........................................................................ [ 87%]
 ..............................                                           [100%]
-245 passed, 1 skipped in 79.92s (0:01:19)
+245 passed, 1 skipped in 83.81s (0:01:23)
