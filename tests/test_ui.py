@@ -1,5 +1,6 @@
 """End to end: the real server, real temporary git repos and a real browser."""
 
+import os
 import shutil
 import threading
 import time
@@ -188,6 +189,78 @@ def test_groups_come_in_priority_order_and_the_closest_to_clean_come_first(page)
     assert names(page) == ["beta", "gamma", "delta", "alpha"]  # 1, 2 and 3 things outstanding, then the pending-CI group
     page.select_option("#sort", "name")
     assert names(page) == ["beta", "delta", "gamma", "alpha"]
+
+
+def test_oldest_fetch_puts_never_fetched_first_and_breaks_ties_by_path(page, world):
+    # beta and delta have never been fetched. gamma has a known fetch.
+    fetch_head = world["root"] / "gamma" / ".git" / "FETCH_HEAD"
+    fetch_head.write_text("")
+    os.utime(fetch_head, (1_600_000_000, 1_600_000_000))
+    page.click("#refresh")
+    page.wait_for_function("document.body.innerText.includes('Refreshed')")
+    requests = list(page.requests)
+    assert page.locator("#sort option", has_text="Oldest fetch").count() == 1
+    page.select_option("#sort", "oldest-fetch")
+    assert names(page) == ["beta", "delta", "gamma", "alpha"]
+    assert page.requests == requests  # Sorting is local, including no fetch or GitHub check.
+
+    # Equal known dates also use path, rather than the previous clean-order rank.
+    for name in ("beta", "delta"):
+        path = world["root"] / name / ".git" / "FETCH_HEAD"
+        path.write_text("")
+        os.utime(path, (1_600_000_000, 1_600_000_000))
+    page.click("#refresh")
+    page.wait_for_function("document.body.innerText.includes('Refreshed')")
+    assert names(page) == ["beta", "delta", "gamma", "alpha"]
+
+
+def test_oldest_fetch_keeps_status_groups_and_worktrees_with_their_main_checkout(tmp_path, monkeypatch):
+    root = tmp_path / "root"
+    for name in ("bad-a", "bad-z", "pending-a", "pending-z", "golden-a", "golden-z"):
+        repo, _ = with_origin(root, name)
+        fetch_head = repo / ".git" / "FETCH_HEAD"
+        fetch_head.write_text("")
+        timestamp = 1_700_000_000 if name.endswith("a") else 1_600_000_000
+        os.utime(fetch_head, (timestamp, timestamp))
+    (root / "bad-z" / "file.txt").write_text("edited\n")
+    worktree = root / "aaa-linked"
+    git(root / "bad-a", "worktree", "add", "-q", "-b", "linked", str(worktree))
+    # The child's older fetch must not move its main checkout ahead of bad-z.
+    child_fetch = Path(git(worktree, "rev-parse", "--path-format=absolute", "--git-path", "FETCH_HEAD"))
+    child_fetch.write_text("")
+    os.utime(child_fetch, (1_500_000_000, 1_500_000_000))
+    server, url = start(root, monkeypatch)
+    monkeypatch.setattr(srv, "get_default_branch_ci", lambda path, refresh=False: CiState(
+        state="unknown" if Path(path).name.startswith("pending") else "passing", repo="o/r",
+        head_sha=git(Path(path), "rev-parse", "refs/heads/main")))
+    try:
+        with playwright.sync_playwright() as p:
+            browser = p.chromium.launch()
+            page = open_page(browser, url, 7)
+            page.click("#ci")
+            page.wait_for_function("document.body.innerText.includes('GitHub checked')")
+            assert counts(page) == {"all": "6", "bad": "2", "pending": "2", "golden": "2"}
+            requests = list(page.requests)
+            page.select_option("#sort", "oldest-fetch")
+            assert names(page) == ["bad-z", "bad-a", "aaa-linked", "pending-z", "pending-a", "golden-z", "golden-a"]
+            titles = [text.lower() for text in page.locator("#rows tr.title th").all_inner_texts()]
+            assert len(titles) == 3
+            assert all(text.startswith(label) for text, label in zip(titles, ("needs work", "pending ci", "golden")))
+            assert row(page, "aaa-linked").get_attribute("class") == "row child"
+            page.select_option("#sort", "name")
+            assert names(page) == ["bad-a", "aaa-linked", "bad-z", "pending-a", "pending-z", "golden-a", "golden-z"]
+            page.select_option("#sort", "oldest-fetch")
+            page.fill("#q", "aaa-linked")
+            assert names(page) == ["bad-a", "aaa-linked"]
+            page.fill("#q", "")
+            page.click("[data-filter=golden]")
+            assert names(page) == ["golden-z", "golden-a"]
+            assert page.requests == requests
+            assert page.errors == []
+            browser.close()
+    finally:
+        server.shutdown()
+        server.server_close()
 
 
 def test_search_and_filters_use_the_group_counts(page):

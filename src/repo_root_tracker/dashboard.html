@@ -121,7 +121,7 @@ footer { margin-top:20px; color:var(--muted); font-size:12px; }
       <button type="button" class="chip" data-filter="pending" aria-pressed="false">Pending CI<b id="n-pending">0</b></button>
       <button type="button" class="chip" data-filter="golden" aria-pressed="false">Golden<b id="n-golden">0</b></button>
     </div>
-    <select id="sort" aria-label="Sort"><option value="clean">Closest to clean</option><option value="name">Name</option><option value="recent">Last commit</option></select>
+    <select id="sort" aria-label="Sort"><option value="clean">Closest to clean</option><option value="name">Name</option><option value="recent">Last commit</option><option value="oldest-fetch">Oldest fetch</option></select>
     <input id="q" type="search" placeholder="Search" aria-label="Search repos">
   </div>
   <div id="status" role="status" aria-live="polite"></div>
@@ -381,7 +381,11 @@ function render() {
   $("clear").hidden = !(state.rows.size && counts.checking === 0 && counts.bad === 0 && counts.pending === 0);
   const head = (rows) => rows[0];
   const recent = (rows) => (head(rows).status && Date.parse(head(rows).status.last_commit.date)) || 0;
-  const order = (a, b) => (sort === "recent" ? recent(b) - recent(a) : sort === "clean" ? outstanding(head(a)) - outstanding(head(b)) : 0)
+  const fetched = (rows) => {
+    const timestamp = head(rows).status && head(rows).status.last_fetch_at;
+    return timestamp ? Date.parse(timestamp) : -Infinity;
+  };
+  const order = (a, b) => (sort === "oldest-fetch" ? fetched(a) - fetched(b) : sort === "recent" ? recent(b) - recent(a) : sort === "clean" ? outstanding(head(a)) - outstanding(head(b)) : 0)
     || head(a).checkout.path.localeCompare(head(b).checkout.path);
   const body = $("rows"); body.querySelectorAll(":scope > tbody").forEach((el) => el.remove());
   let n = 0, shown = 0;
